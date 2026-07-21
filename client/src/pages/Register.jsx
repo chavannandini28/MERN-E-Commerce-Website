@@ -1,17 +1,20 @@
 import { useState } from "react";
-import { registerUser } from "../api/authApi";
-import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import {
+  FaUser,
+  FaEnvelope,
+  FaPhone,
+  FaLock,
+  FaUserPlus,
+} from "react-icons/fa";
 
 const Register = () => {
-
-  const navigate = useNavigate();
-
   const [form, setForm] = useState({
     name: "",
     email: "",
-    password: "",
     phone: "",
+    password: "",
+    confirmPassword: "",
   });
 
   const changeHandler = (e) => {
@@ -21,70 +24,210 @@ const Register = () => {
     });
   };
 
-  const submitHandler = async (e) => {
+  const submitHandler = (e) => {
     e.preventDefault();
 
-    try {
-
-      const { data } = await registerUser(form);
-
-      toast.success(data.message);
-
-      navigate("/login");
-
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || "Registration Failed"
-      );
-    }
+    // Use your existing register API here
+    console.log(form);
   };
 
   return (
-    <div className="container mt-5" style={{ maxWidth: 500 }}>
-      <div className="card shadow p-4">
+    <div
+      className="container-fluid"
+      style={{
+        minHeight: "100vh",
+        background:
+          "linear-gradient(135deg,#2563eb,#7c3aed)",
+      }}
+    >
+      <div className="row justify-content-center align-items-center min-vh-100">
 
-        <h2 className="text-center mb-4">
-          Register
-        </h2>
+        <div className="col-lg-6 col-md-8">
 
-        <form onSubmit={submitHandler}>
+          <div
+            className="card border-0 shadow-lg"
+            style={{ borderRadius: "25px" }}
+          >
+            <div className="card-body p-5">
 
-          <input
-            className="form-control mb-3"
-            placeholder="Name"
-            name="name"
-            onChange={changeHandler}
-          />
+              <div className="text-center mb-4">
 
-          <input
-            className="form-control mb-3"
-            placeholder="Email"
-            name="email"
-            onChange={changeHandler}
-          />
+                <h2 className="fw-bold">
+                  Create Account
+                </h2>
 
-          <input
-            className="form-control mb-3"
-            placeholder="Phone"
-            name="phone"
-            onChange={changeHandler}
-          />
+                <p className="text-muted">
+                  Join MERN Shop Today
+                </p>
 
-          <input
-            className="form-control mb-3"
-            type="password"
-            placeholder="Password"
-            name="password"
-            onChange={changeHandler}
-          />
+              </div>
 
-          <button className="btn btn-success w-100">
-            Register
-          </button>
+              <form onSubmit={submitHandler}>
 
-        </form>
+                <div className="row">
+
+                  <div className="col-md-6 mb-3">
+
+                    <label className="form-label">
+                      Full Name
+                    </label>
+
+                    <div className="input-group">
+
+                      <span className="input-group-text">
+                        <FaUser />
+                      </span>
+
+                      <input
+                        className="form-control"
+                        name="name"
+                        placeholder="Enter Name"
+                        value={form.name}
+                        onChange={changeHandler}
+                      />
+
+                    </div>
+
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+
+                    <label className="form-label">
+                      Mobile
+                    </label>
+
+                    <div className="input-group">
+
+                      <span className="input-group-text">
+                        <FaPhone />
+                      </span>
+
+                      <input
+                        className="form-control"
+                        name="phone"
+                        placeholder="Enter Mobile"
+                        value={form.phone}
+                        onChange={changeHandler}
+                      />
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+                <div className="mb-3">
+
+                  <label className="form-label">
+                    Email
+                  </label>
+
+                  <div className="input-group">
+
+                    <span className="input-group-text">
+                      <FaEnvelope />
+                    </span>
+
+                    <input
+                      type="email"
+                      className="form-control"
+                      name="email"
+                      placeholder="Enter Email"
+                      value={form.email}
+                      onChange={changeHandler}
+                    />
+
+                  </div>
+
+                </div>
+
+                <div className="row">
+
+                  <div className="col-md-6 mb-3">
+
+                    <label className="form-label">
+                      Password
+                    </label>
+
+                    <div className="input-group">
+
+                      <span className="input-group-text">
+                        <FaLock />
+                      </span>
+
+                      <input
+                        type="password"
+                        className="form-control"
+                        name="password"
+                        placeholder="Password"
+                        value={form.password}
+                        onChange={changeHandler}
+                      />
+
+                    </div>
+
+                  </div>
+
+                  <div className="col-md-6 mb-4">
+
+                    <label className="form-label">
+                      Confirm Password
+                    </label>
+
+                    <div className="input-group">
+
+                      <span className="input-group-text">
+                        <FaLock />
+                      </span>
+
+                      <input
+                        type="password"
+                        className="form-control"
+                        name="confirmPassword"
+                        placeholder="Confirm Password"
+                        value={form.confirmPassword}
+                        onChange={changeHandler}
+                      />
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+                <button
+                  className="btn btn-primary w-100 py-3"
+                  type="submit"
+                >
+                  <FaUserPlus className="me-2" />
+                  Create Account
+                </button>
+
+              </form>
+
+              <hr />
+
+              <div className="text-center">
+
+                Already have an account?
+
+                <Link
+                  to="/login"
+                  className="ms-2 fw-bold text-decoration-none"
+                >
+                  Login
+                </Link>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
 
       </div>
+
     </div>
   );
 };

@@ -1,169 +1,192 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { toast } from "react-toastify";
-
-import {
-  getMyCart,
-  removeCartItem,
-  updateQuantity,
-  clearCart,
-} from "../api/cartApi";
-
-import CartItem from "../components/CartItem";
-import Loader from "../components/Loader";
+import { FaTrash, FaMinus, FaPlus, FaShoppingBag } from "react-icons/fa";
+import { useSelector } from "react-redux";
 
 const Cart = () => {
-  const [cart, setCart] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const cartItems =
+    useSelector((state) => state.cart?.cartItems) || [];
 
-  const loadCart = async () => {
-    try {
-      setLoading(true);
-
-      const { data } = await getMyCart();
-
-      setCart(data.cart || []);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to load cart");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadCart();
-  }, []);
-
-  const increase = async (item) => {
-    try {
-      await updateQuantity(item._id, item.quantity + 1);
-      loadCart();
-    } catch {
-      toast.error("Unable to update quantity");
-    }
-  };
-
-  const decrease = async (item) => {
-    if (item.quantity <= 1) return;
-
-    try {
-      await updateQuantity(item._id, item.quantity - 1);
-      loadCart();
-    } catch {
-      toast.error("Unable to update quantity");
-    }
-  };
-
-  const remove = async (id) => {
-    try {
-      await removeCartItem(id);
-      toast.success("Item removed from cart");
-      loadCart();
-    } catch {
-      toast.error("Unable to remove item");
-    }
-  };
-
-  const clear = async () => {
-    try {
-      await clearCart();
-      toast.success("Cart cleared");
-      loadCart();
-    } catch {
-      toast.error("Unable to clear cart");
-    }
-  };
-
-  const total = cart.reduce(
-    (sum, item) =>
-      sum + (item.product?.price || 0) * item.quantity,
+  const total = cartItems.reduce(
+    (acc, item) => acc + item.price * item.quantity,
     0
   );
 
-  if (loading) return <Loader />;
-
   return (
     <div className="container py-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="fw-bold">🛒 My Cart</h2>
 
-        {cart.length > 0 && (
-          <button
-            className="btn btn-outline-danger"
-            onClick={clear}
-          >
-            Clear Cart
-          </button>
-        )}
-      </div>
+      <h2 className="fw-bold mb-4">
+        Shopping Cart
+      </h2>
 
-      {cart.length === 0 ? (
+      {cartItems.length === 0 ? (
         <div className="text-center py-5">
+
+          <FaShoppingBag
+            size={80}
+            className="text-secondary mb-4"
+          />
+
           <h3>Your Cart is Empty</h3>
 
           <p className="text-muted">
-            Looks like you haven't added anything yet.
+            Looks like you haven't added any products.
           </p>
 
           <Link
             to="/shop"
-            className="btn btn-primary"
+            className="btn btn-primary px-4"
           >
             Continue Shopping
           </Link>
+
         </div>
       ) : (
         <div className="row">
+
+          {/* Cart Items */}
+
           <div className="col-lg-8">
-            {cart.map((item) => (
-              <CartItem
+
+            {cartItems.map((item) => (
+              <div
                 key={item._id}
-                item={item}
-                increase={increase}
-                decrease={decrease}
-                remove={remove}
-              />
+                className="card mb-4 border-0 shadow-sm rounded-4"
+              >
+                <div className="card-body">
+
+                  <div className="row align-items-center">
+
+                    <div className="col-md-2">
+
+                      <img
+                        src={
+                          item.images?.[0]?.url ||
+                          item.image
+                        }
+                        alt={item.name}
+                        className="img-fluid rounded"
+                      />
+
+                    </div>
+
+                    <div className="col-md-4">
+
+                      <h5>{item.name}</h5>
+
+                      <small className="text-muted">
+                        ₹{item.price}
+                      </small>
+
+                    </div>
+
+                    <div className="col-md-3">
+
+                      <div className="d-flex align-items-center">
+
+                        <button className="btn btn-outline-secondary">
+                          <FaMinus />
+                        </button>
+
+                        <span className="mx-3 fw-bold">
+                          {item.quantity}
+                        </span>
+
+                        <button className="btn btn-outline-secondary">
+                          <FaPlus />
+                        </button>
+
+                      </div>
+
+                    </div>
+
+                    <div className="col-md-2 text-end">
+
+                      <h5 className="text-success">
+                        ₹
+                        {item.price *
+                          item.quantity}
+                      </h5>
+
+                    </div>
+
+                    <div className="col-md-1 text-end">
+
+                      <button className="btn btn-outline-danger">
+
+                        <FaTrash />
+
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
             ))}
+
           </div>
 
+          {/* Order Summary */}
+
           <div className="col-lg-4">
+
             <div className="card shadow border-0 rounded-4">
+
               <div className="card-body">
-                <h4 className="fw-bold mb-3">
+
+                <h4 className="fw-bold mb-4">
                   Order Summary
                 </h4>
 
-                <hr />
+                <div className="d-flex justify-content-between mb-3">
 
-                <div className="d-flex justify-content-between mb-2">
-                  <span>Total Items</span>
-                  <strong>{cart.length}</strong>
+                  <span>
+                    Products
+                  </span>
+
+                  <span>
+                    {cartItems.length}
+                  </span>
+
                 </div>
 
-                <div className="d-flex justify-content-between mb-4">
-                  <span>Total Price</span>
-                  <strong className="text-success">
-                    ₹ {total.toFixed(2)}
-                  </strong>
+                <div className="d-flex justify-content-between mb-3">
+
+                  <span>Shipping</span>
+
+                  <span className="text-success">
+                    FREE
+                  </span>
+
+                </div>
+
+                <hr />
+
+                <div className="d-flex justify-content-between">
+
+                  <h5>Total</h5>
+
+                  <h4 className="text-primary">
+                    ₹{total}
+                  </h4>
+
                 </div>
 
                 <Link
                   to="/checkout"
-                  className="btn btn-success w-100"
+                  className="btn btn-primary w-100 mt-4"
                 >
                   Proceed To Checkout
                 </Link>
 
-                <Link
-                  to="/shop"
-                  className="btn btn-outline-dark w-100 mt-2"
-                >
-                  Continue Shopping
-                </Link>
               </div>
+
             </div>
+
           </div>
+
         </div>
       )}
     </div>

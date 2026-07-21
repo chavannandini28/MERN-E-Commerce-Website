@@ -1,160 +1,173 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-
-import loadRazorpay from "../utils/loadRazorpay";
+import { Link } from "react-router-dom";
 import {
-  createPaymentOrder,
-  verifyPayment,
-} from "../api/paymentApi";
+  FaCreditCard,
+  FaMapMarkerAlt,
+  FaPhone,
+  FaUser,
+} from "react-icons/fa";
 
 const Checkout = () => {
-  const navigate = useNavigate();
-
-  const [address, setAddress] = useState({
-    fullName: "",
-    phone: "",
-    address: "",
-    city: "",
-    state: "",
-    pincode: "",
-  });
-
-  const handleChange = (e) => {
-    setAddress({
-      ...address,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const payNow = async () => {
-    const loaded = await loadRazorpay();
-
-    if (!loaded) {
-      toast.error("Unable to load Razorpay");
-      return;
-    }
-
-    try {
-      const { data } = await createPaymentOrder(address);
-
-      const options = {
-        key: data.key,
-        amount: data.order.amount,
-        currency: data.order.currency,
-        name: "MERN Ecommerce",
-        description: "Order Payment",
-        order_id: data.order.id,
-
-        handler: async function (response) {
-          try {
-            const verify = await verifyPayment({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              shippingAddress: address,
-            });
-
-            toast.success("Payment Successful");
-
-            navigate("/payment-success", {
-              state: verify.data,
-            });
-
-          } catch {
-            navigate("/payment-failed");
-          }
-        },
-
-        prefill: {
-          name: address.fullName,
-          contact: address.phone,
-        },
-
-        theme: {
-          color: "#0d6efd",
-        },
-      };
-
-      const paymentObject = new window.Razorpay(options);
-
-      paymentObject.open();
-
-    } catch {
-      toast.error("Payment initialization failed");
-    }
-  };
-
   return (
     <div className="container py-5">
 
-      <div className="row justify-content-center">
+      <h2 className="fw-bold mb-4">
+        Checkout
+      </h2>
 
-        <div className="col-lg-7">
+      <div className="row">
 
-          <div className="card shadow p-4">
+        {/* Billing */}
 
-            <h2 className="mb-4">
-              Shipping Address
-            </h2>
+        <div className="col-lg-8">
 
-            <input
-              className="form-control mb-3"
-              placeholder="Full Name"
-              name="fullName"
-              onChange={handleChange}
-            />
+          <div className="card border-0 shadow rounded-4">
 
-            <input
-              className="form-control mb-3"
-              placeholder="Phone"
-              name="phone"
-              onChange={handleChange}
-            />
+            <div className="card-body">
 
-            <textarea
-              className="form-control mb-3"
-              placeholder="Address"
-              name="address"
-              rows="3"
-              onChange={handleChange}
-            />
+              <h4 className="mb-4">
+                Billing Details
+              </h4>
 
-            <div className="row">
+              <div className="row">
 
-              <div className="col">
-                <input
-                  className="form-control"
-                  placeholder="City"
-                  name="city"
-                  onChange={handleChange}
-                />
-              </div>
+                <div className="col-md-6 mb-3">
 
-              <div className="col">
-                <input
-                  className="form-control"
-                  placeholder="State"
-                  name="state"
-                  onChange={handleChange}
-                />
+                  <label className="form-label">
+                    Full Name
+                  </label>
+
+                  <div className="input-group">
+
+                    <span className="input-group-text">
+                      <FaUser />
+                    </span>
+
+                    <input
+                      className="form-control"
+                      placeholder="John Doe"
+                    />
+
+                  </div>
+
+                </div>
+
+                <div className="col-md-6 mb-3">
+
+                  <label className="form-label">
+                    Mobile Number
+                  </label>
+
+                  <div className="input-group">
+
+                    <span className="input-group-text">
+                      <FaPhone />
+                    </span>
+
+                    <input
+                      className="form-control"
+                      placeholder="+91 XXXXX XXXXX"
+                    />
+
+                  </div>
+
+                </div>
+
+                <div className="col-12 mb-3">
+
+                  <label className="form-label">
+                    Delivery Address
+                  </label>
+
+                  <div className="input-group">
+
+                    <span className="input-group-text">
+                      <FaMapMarkerAlt />
+                    </span>
+
+                    <textarea
+                      rows="4"
+                      className="form-control"
+                      placeholder="Enter delivery address..."
+                    ></textarea>
+
+                  </div>
+
+                </div>
+
               </div>
 
             </div>
 
-            <input
-              className="form-control mt-3"
-              placeholder="Pincode"
-              name="pincode"
-              onChange={handleChange}
-            />
+          </div>
 
-            <button
-              className="btn btn-success w-100 mt-4"
-              onClick={payNow}
-            >
-              Pay Now
-            </button>
+        </div>
+
+        {/* Order Summary */}
+
+        <div className="col-lg-4">
+
+          <div className="card shadow border-0 rounded-4">
+
+            <div className="card-body">
+
+              <h4 className="fw-bold mb-4">
+                Order Summary
+              </h4>
+
+              <div className="d-flex justify-content-between mb-3">
+
+                <span>Subtotal</span>
+
+                <span>₹2500</span>
+
+              </div>
+
+              <div className="d-flex justify-content-between mb-3">
+
+                <span>Shipping</span>
+
+                <span className="text-success">
+                  FREE
+                </span>
+
+              </div>
+
+              <div className="d-flex justify-content-between mb-3">
+
+                <span>Tax</span>
+
+                <span>₹150</span>
+
+              </div>
+
+              <hr />
+
+              <div className="d-flex justify-content-between">
+
+                <h5>Total</h5>
+
+                <h4 className="text-primary">
+                  ₹2650
+                </h4>
+
+              </div>
+
+              <button className="btn btn-success w-100 mt-4">
+
+                <FaCreditCard className="me-2" />
+
+                Place Order
+
+              </button>
+
+              <Link
+                to="/cart"
+                className="btn btn-outline-secondary w-100 mt-3"
+              >
+                Back To Cart
+              </Link>
+
+            </div>
 
           </div>
 

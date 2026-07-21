@@ -1,0 +1,16 @@
+.nav-link {
+  transition: 0.3s;
+  border-left: 4px solid transparent;
+}
+
+.nav-link:hover {
+  background: #1e293b;
+  border-left: 4px solid #0d6efd;
+  color: white !important;
+}
+
+.nav-link.active {
+  background: #2563eb;
+  color: white !important;
+  border-left: 4px solid white;
+}

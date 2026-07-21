@@ -1,22 +1,56 @@
 import { Link } from "react-router-dom";
+import { SearchX } from "lucide-react";
 
 const NotFound = () => {
   return (
-    <div
-      className="container d-flex flex-column justify-content-center align-items-center"
-      style={{ minHeight: "80vh" }}
-    >
-      <h1 className="display-1 fw-bold text-danger">404</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-100 px-4">
 
-      <h3>Page Not Found</h3>
+      <div className="text-center max-w-lg">
 
-      <p className="text-muted">
-        The page you are looking for doesn't exist.
-      </p>
+        {/* 404 Icon */}
+        <div className="flex justify-center mb-6">
+          <div className="bg-gray-200 p-6 rounded-full animate-bounce">
+            <SearchX
+              size={90}
+              className="text-gray-600"
+            />
+          </div>
+        </div>
 
-      <Link to="/" className="btn btn-primary mt-3">
-        Go Back Home
-      </Link>
+
+        {/* 404 Text */}
+        <h1 className="text-7xl font-extrabold text-gray-800 mb-4">
+          404
+        </h1>
+
+
+        <h2 className="text-3xl font-bold text-gray-700 mb-3">
+          Page Not Found
+        </h2>
+
+
+        <p className="text-gray-500 mb-8">
+          Sorry, the page you are looking for does not exist
+          or has been moved.
+        </p>
+
+
+        {/* Home Button */}
+        <Link
+          to="/"
+          className="inline-block bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-xl font-semibold transition duration-300 shadow-lg"
+        >
+          🏠 Go Back Home
+        </Link>
+
+
+        {/* Footer */}
+        <div className="mt-8 text-sm text-gray-400">
+          🛍️ Continue exploring our premium products
+        </div>
+
+      </div>
+
     </div>
   );
 };

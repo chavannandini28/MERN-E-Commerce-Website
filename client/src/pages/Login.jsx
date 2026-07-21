@@ -1,95 +1,143 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { toast } from "react-toastify";
-
-import { loginUser } from "../api/authApi";
-import { loginSuccess } from "../redux/authSlice";
+import { Link } from "react-router-dom";
+import { FaEnvelope, FaLock, FaSignInAlt } from "react-icons/fa";
 
 const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const submitHandler = (e) => {
+    e.preventDefault();
 
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
-
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
+    // Call your existing login API here
+    console.log({
+      email,
+      password,
     });
   };
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
-
-    try {
-      const { data } = await loginUser(form);
-
-      dispatch(loginSuccess(data));
-
-      toast.success(data.message);
-
-      if (data.user.role === "Admin") {
-        navigate("/admin/dashboard");
-      } else if (data.user.role === "Vendor") {
-        navigate("/vendor/dashboard");
-      } else {
-        navigate("/");
-      }
-
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || "Login Failed"
-      );
-    }
-  };
-
   return (
-    <div className="container mt-5" style={{ maxWidth: 450 }}>
-      <div className="card shadow p-4">
+    <div
+      className="container-fluid"
+      style={{
+        minHeight: "100vh",
+        background:
+          "linear-gradient(135deg,#0d6efd,#6f42c1)",
+      }}
+    >
+      <div className="row justify-content-center align-items-center min-vh-100">
 
-        <h2 className="text-center mb-4">
-          Login
-        </h2>
+        <div className="col-lg-5 col-md-7">
 
-        <form onSubmit={submitHandler}>
-
-          <input
-            className="form-control mb-3"
-            placeholder="Email"
-            name="email"
-            onChange={handleChange}
-          />
-
-          <input
-            className="form-control mb-3"
-            type="password"
-            placeholder="Password"
-            name="password"
-            onChange={handleChange}
-          />
-
-          <button
-            className="btn btn-dark w-100"
+          <div
+            className="card border-0 shadow-lg"
+            style={{ borderRadius: "25px" }}
           >
-            Login
-          </button>
+            <div className="card-body p-5">
 
-        </form>
+              <div className="text-center mb-4">
 
-        <p className="mt-3 text-center">
-          Don't have an account?
+                <h2 className="fw-bold">
+                  Welcome Back 👋
+                </h2>
 
-          <Link to="/register">
-            Register
-          </Link>
-        </p>
+                <p className="text-muted">
+                  Login to your account
+                </p>
+
+              </div>
+
+              <form onSubmit={submitHandler}>
+
+                <div className="mb-3">
+
+                  <label className="form-label">
+                    Email
+                  </label>
+
+                  <div className="input-group">
+
+                    <span className="input-group-text">
+                      <FaEnvelope />
+                    </span>
+
+                    <input
+                      type="email"
+                      className="form-control"
+                      placeholder="Enter Email"
+                      value={email}
+                      onChange={(e) =>
+                        setEmail(e.target.value)
+                      }
+                    />
+
+                  </div>
+
+                </div>
+
+                <div className="mb-4">
+
+                  <label className="form-label">
+                    Password
+                  </label>
+
+                  <div className="input-group">
+
+                    <span className="input-group-text">
+                      <FaLock />
+                    </span>
+
+                    <input
+                      type="password"
+                      className="form-control"
+                      placeholder="Enter Password"
+                      value={password}
+                      onChange={(e) =>
+                        setPassword(e.target.value)
+                      }
+                    />
+
+                  </div>
+
+                </div>
+
+                <button
+                  className="btn btn-primary w-100 py-3"
+                  type="submit"
+                >
+                  <FaSignInAlt className="me-2" />
+                  Login
+                </button>
+
+              </form>
+
+              <hr />
+
+              <div className="text-center">
+
+                <p className="mb-0">
+
+                  Don't have an account?
+
+                  <Link
+                    to="/register"
+                    className="ms-2 text-decoration-none fw-bold"
+                  >
+                    Register
+                  </Link>
+
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
 
       </div>
+
     </div>
   );
 };

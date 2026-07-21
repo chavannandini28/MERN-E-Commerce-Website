@@ -1,61 +1,132 @@
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { FaFolderPlus, FaSave, FaTag } from "react-icons/fa";
 
 const AddCategory = () => {
-  const [name, setName] = useState("");
+  const [category, setCategory] = useState({
+    name: "",
+    slug: "",
+    description: "",
+  });
 
-  const handleSubmit = (e) => {
+  const changeHandler = (e) => {
+    setCategory({
+      ...category,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const submitHandler = (e) => {
     e.preventDefault();
 
-    if (!name.trim()) {
-      toast.error("Category name is required");
-      return;
-    }
-
-    // TODO: Call createCategory API here
-
-    toast.success("Category added successfully");
-    setName("");
+    // Use your existing API here
+    console.log(category);
   };
 
   return (
-    <div className="container py-4">
-      <div className="card shadow">
-        <div className="card-body">
+    <div className="container-fluid">
 
-          <h2 className="mb-4">
-            Add Category
-          </h2>
+      <div className="card border-0 shadow rounded-4">
 
-          <form onSubmit={handleSubmit}>
+        <div className="card-header bg-primary text-white">
 
-            <div className="mb-3">
-              <label className="form-label">
-                Category Name
-              </label>
+          <h3 className="mb-0">
 
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Enter Category Name"
-                value={name}
-                onChange={(e) =>
-                  setName(e.target.value)
-                }
-              />
+            <FaFolderPlus className="me-2" />
+
+            Add New Category
+
+          </h3>
+
+        </div>
+
+        <div className="card-body p-4">
+
+          <form onSubmit={submitHandler}>
+
+            <div className="row">
+
+              <div className="col-md-6 mb-4">
+
+                <label className="form-label fw-bold">
+                  Category Name
+                </label>
+
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Enter Category Name"
+                  name="name"
+                  value={category.name}
+                  onChange={changeHandler}
+                />
+
+              </div>
+
+              <div className="col-md-6 mb-4">
+
+                <label className="form-label fw-bold">
+                  Category Slug
+                </label>
+
+                <div className="input-group">
+
+                  <span className="input-group-text">
+                    <FaTag />
+                  </span>
+
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="category-slug"
+                    name="slug"
+                    value={category.slug}
+                    onChange={changeHandler}
+                  />
+
+                </div>
+
+              </div>
+
+              <div className="col-12 mb-4">
+
+                <label className="form-label fw-bold">
+                  Description
+                </label>
+
+                <textarea
+                  rows="5"
+                  className="form-control"
+                  placeholder="Enter Category Description"
+                  name="description"
+                  value={category.description}
+                  onChange={changeHandler}
+                ></textarea>
+
+              </div>
+
             </div>
 
-            <button
-              className="btn btn-primary"
-              type="submit"
-            >
-              Add Category
-            </button>
+            <div className="text-end">
+
+              <button
+                className="btn btn-success px-5"
+                type="submit"
+              >
+
+                <FaSave className="me-2" />
+
+                Save Category
+
+              </button>
+
+            </div>
 
           </form>
 
         </div>
+
       </div>
+
     </div>
   );
 };

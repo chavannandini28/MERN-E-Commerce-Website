@@ -1,165 +1,282 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { toast } from "react-toastify";
-
-import Loader from "../components/Loader";
-import { getOrderById, cancelOrder } from "../api/orderApi";
+import { Link } from "react-router-dom";
+import {
+  FaCheckCircle,
+  FaTruck,
+  FaMapMarkerAlt,
+  FaCreditCard,
+  FaBoxOpen,
+} from "react-icons/fa";
 
 const OrderDetails = () => {
-  const { id } = useParams();
 
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  const loadOrder = async () => {
-    try {
-      setLoading(true);
-
-      const { data } = await getOrderById(id);
-
-      setOrder(data.order);
-    } catch (error) {
-      console.error(error);
-      toast.error("Unable to load order");
-    } finally {
-      setLoading(false);
-    }
+  // Replace with your backend data later
+  const order = {
+    _id: "ORD1001",
+    status: "Delivered",
+    payment: "Paid",
+    total: 54999,
+    date: "20 July 2026",
+    address:
+      "Hinjewadi Phase-1, Pune, Maharashtra",
+    items: [
+      {
+        _id: 1,
+        name: "Apple iPhone 16",
+        qty: 1,
+        price: 49999,
+        image: "https://via.placeholder.com/100",
+      },
+      {
+        _id: 2,
+        name: "Apple Charger",
+        qty: 1,
+        price: 5000,
+        image: "https://via.placeholder.com/100",
+      },
+    ],
   };
-
-  useEffect(() => {
-    loadOrder();
-  }, [id]);
-
-  const handleCancel = async () => {
-    try {
-      await cancelOrder(id);
-
-      toast.success("Order cancelled successfully");
-
-      loadOrder();
-    } catch (error) {
-      console.error(error);
-      toast.error("Unable to cancel order");
-    }
-  };
-
-  if (loading) return <Loader />;
-
-  if (!order) {
-    return (
-      <div className="container py-5 text-center">
-        <h3>Order not found</h3>
-      </div>
-    );
-  }
 
   return (
     <div className="container py-5">
-      <div className="card shadow border-0 rounded-4">
-        <div className="card-body p-4">
-          <h2 className="mb-4">Order Details</h2>
 
-          <div className="row mb-4">
-            <div className="col-md-6">
-              <p>
-                <strong>Order ID:</strong> {order._id}
-              </p>
+      {/* Header */}
 
-              <p>
-                <strong>Status:</strong>{" "}
-                <span
-                  className={`badge ${
-                    order.orderStatus === "Delivered"
-                      ? "bg-success"
-                      : order.orderStatus === "Cancelled"
-                      ? "bg-danger"
-                      : order.orderStatus === "Shipped"
-                      ? "bg-primary"
-                      : "bg-warning text-dark"
-                  }`}
-                >
-                  {order.orderStatus}
-                </span>
-              </p>
+      <div className="d-flex justify-content-between align-items-center mb-4">
 
-              <p>
-                <strong>Total Price:</strong>{" "}
-                <span className="text-success fw-bold">
-                  ₹ {order.totalPrice}
-                </span>
-              </p>
+        <div>
+
+          <h2 className="fw-bold">
+
+            Order Details
+
+          </h2>
+
+          <p className="text-muted">
+
+            Order ID :
+            <strong> #{order._id}</strong>
+
+          </p>
+
+        </div>
+
+        <Link
+          to="/my-orders"
+          className="btn btn-outline-primary"
+        >
+          Back
+        </Link>
+
+      </div>
+
+      {/* Status */}
+
+      <div className="row g-4 mb-4">
+
+        <div className="col-md-4">
+
+          <div className="card shadow border-0">
+
+            <div className="card-body text-center">
+
+              <FaTruck
+                size={45}
+                className="text-primary mb-3"
+              />
+
+              <h5>Order Status</h5>
+
+              <span className="badge bg-success">
+
+                {order.status}
+
+              </span>
+
             </div>
 
-            <div className="col-md-6">
-              {order.shippingAddress && (
-                <>
-                  <h5>Shipping Address</h5>
-
-                  <p className="mb-1">
-                    {order.shippingAddress.address}
-                  </p>
-
-                  <p className="mb-1">
-                    {order.shippingAddress.city},{" "}
-                    {order.shippingAddress.state}
-                  </p>
-
-                  <p>{order.shippingAddress.pincode}</p>
-                </>
-              )}
-            </div>
           </div>
+
+        </div>
+
+        <div className="col-md-4">
+
+          <div className="card shadow border-0">
+
+            <div className="card-body text-center">
+
+              <FaCreditCard
+                size={45}
+                className="text-success mb-3"
+              />
+
+              <h5>Payment</h5>
+
+              <span className="badge bg-success">
+
+                {order.payment}
+
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div className="col-md-4">
+
+          <div className="card shadow border-0">
+
+            <div className="card-body text-center">
+
+              <FaMapMarkerAlt
+                size={45}
+                className="text-danger mb-3"
+              />
+
+              <h5>Delivery Address</h5>
+
+              <small>
+
+                {order.address}
+
+              </small>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Products */}
+
+      <div className="card border-0 shadow">
+
+        <div className="card-header bg-white">
+
+          <h4 className="fw-bold mb-0">
+
+            Ordered Products
+
+          </h4>
+
+        </div>
+
+        <div className="card-body">
+
+          {order.items.map((item) => (
+
+            <div
+              key={item._id}
+              className="row align-items-center mb-4"
+            >
+
+              <div className="col-md-2">
+
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="img-fluid rounded"
+                />
+
+              </div>
+
+              <div className="col-md-5">
+
+                <h5>{item.name}</h5>
+
+              </div>
+
+              <div className="col-md-2">
+
+                Qty : {item.qty}
+
+              </div>
+
+              <div className="col-md-3 text-end">
+
+                <strong>
+
+                  ₹{item.price}
+
+                </strong>
+
+              </div>
+
+            </div>
+
+          ))}
 
           <hr />
 
-          <h4 className="mb-3">Ordered Products</h4>
+          <div className="text-end">
 
-          {order.products?.length > 0 ? (
-            order.products.map((item) => (
-              <div
-                key={item._id}
-                className="d-flex justify-content-between align-items-center border rounded p-3 mb-3"
-              >
-                <div className="d-flex align-items-center">
-                  {item.image && (
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      width="70"
-                      height="70"
-                      className="rounded me-3"
-                      style={{ objectFit: "cover" }}
-                    />
-                  )}
+            <h3 className="text-success">
 
-                  <div>
-                    <h6 className="mb-1">{item.name}</h6>
+              Total : ₹{order.total}
 
-                    <small className="text-muted">
-                      Quantity : {item.quantity}
-                    </small>
-                  </div>
-                </div>
+            </h3>
 
-                <h6 className="text-success">
-                  ₹ {item.price}
-                </h6>
-              </div>
-            ))
-          ) : (
-            <p>No products found.</p>
-          )}
+          </div>
 
-          {order.orderStatus === "Pending" && (
-            <button
-              className="btn btn-danger mt-3"
-              onClick={handleCancel}
-            >
-              Cancel Order
-            </button>
-          )}
         </div>
+
       </div>
+
+      {/* Timeline */}
+
+      <div className="card border-0 shadow mt-4">
+
+        <div className="card-header bg-white">
+
+          <h4 className="fw-bold">
+
+            Order Timeline
+
+          </h4>
+
+        </div>
+
+        <div className="card-body">
+
+          <div className="mb-3">
+
+            <FaCheckCircle className="text-success me-2" />
+
+            Order Placed
+
+          </div>
+
+          <div className="mb-3">
+
+            <FaCheckCircle className="text-success me-2" />
+
+            Payment Confirmed
+
+          </div>
+
+          <div className="mb-3">
+
+            <FaTruck className="text-primary me-2" />
+
+            Shipped
+
+          </div>
+
+          <div>
+
+            <FaBoxOpen className="text-success me-2" />
+
+            Delivered Successfully
+
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
   );
 };
