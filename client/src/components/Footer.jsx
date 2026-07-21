@@ -27,7 +27,7 @@ const Footer = () => {
           <div className="col-lg-4 mb-4">
 
             <h3 className="fw-bold text-warning">
-              MERN SHOP
+              NANDINI SHOP
             </h3>
 
             <p className="text-light mt-3">
@@ -160,7 +160,7 @@ const Footer = () => {
 
               <FaPhoneAlt className="me-2 text-warning" />
 
-              +91 9876543210
+              +91 7709881028
 
             </p>
 
@@ -168,7 +168,7 @@ const Footer = () => {
 
               <FaEnvelope className="me-2 text-warning" />
 
-              support@mernshop.com
+              support@Nandinishop.com
 
             </p>
 
@@ -182,8 +182,8 @@ const Footer = () => {
 
       <div className="text-center py-3">
 
-        © {new Date().getFullYear()} MERN SHOP |
-        Designed with ❤️ using React + Node + MongoDB
+        © {new Date().getFullYear()} Nandini SHOP |
+        Designed with ❤️ Nandini Chavan
 
       </div>
 

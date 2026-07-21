@@ -57,7 +57,7 @@ const Register = () => {
                 </h2>
 
                 <p className="text-muted">
-                  Join MERN Shop Today
+                  Join Nandini Shop Today
                 </p>
 
               </div>

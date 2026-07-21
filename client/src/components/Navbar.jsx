@@ -57,7 +57,7 @@ const Navbar = () => {
         {/* Logo */}
 
         <Link className="navbar-brand fw-bold fs-3 logo" to="/">
-          MERN<span>Shop</span>
+          Nandini<span>Shop</span>
         </Link>
 
         {/* Mobile */}
