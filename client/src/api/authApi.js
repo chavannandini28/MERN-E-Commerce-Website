@@ -1,16 +1,51 @@
 import axiosInstance from "./axiosInstance";
 
-export const registerUser = (data) =>
-  axiosInstance.post("/auth/register", data);
+// ==========================
+// Authentication APIs
+// ==========================
 
-export const loginUser = (data) =>
-  axiosInstance.post("/auth/login", data);
+// Register
+export const registerUser = (userData) =>
+  axiosInstance.post("/auth/register", userData);
 
-export const getProfile = () =>
-  axiosInstance.get("/auth/profile");
+// Login
+export const loginUser = (userData) =>
+  axiosInstance.post("/auth/login", userData);
 
-export const updateProfile = (data) =>
-  axiosInstance.put("/auth/profile", data);
+// Logout (Frontend Only)
+export const logoutUser = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+};
 
-export const logoutUser = () =>
-  axiosInstance.post("/auth/logout");
+// ==========================
+// User Profile
+// ==========================
+
+// Get Logged In User
+export const getMyProfile = () =>
+  axiosInstance.get("/users/profile");
+
+// Update Profile
+export const updateProfile = (userData) =>
+  axiosInstance.put("/users/profile", userData);
+
+// Change Password
+export const changePassword = (passwordData) =>
+  axiosInstance.put("/users/change-password", passwordData);
+
+// ==========================
+// Password Recovery
+// ==========================
+
+// Forgot Password
+export const forgotPassword = (email) =>
+  axiosInstance.post("/auth/forgot-password", {
+    email,
+  });
+
+// Reset Password
+export const resetPassword = (token, password) =>
+  axiosInstance.post(`/auth/reset-password/${token}`, {
+    password,
+  });

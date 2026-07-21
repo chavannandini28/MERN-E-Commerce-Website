@@ -1,59 +1,89 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FaSearch,
   FaTrash,
-  FaEye,
   FaStar,
-  FaUserCircle,
+  FaComments,
 } from "react-icons/fa";
 
+import {
+  getReviews,
+  deleteReview,
+} from "../api/reviewApi";
+
 const ReviewManagement = () => {
-  const [search, setSearch] = useState("");
+  const [reviews, setReviews] = useState([]);
+  const [filteredReviews, setFilteredReviews] = useState([]);
+  const [keyword, setKeyword] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  // Replace this with your backend API data
-  const reviews = [
-    {
-      _id: "1",
-      user: "John Doe",
-      product: "Apple iPhone 16",
-      rating: 5,
-      review: "Amazing phone with excellent camera quality.",
-      date: "20 Jul 2026",
-    },
-    {
-      _id: "2",
-      user: "Priya Sharma",
-      product: "Samsung Galaxy S25",
-      rating: 4,
-      review: "Very good performance and battery backup.",
-      date: "19 Jul 2026",
-    },
-    {
-      _id: "3",
-      user: "Rahul Patil",
-      product: "Sony Headphones",
-      rating: 3,
-      review: "Sound quality is good but little expensive.",
-      date: "18 Jul 2026",
-    },
-  ];
+  useEffect(() => {
+    loadReviews();
+  }, []);
 
-  const filteredReviews = reviews.filter(
-    (item) =>
-      item.user.toLowerCase().includes(search.toLowerCase()) ||
-      item.product.toLowerCase().includes(search.toLowerCase())
-  );
+  const loadReviews = async () => {
+    try {
+      setLoading(true);
+
+      const { data } = await getReviews();
+
+      const list = data.reviews || data || [];
+
+      setReviews(list);
+      setFilteredReviews(list);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchHandler = (e) => {
+    const value = e.target.value;
+
+    setKeyword(value);
+
+    const result = reviews.filter((review) =>
+      review.product?.name
+        ?.toLowerCase()
+        .includes(value.toLowerCase()) ||
+      review.user?.name
+        ?.toLowerCase()
+        .includes(value.toLowerCase())
+    );
+
+    setFilteredReviews(result);
+  };
+
+  const deleteHandler = async (id) => {
+    if (!window.confirm("Delete this review?")) return;
+
+    try {
+      await deleteReview(id);
+
+      loadReviews();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-5">
+        <h4>Loading Reviews...</h4>
+      </div>
+    );
+  }
 
   return (
     <div className="container-fluid">
-
-      {/* Header */}
 
       <div className="d-flex justify-content-between align-items-center mb-4">
 
         <div>
 
           <h2 className="fw-bold">
+            <FaComments className="me-2 text-primary" />
             Review Management
           </h2>
 
@@ -65,143 +95,130 @@ const ReviewManagement = () => {
 
       </div>
 
-      {/* Search */}
-
-      <div className="card border-0 shadow mb-4">
+      <div className="card shadow border-0">
 
         <div className="card-body">
 
-          <div className="input-group">
+          <div className="row mb-4">
 
-            <span className="input-group-text">
+            <div className="col-md-5">
 
-              <FaSearch />
+              <div className="input-group">
 
-            </span>
+                <span className="input-group-text">
+                  <FaSearch />
+                </span>
 
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search User or Product..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search Review..."
+                  value={keyword}
+                  onChange={searchHandler}
+                />
+
+              </div>
+
+            </div>
 
           </div>
 
-        </div>
+          <div className="table-responsive">
 
-      </div>
+            <table className="table table-hover align-middle">
 
-      {/* Reviews Table */}
+              <thead className="table-dark">
 
-      <div className="card border-0 shadow rounded-4">
+                <tr>
 
-        <div className="table-responsive">
-
-          <table className="table table-hover align-middle mb-0">
-
-            <thead className="table-dark">
-
-              <tr>
-
-                <th>User</th>
-
-                <th>Product</th>
-
-                <th>Rating</th>
-
-                <th>Review</th>
-
-                <th>Date</th>
-
-                <th>Actions</th>
-
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {filteredReviews.map((review) => (
-
-                <tr key={review._id}>
-
-                  <td>
-
-                    <div className="d-flex align-items-center">
-
-                      <FaUserCircle
-                        className="text-primary me-2"
-                        size={35}
-                      />
-
-                      <strong>
-                        {review.user}
-                      </strong>
-
-                    </div>
-
-                  </td>
-
-                  <td>{review.product}</td>
-
-                  <td>
-
-                    {[...Array(review.rating)].map((_, index) => (
-
-                      <FaStar
-                        key={index}
-                        className="text-warning"
-                      />
-
-                    ))}
-
-                  </td>
-
-                  <td
-                    style={{
-                      maxWidth: "350px",
-                    }}
-                  >
-                    {review.review}
-                  </td>
-
-                  <td>{review.date}</td>
-
-                  <td>
-
-                    <div className="btn-group">
-
-                      <button
-                        className="btn btn-primary btn-sm"
-                        title="View Review"
-                      >
-
-                        <FaEye />
-
-                      </button>
-
-                      <button
-                        className="btn btn-danger btn-sm"
-                        title="Delete Review"
-                      >
-
-                        <FaTrash />
-
-                      </button>
-
-                    </div>
-
-                  </td>
+                  <th>User</th>
+                  <th>Product</th>
+                  <th>Rating</th>
+                  <th>Review</th>
+                  <th>Date</th>
+                  <th width="90">
+                    Action
+                  </th>
 
                 </tr>
 
-              ))}
+              </thead>
 
-            </tbody>
+              <tbody>
 
-          </table>
+                {filteredReviews.length > 0 ? (
+
+                  filteredReviews.map((review) => (
+
+                    <tr key={review._id}>
+
+                      <td>
+                        {review.user?.name || "User"}
+                      </td>
+
+                      <td>
+                        {review.product?.name || "Product"}
+                      </td>
+
+                      <td>
+
+                        <span className="text-warning">
+
+                          <FaStar className="me-1" />
+
+                          {review.rating}
+
+                        </span>
+
+                      </td>
+
+                      <td style={{ maxWidth: "300px" }}>
+                        {review.comment}
+                      </td>
+
+                      <td>
+                        {new Date(
+                          review.createdAt
+                        ).toLocaleDateString()}
+                      </td>
+
+                      <td>
+
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() =>
+                            deleteHandler(review._id)
+                          }
+                        >
+                          <FaTrash />
+                        </button>
+
+                      </td>
+
+                    </tr>
+
+                  ))
+
+                ) : (
+
+                  <tr>
+
+                    <td
+                      colSpan="6"
+                      className="text-center py-5"
+                    >
+                      No Reviews Found
+                    </td>
+
+                  </tr>
+
+                )}
+
+              </tbody>
+
+            </table>
+
+          </div>
 
         </div>
 

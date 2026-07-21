@@ -1,51 +1,48 @@
-import "./AdminLayout.css";
 import { Outlet, NavLink } from "react-router-dom";
 import {
   FaTachometerAlt,
   FaUsers,
-  FaShoppingBag,
+  FaBoxOpen,
   FaTags,
   FaLayerGroup,
-  FaClipboardList,
+  FaShoppingCart,
   FaStar,
   FaStore,
-  FaSignOutAlt,
 } from "react-icons/fa";
 
 const AdminLayout = () => {
-  return (
-    <div className="container-fluid p-0">
+  const linkClass = ({ isActive }) =>
+    `btn text-start mb-2 w-100 ${
+      isActive ? "btn-primary text-white" : "btn-dark"
+    }`;
 
-      <div className="row g-0">
+  return (
+    <div className="container-fluid">
+      <div className="row">
 
         {/* Sidebar */}
-
         <div
-          className="col-lg-2 col-md-3"
+          className="col-lg-2 col-md-3 p-0"
           style={{
             minHeight: "100vh",
-            background: "#0f172a",
+            backgroundColor: "#111827",
           }}
         >
-          <div className="p-4 text-center">
-
-            <h3 className="text-white fw-bold">
+          <div className="text-center py-4 border-bottom border-secondary">
+            <h3 className="text-warning fw-bold mb-0">
               MERN SHOP
             </h3>
 
             <small className="text-light">
-              Admin Panel
+              ADMIN PANEL
             </small>
-
           </div>
 
-          <hr className="text-secondary" />
-
-          <div className="nav flex-column">
+          <div className="d-flex flex-column p-3">
 
             <NavLink
               to="/admin/dashboard"
-              className="nav-link text-white px-4 py-3"
+              className={linkClass}
             >
               <FaTachometerAlt className="me-2" />
               Dashboard
@@ -53,7 +50,7 @@ const AdminLayout = () => {
 
             <NavLink
               to="/admin/users"
-              className="nav-link text-white px-4 py-3"
+              className={linkClass}
             >
               <FaUsers className="me-2" />
               Users
@@ -61,15 +58,15 @@ const AdminLayout = () => {
 
             <NavLink
               to="/admin/products"
-              className="nav-link text-white px-4 py-3"
+              className={linkClass}
             >
-              <FaShoppingBag className="me-2" />
+              <FaBoxOpen className="me-2" />
               Products
             </NavLink>
 
             <NavLink
               to="/admin/categories"
-              className="nav-link text-white px-4 py-3"
+              className={linkClass}
             >
               <FaLayerGroup className="me-2" />
               Categories
@@ -77,7 +74,7 @@ const AdminLayout = () => {
 
             <NavLink
               to="/admin/brands"
-              className="nav-link text-white px-4 py-3"
+              className={linkClass}
             >
               <FaTags className="me-2" />
               Brands
@@ -85,78 +82,39 @@ const AdminLayout = () => {
 
             <NavLink
               to="/admin/orders"
-              className="nav-link text-white px-4 py-3"
+              className={linkClass}
             >
-              <FaClipboardList className="me-2" />
+              <FaShoppingCart className="me-2" />
               Orders
             </NavLink>
 
             <NavLink
               to="/admin/reviews"
-              className="nav-link text-white px-4 py-3"
+              className={linkClass}
             >
               <FaStar className="me-2" />
               Reviews
             </NavLink>
 
             <NavLink
-              to="/vendor/dashboard"
-              className="nav-link text-white px-4 py-3"
+              to="/"
+              className="btn btn-warning w-100 mt-4"
             >
               <FaStore className="me-2" />
-              Vendor
+              Visit Store
             </NavLink>
 
           </div>
-
-          <div className="mt-auto p-4">
-
-            <button className="btn btn-danger w-100">
-
-              <FaSignOutAlt className="me-2" />
-
-              Logout
-
-            </button>
-
-          </div>
-
         </div>
 
-        {/* Content */}
-
-        <div className="col-lg-10 col-md-9">
-
-          {/* Header */}
-
-          <nav className="navbar navbar-light bg-white shadow-sm px-4">
-
-            <h4 className="mb-0 fw-bold">
-              Admin Dashboard
-            </h4>
-
-            <div className="d-flex align-items-center">
-
-              <img
-                src="https://ui-avatars.com/api/?name=Admin"
-                alt="Admin"
-                width="45"
-                height="45"
-                className="rounded-circle"
-              />
-
-            </div>
-
-          </nav>
-
-          <div className="p-4 bg-light" style={{ minHeight: "90vh" }}>
+        {/* Main Content */}
+        <div className="col-lg-10 col-md-9 bg-light">
+          <div className="p-4">
             <Outlet />
           </div>
-
         </div>
 
       </div>
-
     </div>
   );
 };

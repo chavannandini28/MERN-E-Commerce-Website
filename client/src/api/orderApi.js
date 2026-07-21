@@ -1,26 +1,57 @@
 import axiosInstance from "./axiosInstance";
 
-// Customer
-export const createOrder = (data) =>
-  axiosInstance.post("/orders/create", data);
+// ===================================
+// Create New Order
+// POST /orders
+// ===================================
+export const createOrder = (orderData) =>
+  axiosInstance.post("/orders", orderData);
 
+// ===================================
+// Get Logged In User Orders
+// GET /orders/my-orders
+// ===================================
 export const getMyOrders = () =>
   axiosInstance.get("/orders/my-orders");
 
+// ===================================
+// Get Single Order
+// GET /orders/:id
+// ===================================
 export const getOrderById = (id) =>
   axiosInstance.get(`/orders/${id}`);
 
-export const cancelOrder = (id) =>
-  axiosInstance.patch(`/orders/cancel/${id}`);
-
-// Admin
-export const getAllOrders = () =>
+// ===================================
+// Admin - Get All Orders
+// GET /orders
+// ===================================
+export const getOrders = () =>
   axiosInstance.get("/orders");
 
-export const updateOrderStatus = (id, status) =>
-  axiosInstance.patch(`/orders/status/${id}`, {
-    status,
-  });
+// ===================================
+// Admin - Update Order Status
+// PUT /orders/:id
+// ===================================
+export const updateOrderStatus = (id, data) =>
+  axiosInstance.put(`/orders/${id}`, data);
 
-export const deleteOrder = (id) =>
-  axiosInstance.delete(`/orders/${id}`);
+// ===================================
+// Cancel Order
+// PUT /orders/cancel/:id
+// ===================================
+export const cancelOrder = (id) =>
+  axiosInstance.put(`/orders/cancel/${id}`);
+
+// ===================================
+// Razorpay - Create Order
+// POST /payment/create-order
+// ===================================
+export const createRazorpayOrder = (data) =>
+  axiosInstance.post("/payment/create-order", data);
+
+// ===================================
+// Razorpay - Verify Payment
+// POST /payment/verify
+// ===================================
+export const verifyPayment = (paymentData) =>
+  axiosInstance.post("/payment/verify", paymentData);

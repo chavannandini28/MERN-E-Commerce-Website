@@ -1,49 +1,67 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FaSearch,
-  FaUserEdit,
-  FaTrash,
   FaUserShield,
-  FaUserTie,
   FaUser,
+  FaTrash,
 } from "react-icons/fa";
 
-const UserList = () => {
-  const [search, setSearch] = useState("");
+import { getUsers } from "../api/userApi";
 
-  // Replace with your API data
-  const users = [
-    {
-      _id: "1",
-      name: "John Doe",
-      email: "john@gmail.com",
-      role: "Customer",
-      status: "Active",
-    },
-    {
-      _id: "2",
-      name: "Admin",
-      email: "admin@gmail.com",
-      role: "Admin",
-      status: "Active",
-    },
-    {
-      _id: "3",
-      name: "Vendor",
-      email: "vendor@gmail.com",
-      role: "Vendor",
-      status: "Inactive",
-    },
-  ];
+const UserList = () => {
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [keyword, setKeyword] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+
+      const { data } = await getUsers();
+
+      const list = data.users || data || [];
+
+      setUsers(list);
+      setFilteredUsers(list);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchHandler = (e) => {
+    const value = e.target.value;
+
+    setKeyword(value);
+
+    const result = users.filter((user) =>
+      user.name.toLowerCase().includes(value.toLowerCase())
+    );
+
+    setFilteredUsers(result);
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-5">
+        <h4>Loading Users...</h4>
+      </div>
+    );
+  }
 
   return (
     <div className="container-fluid">
 
-      {/* Header */}
-
       <div className="d-flex justify-content-between align-items-center mb-4">
 
         <div>
+
           <h2 className="fw-bold">
             User Management
           </h2>
@@ -51,156 +69,155 @@ const UserList = () => {
           <p className="text-muted">
             Manage all registered users
           </p>
+
         </div>
 
       </div>
 
-      {/* Search */}
-
-      <div className="card border-0 shadow mb-4">
+      <div className="card shadow border-0">
 
         <div className="card-body">
 
-          <div className="input-group">
+          <div className="row mb-4">
 
-            <span className="input-group-text">
-              <FaSearch />
-            </span>
+            <div className="col-md-5">
 
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search User..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+              <div className="input-group">
+
+                <span className="input-group-text">
+                  <FaSearch />
+                </span>
+
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search User..."
+                  value={keyword}
+                  onChange={searchHandler}
+                />
+
+              </div>
+
+            </div>
 
           </div>
 
-        </div>
+          <div className="table-responsive">
 
-      </div>
+            <table className="table table-hover align-middle">
 
-      {/* Users Table */}
+              <thead className="table-dark">
 
-      <div className="card border-0 shadow rounded-4">
+                <tr>
 
-        <div className="table-responsive">
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Action</th>
 
-          <table className="table table-hover align-middle mb-0">
+                </tr>
 
-            <thead className="table-dark">
+              </thead>
 
-              <tr>
+              <tbody>
 
-                <th>User</th>
+                {filteredUsers.length > 0 ? (
 
-                <th>Email</th>
+                  filteredUsers.map((user) => (
 
-                <th>Role</th>
+                    <tr key={user._id}>
 
-                <th>Status</th>
+                      <td>
 
-                <th>Actions</th>
+                        <div className="d-flex align-items-center">
 
-              </tr>
+                          <div
+                            className="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center me-3"
+                            style={{
+                              width: 45,
+                              height: 45,
+                            }}
+                          >
+                            <FaUser />
+                          </div>
 
-            </thead>
+                          <strong>
+                            {user.name}
+                          </strong>
 
-            <tbody>
+                        </div>
 
-              {users
-                .filter((user) =>
-                  user.name
-                    .toLowerCase()
-                    .includes(search.toLowerCase())
-                )
-                .map((user) => (
-                  <tr key={user._id}>
+                      </td>
 
-                    <td>
+                      <td>{user.email}</td>
 
-                      <div className="d-flex align-items-center">
+                      <td>
 
-                        <img
-                          src={`https://ui-avatars.com/api/?name=${user.name}`}
-                          alt={user.name}
-                          className="rounded-circle me-3"
-                          width="50"
-                          height="50"
-                        />
+                        {user.role === "Admin" ? (
 
-                        <strong>
-                          {user.name}
-                        </strong>
+                          <span className="badge bg-danger">
 
-                      </div>
+                            <FaUserShield className="me-1" />
 
-                    </td>
+                            Admin
 
-                    <td>{user.email}</td>
+                          </span>
 
-                    <td>
+                        ) : (
 
-                      {user.role === "Admin" && (
-                        <span className="badge bg-danger">
-                          <FaUserShield className="me-1" />
-                          Admin
+                          <span className="badge bg-primary">
+
+                            Customer
+
+                          </span>
+
+                        )}
+
+                      </td>
+
+                      <td>
+
+                        <span className="badge bg-success">
+                          Active
                         </span>
-                      )}
 
-                      {user.role === "Vendor" && (
-                        <span className="badge bg-warning text-dark">
-                          <FaUserTie className="me-1" />
-                          Vendor
-                        </span>
-                      )}
+                      </td>
 
-                      {user.role === "Customer" && (
-                        <span className="badge bg-primary">
-                          <FaUser className="me-1" />
-                          Customer
-                        </span>
-                      )}
+                      <td>
 
-                    </td>
+                        <button className="btn btn-outline-danger btn-sm">
 
-                    <td>
+                          <FaTrash />
 
-                      <span
-                        className={`badge ${
-                          user.status === "Active"
-                            ? "bg-success"
-                            : "bg-secondary"
-                        }`}
-                      >
-                        {user.status}
-                      </span>
+                        </button>
 
-                    </td>
+                      </td>
 
-                    <td>
+                    </tr>
 
-                      <button className="btn btn-warning btn-sm me-2">
+                  ))
 
-                        <FaUserEdit />
+                ) : (
 
-                      </button>
+                  <tr>
 
-                      <button className="btn btn-danger btn-sm">
-
-                        <FaTrash />
-
-                      </button>
-
+                    <td
+                      colSpan="5"
+                      className="text-center py-5"
+                    >
+                      No Users Found
                     </td>
 
                   </tr>
-                ))}
 
-            </tbody>
+                )}
 
-          </table>
+              </tbody>
+
+            </table>
+
+          </div>
 
         </div>
 

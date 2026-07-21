@@ -1,208 +1,159 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
+  FaArrowLeft,
   FaTags,
   FaSave,
-  FaCloudUploadAlt,
 } from "react-icons/fa";
 
+import { createBrand } from "../api/brandApi";
+
 const AddBrand = () => {
-  const [brand, setBrand] = useState({
+  const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(false);
+
+  const [formData, setFormData] = useState({
     name: "",
     slug: "",
-    description: "",
   });
 
-  const [preview, setPreview] = useState(null);
-
   const changeHandler = (e) => {
-    setBrand({
-      ...brand,
-      [e.target.name]: e.target.value,
+    const { name, value } = e.target;
+
+    setFormData({
+      ...formData,
+      [name]:
+        name === "slug"
+          ? value.toLowerCase().replace(/\s+/g, "-")
+          : value,
     });
   };
 
-  const imageHandler = (e) => {
-    if (e.target.files[0]) {
-      setPreview(
-        URL.createObjectURL(e.target.files[0])
-      );
+  const submitHandler = async (e) => {
+    e.preventDefault();
+
+    try {
+      setLoading(true);
+
+      await createBrand(formData);
+
+      navigate("/admin/brands");
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const submitHandler = (e) => {
-    e.preventDefault();
-
-    // Call your existing API here
-
-    console.log(brand);
-  };
-
   return (
-    <div className="container-fluid py-4">
+    <div className="container-fluid">
 
-      <div className="card border-0 shadow-lg rounded-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
 
-        <div className="card-header bg-primary text-white py-3">
+        <div>
 
-          <h3 className="mb-0">
-
-            <FaTags className="me-2" />
-
+          <h2 className="fw-bold">
+            <FaTags className="me-2 text-primary" />
             Add Brand
+          </h2>
 
-          </h3>
+          <p className="text-muted">
+            Create a new product brand
+          </p>
 
         </div>
 
-        <div className="card-body p-4">
+        <button
+          className="btn btn-outline-secondary"
+          onClick={() => navigate(-1)}
+        >
+          <FaArrowLeft className="me-2" />
+          Back
+        </button>
 
-          <form onSubmit={submitHandler}>
+      </div>
 
-            <div className="row">
+      <div className="row justify-content-center">
 
-              {/* Left */}
+        <div className="col-lg-8">
 
-              <div className="col-lg-8">
+          <div className="card border-0 shadow">
+
+            <div className="card-body p-5">
+
+              <form onSubmit={submitHandler}>
 
                 <div className="mb-4">
 
-                  <label className="form-label fw-bold">
-
+                  <label className="form-label fw-semibold">
                     Brand Name
-
                   </label>
 
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Enter Brand Name"
                     name="name"
-                    value={brand.name}
+                    placeholder="Enter brand name"
+                    value={formData.name}
                     onChange={changeHandler}
+                    required
                   />
 
                 </div>
 
                 <div className="mb-4">
 
-                  <label className="form-label fw-bold">
-
-                    Brand Slug
-
+                  <label className="form-label fw-semibold">
+                    Slug
                   </label>
 
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="brand-slug"
                     name="slug"
-                    value={brand.slug}
+                    placeholder="brand-slug"
+                    value={formData.slug}
                     onChange={changeHandler}
+                    required
                   />
 
-                </div>
-
-                <div className="mb-4">
-
-                  <label className="form-label fw-bold">
-
-                    Description
-
-                  </label>
-
-                  <textarea
-                    rows="5"
-                    className="form-control"
-                    placeholder="Write Brand Description..."
-                    name="description"
-                    value={brand.description}
-                    onChange={changeHandler}
-                  ></textarea>
+                  <small className="text-muted">
+                    Example: apple, samsung, sony
+                  </small>
 
                 </div>
 
-              </div>
+                <div className="d-flex gap-3">
 
-              {/* Right */}
+                  <button
+                    type="submit"
+                    className="btn btn-primary px-5"
+                    disabled={loading}
+                  >
+                    <FaSave className="me-2" />
 
-              <div className="col-lg-4">
+                    {loading
+                      ? "Saving..."
+                      : "Save Brand"}
 
-                <div className="card shadow-sm">
+                  </button>
 
-                  <div className="card-body text-center">
-
-                    {preview ? (
-
-                      <img
-                        src={preview}
-                        alt="Preview"
-                        className="img-fluid rounded mb-3"
-                        style={{
-                          height: "220px",
-                          objectFit: "contain",
-                        }}
-                      />
-
-                    ) : (
-
-                      <div
-                        className="border rounded d-flex justify-content-center align-items-center"
-                        style={{
-                          height: "220px",
-                        }}
-                      >
-
-                        <div>
-
-                          <FaCloudUploadAlt
-                            size={60}
-                            className="text-secondary"
-                          />
-
-                          <p className="mt-2">
-
-                            Brand Logo Preview
-
-                          </p>
-
-                        </div>
-
-                      </div>
-
-                    )}
-
-                    <input
-                      type="file"
-                      className="form-control mt-3"
-                      onChange={imageHandler}
-                    />
-
-                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => navigate("/admin/brands")}
+                  >
+                    Cancel
+                  </button>
 
                 </div>
 
-              </div>
+              </form>
 
             </div>
 
-            <hr />
-
-            <div className="text-end">
-
-              <button
-                className="btn btn-success px-5"
-                type="submit"
-              >
-
-                <FaSave className="me-2" />
-
-                Save Brand
-
-              </button>
-
-            </div>
-
-          </form>
+          </div>
 
         </div>
 

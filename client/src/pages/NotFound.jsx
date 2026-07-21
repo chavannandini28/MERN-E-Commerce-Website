@@ -1,56 +1,76 @@
 import { Link } from "react-router-dom";
-import { SearchX } from "lucide-react";
+import {
+  FaExclamationTriangle,
+  FaHome,
+  FaShoppingBag,
+} from "react-icons/fa";
 
 const NotFound = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-100 px-4">
+    <div
+      className="container d-flex align-items-center justify-content-center"
+      style={{ minHeight: "80vh" }}
+    >
+      <div className="text-center">
 
-      <div className="text-center max-w-lg">
-
-        {/* 404 Icon */}
-        <div className="flex justify-center mb-6">
-          <div className="bg-gray-200 p-6 rounded-full animate-bounce">
-            <SearchX
-              size={90}
-              className="text-gray-600"
-            />
-          </div>
+        <div
+          className="mx-auto mb-4 d-flex align-items-center justify-content-center rounded-circle shadow"
+          style={{
+            width: "150px",
+            height: "150px",
+            background: "#fff3cd",
+          }}
+        >
+          <FaExclamationTriangle
+            size={80}
+            className="text-warning"
+          />
         </div>
 
-
-        {/* 404 Text */}
-        <h1 className="text-7xl font-extrabold text-gray-800 mb-4">
+        <h1
+          className="fw-bold"
+          style={{
+            fontSize: "90px",
+          }}
+        >
           404
         </h1>
 
-
-        <h2 className="text-3xl font-bold text-gray-700 mb-3">
-          Page Not Found
+        <h2 className="fw-bold mb-3">
+          Oops! Page Not Found
         </h2>
 
-
-        <p className="text-gray-500 mb-8">
-          Sorry, the page you are looking for does not exist
-          or has been moved.
+        <p
+          className="text-muted mx-auto"
+          style={{
+            maxWidth: "600px",
+          }}
+        >
+          The page you're looking for doesn't exist,
+          may have been moved, or the URL is incorrect.
         </p>
 
+        <div className="mt-4">
 
-        {/* Home Button */}
-        <Link
-          to="/"
-          className="inline-block bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-xl font-semibold transition duration-300 shadow-lg"
-        >
-          🏠 Go Back Home
-        </Link>
+          <Link
+            to="/"
+            className="btn btn-primary btn-lg me-3"
+          >
+            <FaHome className="me-2" />
+            Go Home
+          </Link>
 
+          <Link
+            to="/shop"
+            className="btn btn-outline-dark btn-lg"
+          >
+            <FaShoppingBag className="me-2" />
+            Continue Shopping
+          </Link>
 
-        {/* Footer */}
-        <div className="mt-8 text-sm text-gray-400">
-          🛍️ Continue exploring our premium products
         </div>
 
       </div>
-
     </div>
   );
 };

@@ -1,15 +1,20 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FaHeart, FaShoppingCart, FaStar, FaTruck } from "react-icons/fa";
+import {
+  FaHeart,
+  FaShoppingCart,
+  FaStar,
+  FaTruck,
+} from "react-icons/fa";
+
 import { getProductById } from "../api/productApi";
 import Loader from "../components/Loader";
+import ProductCarousel from "../components/ProductCarousel";
 
 const ProductDetails = () => {
   const { id } = useParams();
 
   const [product, setProduct] = useState(null);
-
-  const [selectedImage, setSelectedImage] = useState("");
 
   const [qty, setQty] = useState(1);
 
@@ -22,12 +27,8 @@ const ProductDetails = () => {
       const { data } = await getProductById(id);
 
       setProduct(data.product);
-
-      setSelectedImage(
-        data.product.images?.[0]?.url || ""
-      );
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -38,51 +39,17 @@ const ProductDetails = () => {
 
       <div className="row g-5">
 
-        {/* Images */}
+        {/* Product Images */}
 
         <div className="col-lg-6">
 
-          <div className="card shadow border-0 rounded-4">
-
-            <img
-              src={selectedImage}
-              alt={product.name}
-              className="img-fluid rounded-4"
-              style={{
-                height: "500px",
-                objectFit: "cover",
-              }}
-            />
-
-          </div>
-
-          <div className="d-flex mt-3 gap-2 flex-wrap">
-
-            {product.images?.map((img) => (
-              <img
-                key={img.url}
-                src={img.url}
-                alt=""
-                onClick={() => setSelectedImage(img.url)}
-                style={{
-                  width: 90,
-                  height: 90,
-                  objectFit: "cover",
-                  cursor: "pointer",
-                  borderRadius: 12,
-                  border:
-                    selectedImage === img.url
-                      ? "3px solid #0d6efd"
-                      : "2px solid #ddd",
-                }}
-              />
-            ))}
-
-          </div>
+          <ProductCarousel
+            images={product.images || []}
+          />
 
         </div>
 
-        {/* Details */}
+        {/* Product Details */}
 
         <div className="col-lg-6">
 
@@ -90,7 +57,7 @@ const ProductDetails = () => {
             {product.category?.name || "Category"}
           </span>
 
-          <h1 className="fw-bold">
+          <h1 className="fw-bold mb-3">
             {product.name}
           </h1>
 
@@ -108,29 +75,25 @@ const ProductDetails = () => {
 
           </div>
 
-          <h2 className="text-success fw-bold mb-4">
+          <h2 className="fw-bold text-success mb-4">
             ₹{product.price}
           </h2>
 
-          <p className="text-secondary fs-5">
+          <p className="text-secondary">
             {product.description}
           </p>
 
-          <div className="mb-3">
-
-            <strong>Brand :</strong>{" "}
-            {product.brand?.name || "Brand"}
-
+          <div className="mb-2">
+            <strong>Brand : </strong>
+            {product.brand?.name || "N/A"}
           </div>
 
           <div className="mb-4">
+            <strong>Status : </strong>
 
-            <strong>Status :</strong>
-
-            <span className="text-success ms-2">
+            <span className="badge bg-success ms-2">
               In Stock
             </span>
-
           </div>
 
           {/* Quantity */}
@@ -150,7 +113,7 @@ const ProductDetails = () => {
               -
             </button>
 
-            <span className="mx-3 fs-5">
+            <span className="mx-3 fw-bold">
               {qty}
             </span>
 
@@ -165,7 +128,9 @@ const ProductDetails = () => {
 
           </div>
 
-          <div className="d-flex gap-3 flex-wrap">
+          {/* Buttons */}
+
+          <div className="d-flex flex-wrap gap-3 mb-5">
 
             <button className="btn btn-primary btn-lg">
 
@@ -185,25 +150,25 @@ const ProductDetails = () => {
 
           </div>
 
-          <hr className="my-5" />
+          {/* Features */}
 
-          <div className="row">
+          <div className="row g-3">
 
             <div className="col-md-6">
 
-              <div className="card border-0 shadow-sm">
+              <div className="card shadow-sm border-0">
 
-                <div className="card-body">
+                <div className="card-body text-center">
 
                   <FaTruck
-                    size={35}
+                    size={40}
                     className="text-primary mb-3"
                   />
 
-                  <h5>Free Shipping</h5>
+                  <h5>Free Delivery</h5>
 
-                  <small>
-                    Delivery within 3-5 days
+                  <small className="text-muted">
+                    Delivery within 3-5 business days
                   </small>
 
                 </div>
@@ -214,19 +179,19 @@ const ProductDetails = () => {
 
             <div className="col-md-6">
 
-              <div className="card border-0 shadow-sm">
+              <div className="card shadow-sm border-0">
 
-                <div className="card-body">
+                <div className="card-body text-center">
 
                   <FaShoppingCart
-                    size={35}
+                    size={40}
                     className="text-success mb-3"
                   />
 
                   <h5>Easy Returns</h5>
 
-                  <small>
-                    7 Days Replacement
+                  <small className="text-muted">
+                    7 Days Replacement Policy
                   </small>
 
                 </div>
@@ -249,15 +214,17 @@ const ProductDetails = () => {
           Customer Reviews
         </h3>
 
-        <div className="card shadow-sm border-0">
+        <div className="card border-0 shadow">
 
           <div className="card-body">
 
-            <h5>⭐⭐⭐⭐⭐ Amazing Product</h5>
+            <h5>
+              ⭐⭐⭐⭐⭐ Amazing Product
+            </h5>
 
-            <p className="text-muted">
-              Excellent quality, premium packaging and
-              fast delivery.
+            <p className="text-muted mb-0">
+              Excellent quality, premium packaging,
+              and fast delivery. Highly recommended!
             </p>
 
           </div>

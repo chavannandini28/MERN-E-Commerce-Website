@@ -1,127 +1,159 @@
 import { useState } from "react";
-import { FaFolderPlus, FaSave, FaTag } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import {
+  FaArrowLeft,
+  FaLayerGroup,
+  FaSave,
+} from "react-icons/fa";
+
+import { createCategory } from "../api/categoryApi";
 
 const AddCategory = () => {
-  const [category, setCategory] = useState({
+  const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(false);
+
+  const [formData, setFormData] = useState({
     name: "",
     slug: "",
-    description: "",
   });
 
   const changeHandler = (e) => {
-    setCategory({
-      ...category,
-      [e.target.name]: e.target.value,
+    const { name, value } = e.target;
+
+    setFormData({
+      ...formData,
+      [name]:
+        name === "slug"
+          ? value.toLowerCase().replace(/\s+/g, "-")
+          : value,
     });
   };
 
-  const submitHandler = (e) => {
+  const submitHandler = async (e) => {
     e.preventDefault();
 
-    // Use your existing API here
-    console.log(category);
+    try {
+      setLoading(true);
+
+      await createCategory(formData);
+
+      navigate("/admin/categories");
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="container-fluid">
 
-      <div className="card border-0 shadow rounded-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
 
-        <div className="card-header bg-primary text-white">
+        <div>
 
-          <h3 className="mb-0">
+          <h2 className="fw-bold">
+            <FaLayerGroup className="me-2 text-primary" />
+            Add Category
+          </h2>
 
-            <FaFolderPlus className="me-2" />
-
-            Add New Category
-
-          </h3>
+          <p className="text-muted">
+            Create a new product category
+          </p>
 
         </div>
 
-        <div className="card-body p-4">
+        <button
+          className="btn btn-outline-secondary"
+          onClick={() => navigate(-1)}
+        >
+          <FaArrowLeft className="me-2" />
+          Back
+        </button>
 
-          <form onSubmit={submitHandler}>
+      </div>
 
-            <div className="row">
+      <div className="row justify-content-center">
 
-              <div className="col-md-6 mb-4">
+        <div className="col-lg-8">
 
-                <label className="form-label fw-bold">
-                  Category Name
-                </label>
+          <div className="card border-0 shadow">
 
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Enter Category Name"
-                  name="name"
-                  value={category.name}
-                  onChange={changeHandler}
-                />
+            <div className="card-body p-5">
 
-              </div>
+              <form onSubmit={submitHandler}>
 
-              <div className="col-md-6 mb-4">
+                <div className="mb-4">
 
-                <label className="form-label fw-bold">
-                  Category Slug
-                </label>
-
-                <div className="input-group">
-
-                  <span className="input-group-text">
-                    <FaTag />
-                  </span>
+                  <label className="form-label fw-semibold">
+                    Category Name
+                  </label>
 
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="category-slug"
-                    name="slug"
-                    value={category.slug}
+                    name="name"
+                    placeholder="Enter category name"
+                    value={formData.name}
                     onChange={changeHandler}
+                    required
                   />
 
                 </div>
 
-              </div>
+                <div className="mb-4">
 
-              <div className="col-12 mb-4">
+                  <label className="form-label fw-semibold">
+                    Slug
+                  </label>
 
-                <label className="form-label fw-bold">
-                  Description
-                </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="slug"
+                    placeholder="category-slug"
+                    value={formData.slug}
+                    onChange={changeHandler}
+                    required
+                  />
 
-                <textarea
-                  rows="5"
-                  className="form-control"
-                  placeholder="Enter Category Description"
-                  name="description"
-                  value={category.description}
-                  onChange={changeHandler}
-                ></textarea>
+                  <small className="text-muted">
+                    Example: mobile-phones
+                  </small>
 
-              </div>
+                </div>
+
+                <div className="d-flex gap-3">
+
+                  <button
+                    type="submit"
+                    className="btn btn-primary px-5"
+                    disabled={loading}
+                  >
+                    <FaSave className="me-2" />
+
+                    {loading
+                      ? "Saving..."
+                      : "Save Category"}
+
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => navigate("/admin/categories")}
+                  >
+                    Cancel
+                  </button>
+
+                </div>
+
+              </form>
 
             </div>
 
-            <div className="text-end">
-
-              <button
-                className="btn btn-success px-5"
-                type="submit"
-              >
-
-                <FaSave className="me-2" />
-
-                Save Category
-
-              </button>
-
-            </div>
-
-          </form>
+          </div>
 
         </div>
 

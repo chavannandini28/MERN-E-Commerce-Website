@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import {
-  FaShoppingCart,
-  FaHeart,
-  FaSearch,
-} from "react-icons/fa";
+import { FaSearch } from "react-icons/fa";
 
 import { getProducts } from "../api/productApi";
+import ProductCard from "../components/ProductCard";
+import SkeletonLoader from "../components/SkeletonLoader";
 
 const Shop = () => {
   const [products, setProducts] = useState([]);
@@ -20,6 +17,8 @@ const Shop = () => {
 
   const loadProducts = async () => {
     try {
+      setLoading(true);
+
       const { data } = await getProducts();
 
       const productList = data.products || data || [];
@@ -47,8 +46,8 @@ const Shop = () => {
 
   if (loading) {
     return (
-      <div className="container py-5 text-center">
-        <h4>Loading Products...</h4>
+      <div className="container py-5">
+        <SkeletonLoader count={8} />
       </div>
     );
   }
@@ -56,20 +55,36 @@ const Shop = () => {
   return (
     <div className="container py-5">
 
-      <div className="row mb-5">
+      {/* Header */}
 
-        <div className="col-lg-6 mx-auto">
+      <div className="text-center mb-5">
 
-          <div className="input-group">
+        <h1 className="fw-bold">
+          Our Products
+        </h1>
 
-            <span className="input-group-text">
+        <p className="text-muted">
+          Discover premium products at the best prices.
+        </p>
+
+      </div>
+
+      {/* Search */}
+
+      <div className="row justify-content-center mb-5">
+
+        <div className="col-lg-6">
+
+          <div className="input-group shadow-sm">
+
+            <span className="input-group-text bg-white border-end-0">
               <FaSearch />
             </span>
 
             <input
               type="text"
-              className="form-control"
-              placeholder="Search Product..."
+              className="form-control border-start-0"
+              placeholder="Search products..."
               value={keyword}
               onChange={searchHandler}
             />
@@ -80,66 +95,29 @@ const Shop = () => {
 
       </div>
 
+      {/* Products */}
+
       <div className="row g-4">
 
-        {filteredProducts.length === 0 ? (
-          <div className="text-center">
-            <h3>No Products Found</h3>
-          </div>
-        ) : (
+        {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
             <div
-              className="col-lg-3 col-md-6"
+              className="col-lg-3 col-md-4 col-sm-6"
               key={product._id}
             >
-              <div className="card h-100 shadow border-0">
-
-                <img
-                  src={product.images?.[0] || product.image}
-                  className="card-img-top"
-                  alt={product.name}
-                  style={{
-                    height: "240px",
-                    objectFit: "cover",
-                  }}
-                />
-
-                <div className="card-body">
-
-                  <h5>{product.name}</h5>
-
-                  <p className="text-muted small">
-                    {product.brand?.name || product.brand}
-                  </p>
-
-                  <h4 className="text-primary">
-                    ₹{product.price}
-                  </h4>
-
-                </div>
-
-                <div className="card-footer bg-white border-0 d-flex justify-content-between">
-
-                  <Link
-                    to={`/product/${product._id}`}
-                    className="btn btn-outline-primary"
-                  >
-                    View
-                  </Link>
-
-                  <button className="btn btn-primary">
-                    <FaShoppingCart />
-                  </button>
-
-                  <button className="btn btn-outline-danger">
-                    <FaHeart />
-                  </button>
-
-                </div>
-
-              </div>
+              <ProductCard product={product} />
             </div>
           ))
+        ) : (
+          <div className="col-12 text-center py-5">
+
+            <h3>No Products Found</h3>
+
+            <p className="text-muted">
+              Try searching with another keyword.
+            </p>
+
+          </div>
         )}
 
       </div>

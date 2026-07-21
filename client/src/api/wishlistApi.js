@@ -1,10 +1,29 @@
 import axiosInstance from "./axiosInstance";
 
-export const addWishlist = (data) =>
+// ===================================
+// Add Product To Wishlist
+// POST /wishlist/addToWishlist
+// ===================================
+export const addToWishlist = (data) =>
   axiosInstance.post("/wishlist/addToWishlist", data);
 
-export const getWishlist = () =>
+// ===================================
+// Get Logged In User Wishlist
+// GET /wishlist/getMyWishlist
+// ===================================
+export const getMyWishlist = () =>
   axiosInstance.get("/wishlist/getMyWishlist");
 
-export const removeWishlist = (id) =>
+// ===================================
+// Remove Product From Wishlist
+// DELETE /wishlist/removeFromWishlist/:id
+// ===================================
+export const removeFromWishlist = (id) =>
   axiosInstance.delete(`/wishlist/removeFromWishlist/${id}`);
+
+// ===================================
+// Clear Wishlist
+// DELETE /wishlist/clearWishlist
+// ===================================
+export const clearWishlist = () =>
+  axiosInstance.delete("/wishlist/clearWishlist");

@@ -1,23 +1,32 @@
 import {
   FaUsers,
-  FaShoppingBag,
-  FaClipboardList,
+  FaBoxOpen,
+  FaShoppingCart,
   FaRupeeSign,
   FaArrowUp,
 } from "react-icons/fa";
 
 const AdminDashboard = () => {
   return (
-    <div className="container-fluid py-4">
+    <div className="container-fluid">
+
+      {/* Heading */}
 
       <div className="d-flex justify-content-between align-items-center mb-4">
 
         <div>
-          <h2 className="fw-bold">Admin Dashboard</h2>
-          <p className="text-muted">
+          <h2 className="fw-bold">
+            Dashboard
+          </h2>
+
+          <p className="text-muted mb-0">
             Welcome back, Admin 👋
           </p>
         </div>
+
+        <button className="btn btn-primary">
+          Generate Report
+        </button>
 
       </div>
 
@@ -27,33 +36,34 @@ const AdminDashboard = () => {
 
         <div className="col-lg-3 col-md-6">
 
-          <div className="card border-0 shadow rounded-4">
+          <div className="card border-0 shadow h-100">
 
-            <div className="card-body">
+            <div className="card-body d-flex justify-content-between align-items-center">
 
-              <div className="d-flex justify-content-between">
+              <div>
 
-                <div>
+                <small className="text-muted">
+                  Total Users
+                </small>
 
-                  <h6 className="text-muted">
-                    Total Users
-                  </h6>
+                <h2 className="fw-bold">
+                  1,250
+                </h2>
 
-                  <h2 className="fw-bold">
-                    1,250
-                  </h2>
+                <span className="text-success">
+                  <FaArrowUp /> 12%
+                </span>
 
-                  <span className="text-success">
-                    <FaArrowUp /> 12%
-                  </span>
+              </div>
 
-                </div>
-
-                <FaUsers
-                  size={45}
-                  className="text-primary"
-                />
-
+              <div
+                className="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center"
+                style={{
+                  width: "70px",
+                  height: "70px",
+                }}
+              >
+                <FaUsers size={30} />
               </div>
 
             </div>
@@ -64,33 +74,34 @@ const AdminDashboard = () => {
 
         <div className="col-lg-3 col-md-6">
 
-          <div className="card border-0 shadow rounded-4">
+          <div className="card border-0 shadow h-100">
 
-            <div className="card-body">
+            <div className="card-body d-flex justify-content-between align-items-center">
 
-              <div className="d-flex justify-content-between">
+              <div>
 
-                <div>
+                <small className="text-muted">
+                  Products
+                </small>
 
-                  <h6 className="text-muted">
-                    Products
-                  </h6>
+                <h2 className="fw-bold">
+                  520
+                </h2>
 
-                  <h2 className="fw-bold">
-                    450
-                  </h2>
+                <span className="text-success">
+                  <FaArrowUp /> 8%
+                </span>
 
-                  <span className="text-success">
-                    <FaArrowUp /> 8%
-                  </span>
+              </div>
 
-                </div>
-
-                <FaShoppingBag
-                  size={45}
-                  className="text-success"
-                />
-
+              <div
+                className="rounded-circle bg-success text-white d-flex justify-content-center align-items-center"
+                style={{
+                  width: "70px",
+                  height: "70px",
+                }}
+              >
+                <FaBoxOpen size={30} />
               </div>
 
             </div>
@@ -101,33 +112,34 @@ const AdminDashboard = () => {
 
         <div className="col-lg-3 col-md-6">
 
-          <div className="card border-0 shadow rounded-4">
+          <div className="card border-0 shadow h-100">
 
-            <div className="card-body">
+            <div className="card-body d-flex justify-content-between align-items-center">
 
-              <div className="d-flex justify-content-between">
+              <div>
 
-                <div>
+                <small className="text-muted">
+                  Orders
+                </small>
 
-                  <h6 className="text-muted">
-                    Orders
-                  </h6>
+                <h2 className="fw-bold">
+                  385
+                </h2>
 
-                  <h2 className="fw-bold">
-                    892
-                  </h2>
+                <span className="text-success">
+                  <FaArrowUp /> 15%
+                </span>
 
-                  <span className="text-success">
-                    <FaArrowUp /> 15%
-                  </span>
+              </div>
 
-                </div>
-
-                <FaClipboardList
-                  size={45}
-                  className="text-warning"
-                />
-
+              <div
+                className="rounded-circle bg-warning text-white d-flex justify-content-center align-items-center"
+                style={{
+                  width: "70px",
+                  height: "70px",
+                }}
+              >
+                <FaShoppingCart size={30} />
               </div>
 
             </div>
@@ -138,33 +150,34 @@ const AdminDashboard = () => {
 
         <div className="col-lg-3 col-md-6">
 
-          <div className="card border-0 shadow rounded-4">
+          <div className="card border-0 shadow h-100">
 
-            <div className="card-body">
+            <div className="card-body d-flex justify-content-between align-items-center">
 
-              <div className="d-flex justify-content-between">
+              <div>
 
-                <div>
+                <small className="text-muted">
+                  Revenue
+                </small>
 
-                  <h6 className="text-muted">
-                    Revenue
-                  </h6>
+                <h2 className="fw-bold">
+                  ₹2.5L
+                </h2>
 
-                  <h2 className="fw-bold">
-                    ₹5.6L
-                  </h2>
+                <span className="text-success">
+                  <FaArrowUp /> 20%
+                </span>
 
-                  <span className="text-success">
-                    <FaArrowUp /> 20%
-                  </span>
+              </div>
 
-                </div>
-
-                <FaRupeeSign
-                  size={45}
-                  className="text-danger"
-                />
-
+              <div
+                className="rounded-circle bg-danger text-white d-flex justify-content-center align-items-center"
+                style={{
+                  width: "70px",
+                  height: "70px",
+                }}
+              >
+                <FaRupeeSign size={30} />
               </div>
 
             </div>
@@ -177,89 +190,84 @@ const AdminDashboard = () => {
 
       {/* Recent Orders */}
 
-      <div className="card border-0 shadow rounded-4 mt-5">
+      <div className="card border-0 shadow mt-5">
 
-        <div className="card-body">
-
-          <h4 className="fw-bold mb-4">
+        <div className="card-header bg-white">
+          <h4 className="fw-bold mb-0">
             Recent Orders
           </h4>
+        </div>
 
-          <div className="table-responsive">
+        <div className="table-responsive">
 
-            <table className="table table-hover align-middle">
+          <table className="table align-middle mb-0">
 
-              <thead className="table-light">
+            <thead>
 
-                <tr>
+              <tr>
 
-                  <th>Order ID</th>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Status</th>
 
-                  <th>Customer</th>
+              </tr>
 
-                  <th>Amount</th>
+            </thead>
 
-                  <th>Status</th>
+            <tbody>
 
-                </tr>
+              <tr>
 
-              </thead>
+                <td>#1001</td>
 
-              <tbody>
+                <td>Rahul Sharma</td>
 
-                <tr>
+                <td>₹24,999</td>
 
-                  <td>#1001</td>
+                <td>
+                  <span className="badge bg-success">
+                    Delivered
+                  </span>
+                </td>
 
-                  <td>John Doe</td>
+              </tr>
 
-                  <td>₹2,499</td>
+              <tr>
 
-                  <td>
-                    <span className="badge bg-success">
-                      Delivered
-                    </span>
-                  </td>
+                <td>#1002</td>
 
-                </tr>
+                <td>Priya Patil</td>
 
-                <tr>
+                <td>₹12,500</td>
 
-                  <td>#1002</td>
+                <td>
+                  <span className="badge bg-warning text-dark">
+                    Pending
+                  </span>
+                </td>
 
-                  <td>Priya Sharma</td>
+              </tr>
 
-                  <td>₹4,999</td>
+              <tr>
 
-                  <td>
-                    <span className="badge bg-warning text-dark">
-                      Processing
-                    </span>
-                  </td>
+                <td>#1003</td>
 
-                </tr>
+                <td>Amit Kumar</td>
 
-                <tr>
+                <td>₹9,999</td>
 
-                  <td>#1003</td>
+                <td>
+                  <span className="badge bg-primary">
+                    Shipped
+                  </span>
+                </td>
 
-                  <td>Rahul Patil</td>
+              </tr>
 
-                  <td>₹1,299</td>
+            </tbody>
 
-                  <td>
-                    <span className="badge bg-info">
-                      Shipped
-                    </span>
-                  </td>
-
-                </tr>
-
-              </tbody>
-
-            </table>
-
-          </div>
+          </table>
 
         </div>
 

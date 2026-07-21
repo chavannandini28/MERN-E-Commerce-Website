@@ -1,17 +1,28 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-const RoleBasedRoute = ({ allowedRoles }) => {
-  const user = JSON.parse(localStorage.getItem("user"));
+const RoleBasedRoute = ({
+  children,
+  allowedRoles = [],
+}) => {
+  const { user, token } = useSelector(
+    (state) => state.auth
+  );
 
-  if (!user) {
+  // Not Logged In
+  if (!token || !user) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!allowedRoles.includes(user.role)) {
+  // Unauthorized
+  if (
+    allowedRoles.length > 0 &&
+    !allowedRoles.includes(user.role)
+  ) {
     return <Navigate to="/" replace />;
   }
 
-  return <Outlet />;
+  return children;
 };
 
 export default RoleBasedRoute;

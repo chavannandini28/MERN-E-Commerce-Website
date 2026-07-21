@@ -1,107 +1,54 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  createSlice,
+  createAsyncThunk,
+} from "@reduxjs/toolkit";
 
 import {
   getProducts,
   getProductById,
-  searchProducts,
-  getCategoryProducts,
-  getBrandProducts,
 } from "../api/productApi";
 
-/* ==============================
-   Get All Products
-============================== */
-
+// ======================================
+// Get All Products
+// ======================================
 export const fetchProducts = createAsyncThunk(
   "products/fetchProducts",
   async (_, thunkAPI) => {
     try {
       const { data } = await getProducts();
+
       return data.products || data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Unable to fetch products"
+        error.response?.data?.message ||
+          "Failed to load products"
       );
     }
   }
 );
 
-/* ==============================
-   Get Product Details
-============================== */
-
-export const fetchProduct = createAsyncThunk(
-  "products/fetchProduct",
+// ======================================
+// Get Single Product
+// ======================================
+export const fetchProductById = createAsyncThunk(
+  "products/fetchProductById",
   async (id, thunkAPI) => {
     try {
       const { data } = await getProductById(id);
+
       return data.product || data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Unable to fetch product"
+        error.response?.data?.message ||
+          "Failed to load product"
       );
     }
   }
 );
 
-/* ==============================
-   Search Products
-============================== */
-
-export const fetchSearchProducts = createAsyncThunk(
-  "products/search",
-  async (keyword, thunkAPI) => {
-    try {
-      const { data } = await searchProducts(keyword);
-      return data.products || data;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Search failed"
-      );
-    }
-  }
-);
-
-/* ==============================
-   Category Filter
-============================== */
-
-export const fetchCategoryProducts = createAsyncThunk(
-  "products/category",
-  async (id, thunkAPI) => {
-    try {
-      const { data } = await getCategoryProducts(id);
-      return data.products || data;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Category fetch failed"
-      );
-    }
-  }
-);
-
-/* ==============================
-   Brand Filter
-============================== */
-
-export const fetchBrandProducts = createAsyncThunk(
-  "products/brand",
-  async (id, thunkAPI) => {
-    try {
-      const { data } = await getBrandProducts(id);
-      return data.products || data;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Brand fetch failed"
-      );
-    }
-  }
-);
-
-/* ==============================
-   Slice
-============================== */
-
+// ======================================
+// Initial State
+// ======================================
 const initialState = {
   products: [],
   product: null,
@@ -109,9 +56,14 @@ const initialState = {
   error: null,
 };
 
+// ======================================
+// Slice
+// ======================================
 const productSlice = createSlice({
   name: "products",
+
   initialState,
+
   reducers: {
     clearProduct: (state) => {
       state.product = null;
@@ -121,10 +73,10 @@ const productSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      /* Fetch Products */
-
+      // Get Products
       .addCase(fetchProducts.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
 
       .addCase(fetchProducts.fulfilled, (state, action) => {
@@ -137,42 +89,26 @@ const productSlice = createSlice({
         state.error = action.payload;
       })
 
-      /* Product Details */
-
-      .addCase(fetchProduct.pending, (state) => {
+      // Get Product By Id
+      .addCase(fetchProductById.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
 
-      .addCase(fetchProduct.fulfilled, (state, action) => {
+      .addCase(fetchProductById.fulfilled, (state, action) => {
         state.loading = false;
         state.product = action.payload;
       })
 
-      .addCase(fetchProduct.rejected, (state, action) => {
+      .addCase(fetchProductById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      })
-
-      /* Search */
-
-      .addCase(fetchSearchProducts.fulfilled, (state, action) => {
-        state.products = action.payload;
-      })
-
-      /* Category */
-
-      .addCase(fetchCategoryProducts.fulfilled, (state, action) => {
-        state.products = action.payload;
-      })
-
-      /* Brand */
-
-      .addCase(fetchBrandProducts.fulfilled, (state, action) => {
-        state.products = action.payload;
       });
   },
 });
 
-export const { clearProduct } = productSlice.actions;
+export const {
+  clearProduct,
+} = productSlice.actions;
 
 export default productSlice.reducer;

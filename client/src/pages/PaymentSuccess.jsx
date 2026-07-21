@@ -1,58 +1,106 @@
 import { Link } from "react-router-dom";
-import { CheckCircle } from "lucide-react";
+import {
+  FaCheckCircle,
+  FaShoppingBag,
+  FaBoxOpen,
+} from "react-icons/fa";
 
 const PaymentSuccess = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-green-100 px-4">
+    <div className="container py-5">
 
-      <div className="bg-white shadow-2xl rounded-3xl p-10 text-center max-w-md w-full">
+      <div className="row justify-content-center">
 
-        {/* Success Icon */}
-        <div className="flex justify-center mb-6">
-          <div className="bg-green-100 p-5 rounded-full animate-bounce">
-            <CheckCircle
-              size={80}
-              className="text-green-600"
-            />
+        <div className="col-lg-7">
+
+          <div className="card border-0 shadow-lg rounded-4">
+
+            <div className="card-body text-center p-5">
+
+              {/* Success Icon */}
+
+              <div
+                className="mx-auto mb-4 d-flex justify-content-center align-items-center rounded-circle"
+                style={{
+                  width: "120px",
+                  height: "120px",
+                  background: "#d1fae5",
+                }}
+              >
+                <FaCheckCircle
+                  size={70}
+                  className="text-success"
+                />
+              </div>
+
+              <h1 className="fw-bold text-success">
+                Payment Successful!
+              </h1>
+
+              <p className="text-muted fs-5 mt-3">
+                Thank you for your purchase.
+                <br />
+                Your order has been placed successfully.
+              </p>
+
+              <div className="alert alert-success mt-4">
+
+                <strong>Order ID :</strong> #ORD1001
+
+                <br />
+
+                Estimated Delivery :
+                <strong> 3 - 5 Business Days</strong>
+
+              </div>
+
+              <div className="row mt-5">
+
+                <div className="col-md-6 mb-3">
+
+                  <Link
+                    to="/my-orders"
+                    className="btn btn-success w-100 py-3"
+                  >
+
+                    <FaBoxOpen className="me-2" />
+
+                    View My Orders
+
+                  </Link>
+
+                </div>
+
+                <div className="col-md-6 mb-3">
+
+                  <Link
+                    to="/shop"
+                    className="btn btn-outline-primary w-100 py-3"
+                  >
+
+                    <FaShoppingBag className="me-2" />
+
+                    Continue Shopping
+
+                  </Link>
+
+                </div>
+
+              </div>
+
+              <hr className="my-4" />
+
+              <p className="text-muted mb-0">
+
+                Thank you for shopping with
+                <strong> MERN SHOP</strong> ❤️
+
+              </p>
+
+            </div>
+
           </div>
-        </div>
 
-
-        {/* Message */}
-        <h1 className="text-3xl font-bold text-gray-800 mb-3">
-          🎉 Order Placed Successfully!
-        </h1>
-
-        <p className="text-gray-500 mb-8">
-          Thank you for shopping with us.
-          Your order has been confirmed and will be delivered soon.
-        </p>
-
-
-        {/* Buttons */}
-        <div className="space-y-4">
-
-          <Link
-            to="/orders"
-            className="block w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold transition duration-300 shadow-md"
-          >
-            📦 View Order
-          </Link>
-
-
-          <Link
-            to="/products"
-            className="block w-full border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white py-3 rounded-xl font-semibold transition duration-300"
-          >
-            🛍️ Continue Shopping
-          </Link>
-
-        </div>
-
-
-        {/* Footer */}
-        <div className="mt-8 text-sm text-gray-400">
-          💚 Secure Payment | Fast Delivery | Premium Shopping Experience
         </div>
 
       </div>
