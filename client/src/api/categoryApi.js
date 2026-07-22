@@ -18,15 +18,23 @@ export const getCategoryById = (id) =>
 // Create Category
 // POST /categories
 // ===================================
-export const createCategory = (data) =>
-  axiosInstance.post("/categories", data);
+export const createCategory = (formData) =>
+  axiosInstance.post("/categories", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 
 // ===================================
 // Update Category
 // PUT /categories/:id
 // ===================================
-export const updateCategory = (id, data) =>
-  axiosInstance.put(`/categories/${id}`, data);
+export const updateCategory = (id, formData) =>
+  axiosInstance.put(`/categories/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 
 // ===================================
 // Delete Category

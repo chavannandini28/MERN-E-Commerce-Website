@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
 import {
-  FaSearch,
-  FaUserShield,
-  FaUser,
   FaTrash,
+  FaBan,
+  FaCheckCircle,
+  FaSearch,
 } from "react-icons/fa";
+import { toast } from "react-toastify";
 
-import { getUsers } from "../api/userApi";
+import {
+  getUsers,
+  deleteUser,
+  blockUser,
+  unblockUser,
+} from "../api/userApi";
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -20,8 +26,6 @@ const UserList = () => {
 
   const loadUsers = async () => {
     try {
-      setLoading(true);
-
       const { data } = await getUsers();
 
       const list = data.users || data || [];
@@ -29,7 +33,7 @@ const UserList = () => {
       setUsers(list);
       setFilteredUsers(list);
     } catch (err) {
-      console.log(err);
+      toast.error("Failed to load users");
     } finally {
       setLoading(false);
     }
@@ -40,17 +44,61 @@ const UserList = () => {
 
     setKeyword(value);
 
-    const result = users.filter((user) =>
-      user.name.toLowerCase().includes(value.toLowerCase())
+    const result = users.filter(
+      (user) =>
+        user.name
+          ?.toLowerCase()
+          .includes(value.toLowerCase()) ||
+        user.email
+          ?.toLowerCase()
+          .includes(value.toLowerCase())
     );
 
     setFilteredUsers(result);
   };
 
+  const deleteHandler = async (id) => {
+    if (!window.confirm("Delete this user?")) return;
+
+    try {
+      await deleteUser(id);
+
+      toast.success("User deleted");
+
+      loadUsers();
+    } catch {
+      toast.error("Delete failed");
+    }
+  };
+
+  const blockHandler = async (id) => {
+    try {
+      await blockUser(id);
+
+      toast.success("User blocked");
+
+      loadUsers();
+    } catch {
+      toast.error("Operation failed");
+    }
+  };
+
+  const unblockHandler = async (id) => {
+    try {
+      await unblockUser(id);
+
+      toast.success("User unblocked");
+
+      loadUsers();
+    } catch {
+      toast.error("Operation failed");
+    }
+  };
+
   if (loading) {
     return (
       <div className="text-center py-5">
-        <h4>Loading Users...</h4>
+        <h3>Loading Users...</h3>
       </div>
     );
   }
@@ -60,164 +108,125 @@ const UserList = () => {
 
       <div className="d-flex justify-content-between align-items-center mb-4">
 
-        <div>
+        <h2>User Management</h2>
 
-          <h2 className="fw-bold">
-            User Management
-          </h2>
+        <div className="input-group w-25">
 
-          <p className="text-muted">
-            Manage all registered users
-          </p>
+          <span className="input-group-text">
+            <FaSearch />
+          </span>
+
+          <input
+            className="form-control"
+            placeholder="Search..."
+            value={keyword}
+            onChange={searchHandler}
+          />
 
         </div>
 
       </div>
 
-      <div className="card shadow border-0">
+      <div className="card shadow">
 
-        <div className="card-body">
+        <div className="table-responsive">
 
-          <div className="row mb-4">
+          <table className="table table-hover align-middle">
 
-            <div className="col-md-5">
+            <thead className="table-dark">
 
-              <div className="input-group">
+              <tr>
 
-                <span className="input-group-text">
-                  <FaSearch />
-                </span>
+                <th>Name</th>
 
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Search User..."
-                  value={keyword}
-                  onChange={searchHandler}
-                />
+                <th>Email</th>
 
-              </div>
+                <th>Role</th>
 
-            </div>
+                <th>Status</th>
 
-          </div>
+                <th>Actions</th>
 
-          <div className="table-responsive">
+              </tr>
 
-            <table className="table table-hover align-middle">
+            </thead>
 
-              <thead className="table-dark">
+            <tbody>
 
-                <tr>
+              {filteredUsers.map((user) => (
 
-                  <th>User</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>Action</th>
+                <tr key={user._id}>
+
+                  <td>{user.name}</td>
+
+                  <td>{user.email}</td>
+
+                  <td>
+
+                    <span className="badge bg-primary">
+                      {user.role}
+                    </span>
+
+                  </td>
+
+                  <td>
+
+                    {user.isBlocked ? (
+                      <span className="badge bg-danger">
+                        Blocked
+                      </span>
+                    ) : (
+                      <span className="badge bg-success">
+                        Active
+                      </span>
+                    )}
+
+                  </td>
+
+                  <td>
+
+                    {user.isBlocked ? (
+
+                      <button
+                        className="btn btn-success btn-sm me-2"
+                        onClick={() =>
+                          unblockHandler(user._id)
+                        }
+                      >
+                        <FaCheckCircle />
+                      </button>
+
+                    ) : (
+
+                      <button
+                        className="btn btn-warning btn-sm me-2"
+                        onClick={() =>
+                          blockHandler(user._id)
+                        }
+                      >
+                        <FaBan />
+                      </button>
+
+                    )}
+
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() =>
+                        deleteHandler(user._id)
+                      }
+                    >
+                      <FaTrash />
+                    </button>
+
+                  </td>
 
                 </tr>
 
-              </thead>
+              ))}
 
-              <tbody>
+            </tbody>
 
-                {filteredUsers.length > 0 ? (
-
-                  filteredUsers.map((user) => (
-
-                    <tr key={user._id}>
-
-                      <td>
-
-                        <div className="d-flex align-items-center">
-
-                          <div
-                            className="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center me-3"
-                            style={{
-                              width: 45,
-                              height: 45,
-                            }}
-                          >
-                            <FaUser />
-                          </div>
-
-                          <strong>
-                            {user.name}
-                          </strong>
-
-                        </div>
-
-                      </td>
-
-                      <td>{user.email}</td>
-
-                      <td>
-
-                        {user.role === "Admin" ? (
-
-                          <span className="badge bg-danger">
-
-                            <FaUserShield className="me-1" />
-
-                            Admin
-
-                          </span>
-
-                        ) : (
-
-                          <span className="badge bg-primary">
-
-                            Customer
-
-                          </span>
-
-                        )}
-
-                      </td>
-
-                      <td>
-
-                        <span className="badge bg-success">
-                          Active
-                        </span>
-
-                      </td>
-
-                      <td>
-
-                        <button className="btn btn-outline-danger btn-sm">
-
-                          <FaTrash />
-
-                        </button>
-
-                      </td>
-
-                    </tr>
-
-                  ))
-
-                ) : (
-
-                  <tr>
-
-                    <td
-                      colSpan="5"
-                      className="text-center py-5"
-                    >
-                      No Users Found
-                    </td>
-
-                  </tr>
-
-                )}
-
-              </tbody>
-
-            </table>
-
-          </div>
+          </table>
 
         </div>
 

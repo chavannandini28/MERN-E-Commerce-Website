@@ -3,12 +3,12 @@ import {
   createAsyncThunk,
 } from "@reduxjs/toolkit";
 
+
 import {
   getMyProfile,
   updateProfile,
   changePassword,
 } from "../api/authApi";
-
 // ======================================
 // Get Profile
 // ======================================

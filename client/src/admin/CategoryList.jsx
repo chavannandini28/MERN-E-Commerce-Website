@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  FaSearch,
   FaPlus,
   FaEdit,
   FaTrash,
-  FaLayerGroup,
+  FaSearch,
 } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 import {
   getCategories,
@@ -25,16 +25,14 @@ const CategoryList = () => {
 
   const loadCategories = async () => {
     try {
-      setLoading(true);
-
       const { data } = await getCategories();
 
       const list = data.categories || data || [];
 
       setCategories(list);
       setFilteredCategories(list);
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      toast.error("Failed to load categories");
     } finally {
       setLoading(false);
     }
@@ -45,13 +43,13 @@ const CategoryList = () => {
 
     setKeyword(value);
 
-    setFilteredCategories(
-      categories.filter((item) =>
-        item.name
-          .toLowerCase()
-          .includes(value.toLowerCase())
-      )
+    const result = categories.filter((item) =>
+      item.name
+        ?.toLowerCase()
+        .includes(value.toLowerCase())
     );
+
+    setFilteredCategories(result);
   };
 
   const deleteHandler = async (id) => {
@@ -59,16 +57,19 @@ const CategoryList = () => {
 
     try {
       await deleteCategory(id);
+
+      toast.success("Category deleted");
+
       loadCategories();
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      toast.error("Delete failed");
     }
   };
 
   if (loading) {
     return (
       <div className="text-center py-5">
-        <h4>Loading Categories...</h4>
+        <h3>Loading Categories...</h3>
       </div>
     );
   }
@@ -78,21 +79,10 @@ const CategoryList = () => {
 
       <div className="d-flex justify-content-between align-items-center mb-4">
 
-        <div>
-
-          <h2 className="fw-bold">
-            <FaLayerGroup className="me-2 text-primary" />
-            Categories
-          </h2>
-
-          <p className="text-muted">
-            Manage product categories
-          </p>
-
-        </div>
+        <h2>Categories</h2>
 
         <Link
-          to="/admin/add-category"
+          to="/admin/categories/add"
           className="btn btn-primary"
         >
           <FaPlus className="me-2" />
@@ -101,114 +91,116 @@ const CategoryList = () => {
 
       </div>
 
-      <div className="card shadow border-0">
+      <div className="input-group mb-4">
 
-        <div className="card-body">
+        <span className="input-group-text">
+          <FaSearch />
+        </span>
 
-          <div className="row mb-4">
+        <input
+          type="text"
+          className="form-control"
+          placeholder="Search Category..."
+          value={keyword}
+          onChange={searchHandler}
+        />
 
-            <div className="col-md-5">
+      </div>
 
-              <div className="input-group">
+      <div className="card shadow">
 
-                <span className="input-group-text">
-                  <FaSearch />
-                </span>
+        <div className="table-responsive">
 
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Search Category..."
-                  value={keyword}
-                  onChange={searchHandler}
-                />
+          <table className="table table-hover align-middle">
 
-              </div>
+            <thead className="table-dark">
 
-            </div>
+              <tr>
 
-          </div>
+                <th>Image</th>
 
-          <div className="table-responsive">
+                <th>Name</th>
 
-            <table className="table table-hover align-middle">
+                <th>Slug</th>
 
-              <thead className="table-dark">
+                <th>Actions</th>
 
-                <tr>
+              </tr>
 
-                  <th>#</th>
-                  <th>Category Name</th>
-                  <th>Slug</th>
-                  <th width="160">
-                    Action
-                  </th>
+            </thead>
 
-                </tr>
+            <tbody>
 
-              </thead>
+              {filteredCategories.length > 0 ? (
 
-              <tbody>
+                filteredCategories.map((category) => (
 
-                {filteredCategories.length > 0 ? (
+                  <tr key={category._id}>
 
-                  filteredCategories.map((category, index) => (
+                    <td>
 
-                    <tr key={category._id}>
+                      <img
+                        src={
+                          category.image?.url ||
+                          "https://via.placeholder.com/60"
+                        }
+                        alt={category.name}
+                        width="60"
+                        height="60"
+                        style={{
+                          borderRadius: "8px",
+                          objectFit: "cover",
+                        }}
+                      />
 
-                      <td>{index + 1}</td>
+                    </td>
 
-                      <td className="fw-semibold">
-                        {category.name}
-                      </td>
+                    <td>{category.name}</td>
 
-                      <td>
-                        {category.slug}
-                      </td>
+                    <td>{category.slug}</td>
 
-                      <td>
+                    <td>
 
-                        <button className="btn btn-warning btn-sm me-2">
+                      <Link
+                        to={`/admin/categories/edit/${category._id}`}
+                        className="btn btn-warning btn-sm me-2"
+                      >
+                        <FaEdit />
+                      </Link>
 
-                          <FaEdit />
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={() =>
+                          deleteHandler(category._id)
+                        }
+                      >
+                        <FaTrash />
+                      </button>
 
-                        </button>
-
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() =>
-                            deleteHandler(category._id)
-                          }
-                        >
-                          <FaTrash />
-                        </button>
-
-                      </td>
-
-                    </tr>
-
-                  ))
-
-                ) : (
-
-                  <tr>
-
-                    <td
-                      colSpan="4"
-                      className="text-center py-5"
-                    >
-                      No Categories Found
                     </td>
 
                   </tr>
 
-                )}
+                ))
 
-              </tbody>
+              ) : (
 
-            </table>
+                <tr>
 
-          </div>
+                  <td
+                    colSpan="4"
+                    className="text-center"
+                  >
+                    No Categories Found
+                  </td>
+
+                </tr>
+
+              )}
+
+            </tbody>
+
+          </table>
 
         </div>
 

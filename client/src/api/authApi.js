@@ -1,51 +1,238 @@
-import axiosInstance from "./axiosInstance";
+import axios from "axios";
 
-// ==========================
-// Authentication APIs
-// ==========================
 
-// Register
-export const registerUser = (userData) =>
-  axiosInstance.post("/auth/register", userData);
+// ======================================
+// Axios Instance
+// ======================================
 
-// Login
-export const loginUser = (userData) =>
-  axiosInstance.post("/auth/login", userData);
+const API = axios.create({
 
-// Logout (Frontend Only)
-export const logoutUser = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
+  baseURL: "http://localhost:5000/api/auth",
+
+  headers: {
+    "Content-Type": "application/json",
+  },
+
+});
+
+
+
+
+// ======================================
+// Attach JWT Token Automatically
+// ======================================
+
+API.interceptors.request.use(
+
+  (config) => {
+
+    const token = localStorage.getItem("token");
+
+
+    if (token) {
+
+      config.headers.Authorization =
+        `Bearer ${token}`;
+
+    }
+
+
+    return config;
+
+  },
+
+
+  (error) => {
+
+    return Promise.reject(error);
+
+  }
+
+);
+
+
+
+
+
+// ======================================
+// Register User
+// POST /api/auth/register
+// ======================================
+
+export const registerUser = (userData) => {
+
+  return API.post(
+    "/register",
+    userData
+  );
+
 };
 
-// ==========================
-// User Profile
-// ==========================
 
-// Get Logged In User
-export const getMyProfile = () =>
-  axiosInstance.get("/users/profile");
 
+
+
+// ======================================
+// Login User
+// POST /api/auth/login
+// ======================================
+
+export const loginUser = (loginData) => {
+
+  return API.post(
+    "/login",
+    loginData
+  );
+
+};
+
+
+
+
+
+// ======================================
+// Logout User
+// POST /api/auth/logout
+// ======================================
+
+export const logoutUser = () => {
+
+  return API.post(
+    "/logout"
+  );
+
+};
+
+
+
+
+
+// ======================================
+// Get Logged User Profile
+// GET /api/auth/profile
+// ======================================
+
+export const getMyProfile = () => {
+
+  return API.get(
+    "/profile"
+  );
+
+};
+
+
+
+
+
+// ======================================
 // Update Profile
-export const updateProfile = (userData) =>
-  axiosInstance.put("/users/profile", userData);
+// PUT /api/auth/profile
+// ======================================
 
+export const updateProfile = (userData) => {
+
+  return API.put(
+    "/profile",
+    userData
+  );
+
+};
+
+
+
+
+
+// ======================================
 // Change Password
-export const changePassword = (passwordData) =>
-  axiosInstance.put("/users/change-password", passwordData);
+// PUT /api/auth/change-password
+// ======================================
 
-// ==========================
-// Password Recovery
-// ==========================
+export const changePassword = (passwordData) => {
 
+  return API.put(
+    "/change-password",
+    passwordData
+  );
+
+};
+
+
+
+
+
+// ======================================
 // Forgot Password
-export const forgotPassword = (email) =>
-  axiosInstance.post("/auth/forgot-password", {
-    email,
-  });
+// POST /api/auth/forgot-password
+// ======================================
 
+export const forgotPassword = (email) => {
+
+  return API.post(
+    "/forgot-password",
+    email
+  );
+
+};
+
+
+
+
+
+// ======================================
 // Reset Password
-export const resetPassword = (token, password) =>
-  axiosInstance.post(`/auth/reset-password/${token}`, {
-    password,
-  });
+// POST /api/auth/reset-password/:token
+// ======================================
+
+export const resetPassword = (
+  token,
+  password
+) => {
+
+  return API.post(
+    `/reset-password/${token}`,
+    password
+  );
+
+};
+
+
+
+
+
+// ======================================
+// Verify OTP
+// POST /api/auth/verify-otp
+// ======================================
+
+export const verifyOTP = (data) => {
+
+  return API.post(
+    "/verify-otp",
+    data
+  );
+
+};
+
+
+
+
+
+// ======================================
+// Resend OTP
+// POST /api/auth/resend-otp
+// ======================================
+
+export const resendOTP = (data) => {
+
+  return API.post(
+    "/resend-otp",
+    data
+  );
+
+};
+
+
+
+
+
+export default API;

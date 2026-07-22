@@ -1,38 +1,71 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { FaCloudUploadAlt, FaArrowLeft } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  FaCloudUploadAlt,
+  FaArrowLeft,
+} from "react-icons/fa";
 import { toast } from "react-toastify";
 
-import { createCategory } from "../api/categoryApi";
+import {
+  getBrandById,
+  updateBrand,
+} from "../api/brandApi";
 
-const AddCategory = () => {
+const EditBrand = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
-
   const [preview, setPreview] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
-    image: null,
+    description: "",
+    website: "",
+    country: "",
+    logo: null,
   });
 
-  const changeHandler = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  useEffect(() => {
+    loadBrand();
+  }, [id]);
+
+  const loadBrand = async () => {
+    try {
+      const { data } = await getBrandById(id);
+
+      const brand = data.brand;
+
+      setFormData({
+        name: brand.name || "",
+        description: brand.description || "",
+        website: brand.website || "",
+        country: brand.country || "",
+        logo: null,
+      });
+
+      setPreview(brand.logo?.url || "");
+    } catch (error) {
+      toast.error("Failed to load brand");
+    }
   };
 
-  const imageHandler = (e) => {
+  const changeHandler = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const logoHandler = (e) => {
     const file = e.target.files[0];
 
     if (!file) return;
 
-    setFormData({
-      ...formData,
-      image: file,
-    });
+    setFormData((prev) => ({
+      ...prev,
+      logo: file,
+    }));
 
     setPreview(URL.createObjectURL(file));
   };
@@ -46,20 +79,23 @@ const AddCategory = () => {
       const data = new FormData();
 
       data.append("name", formData.name);
+      data.append("description", formData.description);
+      data.append("website", formData.website);
+      data.append("country", formData.country);
 
-      if (formData.image) {
-        data.append("image", formData.image);
+      if (formData.logo) {
+        data.append("logo", formData.logo);
       }
 
-      await createCategory(data);
+      await updateBrand(id, data);
 
-      toast.success("Category Created Successfully");
+      toast.success("Brand Updated Successfully");
 
-      navigate("/admin/categories");
+      navigate("/admin/brands");
     } catch (error) {
       toast.error(
         error?.response?.data?.message ||
-          "Unable to create category"
+          "Update failed"
       );
     } finally {
       setLoading(false);
@@ -71,7 +107,7 @@ const AddCategory = () => {
 
       <div className="d-flex justify-content-between align-items-center mb-4">
 
-        <h2>Add Category</h2>
+        <h2>Edit Brand</h2>
 
         <button
           className="btn btn-outline-secondary"
@@ -93,10 +129,9 @@ const AddCategory = () => {
 
               <div className="col-lg-8">
 
-                <div className="mb-4">
-
+                <div className="mb-3">
                   <label className="form-label">
-                    Category Name
+                    Brand Name
                   </label>
 
                   <input
@@ -107,7 +142,48 @@ const AddCategory = () => {
                     onChange={changeHandler}
                     required
                   />
+                </div>
 
+                <div className="mb-3">
+                  <label className="form-label">
+                    Description
+                  </label>
+
+                  <textarea
+                    rows="4"
+                    className="form-control"
+                    name="description"
+                    value={formData.description}
+                    onChange={changeHandler}
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label">
+                    Website
+                  </label>
+
+                  <input
+                    type="url"
+                    className="form-control"
+                    name="website"
+                    value={formData.website}
+                    onChange={changeHandler}
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label">
+                    Country
+                  </label>
+
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="country"
+                    value={formData.country}
+                    onChange={changeHandler}
+                  />
                 </div>
 
               </div>
@@ -121,39 +197,32 @@ const AddCategory = () => {
                     <label style={{ cursor: "pointer" }}>
 
                       {preview ? (
-
                         <img
                           src={preview}
-                          alt="Preview"
+                          alt="Logo Preview"
                           className="img-fluid rounded"
                           style={{
                             height: 220,
                             objectFit: "cover",
                           }}
                         />
-
                       ) : (
-
                         <div className="py-5">
-
                           <FaCloudUploadAlt
                             size={60}
                             className="text-primary"
                           />
-
                           <h5 className="mt-3">
-                            Upload Category Image
+                            Upload Logo
                           </h5>
-
                         </div>
-
                       )}
 
                       <input
                         hidden
                         type="file"
                         accept="image/*"
-                        onChange={imageHandler}
+                        onChange={logoHandler}
                       />
 
                     </label>
@@ -167,12 +236,12 @@ const AddCategory = () => {
             </div>
 
             <button
-              className="btn btn-primary mt-4 px-5"
+              className="btn btn-success mt-4 px-5"
               disabled={loading}
             >
               {loading
-                ? "Creating..."
-                : "Create Category"}
+                ? "Updating..."
+                : "Update Brand"}
             </button>
 
           </form>
@@ -185,4 +254,4 @@ const AddCategory = () => {
   );
 };
 
-export default AddCategory;
+export default EditBrand;

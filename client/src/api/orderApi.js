@@ -1,57 +1,61 @@
 import axiosInstance from "./axiosInstance";
 
 // ===================================
-// Create New Order
-// POST /orders
+// Create Order
+// POST /orders/create
 // ===================================
-export const createOrder = (orderData) =>
-  axiosInstance.post("/orders", orderData);
+export const createOrder = (data) =>
+  axiosInstance.post("/orders/create", data);
 
 // ===================================
-// Get Logged In User Orders
+// My Orders
 // GET /orders/my-orders
 // ===================================
 export const getMyOrders = () =>
   axiosInstance.get("/orders/my-orders");
 
 // ===================================
-// Get Single Order
+// Get Order By Id
 // GET /orders/:id
 // ===================================
 export const getOrderById = (id) =>
   axiosInstance.get(`/orders/${id}`);
 
 // ===================================
-// Admin - Get All Orders
+// Admin Orders
 // GET /orders
 // ===================================
 export const getOrders = () =>
   axiosInstance.get("/orders");
 
 // ===================================
-// Admin - Update Order Status
-// PUT /orders/:id
+// Update Status
+// PATCH /orders/status/:id
 // ===================================
 export const updateOrderStatus = (id, data) =>
-  axiosInstance.put(`/orders/${id}`, data);
+  axiosInstance.patch(`/orders/status/${id}`, data);
 
 // ===================================
 // Cancel Order
-// PUT /orders/cancel/:id
+// PATCH /orders/cancel/:id
 // ===================================
 export const cancelOrder = (id) =>
-  axiosInstance.put(`/orders/cancel/${id}`);
+  axiosInstance.patch(`/orders/cancel/${id}`);
 
 // ===================================
-// Razorpay - Create Order
-// POST /payment/create-order
+// Razorpay Create
 // ===================================
 export const createRazorpayOrder = (data) =>
-  axiosInstance.post("/payment/create-order", data);
+  axiosInstance.post(
+    "/orders/payment/create-order",
+    data
+  );
 
 // ===================================
-// Razorpay - Verify Payment
-// POST /payment/verify
+// Razorpay Verify
 // ===================================
-export const verifyPayment = (paymentData) =>
-  axiosInstance.post("/payment/verify", paymentData);
+export const verifyPayment = (data) =>
+  axiosInstance.post(
+    "/orders/payment/verify",
+    data
+  );

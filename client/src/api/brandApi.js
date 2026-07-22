@@ -2,35 +2,38 @@ import axiosInstance from "./axiosInstance";
 
 // ===================================
 // Get All Brands
-// GET /brands
 // ===================================
 export const getBrands = () =>
   axiosInstance.get("/brands");
 
 // ===================================
 // Get Single Brand
-// GET /brands/:id
 // ===================================
 export const getBrandById = (id) =>
   axiosInstance.get(`/brands/${id}`);
 
 // ===================================
 // Create Brand
-// POST /brands
 // ===================================
-export const createBrand = (data) =>
-  axiosInstance.post("/brands", data);
+export const createBrand = (formData) =>
+  axiosInstance.post("/brands", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 
 // ===================================
 // Update Brand
-// PUT /brands/:id
 // ===================================
-export const updateBrand = (id, data) =>
-  axiosInstance.put(`/brands/${id}`, data);
+export const updateBrand = (id, formData) =>
+  axiosInstance.put(`/brands/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 
 // ===================================
 // Delete Brand
-// DELETE /brands/:id
 // ===================================
 export const deleteBrand = (id) =>
   axiosInstance.delete(`/brands/${id}`);

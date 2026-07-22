@@ -1,115 +1,135 @@
 const express = require("express");
+
 const router = express.Router();
 
-const {
-  register,
-  login,
-  logout,
-  getProfile,
-  updateProfile,
-  changePassword,
-  forgotPassword,
-  resetPassword,
-  verifyOTP,
-  resendOTP,
-} = require("../controllers/authController");
-
-const { protect } = require("../middleware/authMiddleware");
-const authorize = require("../middleware/roleMiddleware");
 
 const {
-  registerValidation,
-  loginValidation,
-} = require("../middleware/validationMiddleware");
 
-// ===============================
-// Public Routes
-// ===============================
+register,
+login,
+logout,
+getProfile,
+updateProfile,
+changePassword,
+forgotPassword,
+resetPassword,
+verifyOTP,
+resendOTP
 
-// Register User
+}=require("../controllers/authController");
+
+
+
+const {
+protect
+}=require("../middleware/authMiddleware");
+
+
+const authorize =
+require("../middleware/roleMiddleware");
+
+
+
+
+// PUBLIC
+
 router.post(
-  "/register",
-  registerValidation,
-  register
+"/register",
+register
 );
 
-// Login User
+
 router.post(
-  "/login",
-  loginValidation,
-  login
+"/login",
+login
 );
 
-// Logout User
+
 router.post(
-  "/logout",
-  logout
+"/logout",
+logout
 );
 
-// Forgot Password
+
+
 router.post(
-  "/forgot-password",
-  forgotPassword
+"/forgot-password",
+forgotPassword
 );
 
-// Reset Password
+
+
 router.post(
-  "/reset-password/:token",
-  resetPassword
+"/reset-password/:token",
+resetPassword
 );
 
-// Verify OTP
+
+
 router.post(
-  "/verify-otp",
-  verifyOTP
+"/verify-otp",
+verifyOTP
 );
 
-// Resend OTP
+
+
 router.post(
-  "/resend-otp",
-  resendOTP
+"/resend-otp",
+resendOTP
 );
 
-// ===============================
-// Protected Routes
-// ===============================
 
-// Logged In User Profile
+
+
+
+// PRIVATE
+
+
 router.get(
-  "/profile",
-  protect,
-  getProfile
+"/profile",
+protect,
+getProfile
 );
 
-// Update Profile
+
+
 router.put(
-  "/profile",
-  protect,
-  updateProfile
+"/profile",
+protect,
+updateProfile
 );
 
-// Change Password
+
+
 router.put(
-  "/change-password",
-  protect,
-  changePassword
+"/change-password",
+protect,
+changePassword
 );
 
-// ===============================
-// Admin Route Example
-// ===============================
 
-// Only Admin Can Access
+
+
+
+// ADMIN TEST
+
+
 router.get(
-  "/admin",
-  protect,
-  authorize("Admin"),
-  (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: "Welcome Admin",
-    });
-  }
-);
+"/admin",
+protect,
+authorize("Admin"),
+(req,res)=>{
+
+res.json({
+
+success:true,
+message:"Welcome Admin"
+
+});
+
+
+});
+
+
 
 module.exports = router;

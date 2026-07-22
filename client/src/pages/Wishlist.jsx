@@ -1,126 +1,166 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaHeart, FaShoppingCart, FaTrashAlt } from "react-icons/fa";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchWishlist,
+  removeWishlistItem,
+} from "../redux/wishlistSlice";
+import { addItemToCart } from "../redux/cartSlice";
+
+import {
+  FaHeart,
+  FaTrash,
+  FaShoppingCart,
+} from "react-icons/fa";
 
 const Wishlist = () => {
-  const wishlistItems =
-    useSelector((state) => state.wishlist?.wishlistItems) || [];
+  const dispatch = useDispatch();
+
+  const {
+    wishlist,
+    loading,
+  } = useSelector((state) => state.wishlist);
+
+  useEffect(() => {
+    dispatch(fetchWishlist());
+  }, [dispatch]);
+
+  const removeItem = (id) => {
+    dispatch(removeWishlistItem(id));
+  };
+
+  const moveToCart = (item) => {
+    dispatch(
+      addItemToCart({
+        productId: item.product._id,
+        quantity: 1,
+      })
+    );
+
+    dispatch(removeWishlistItem(item._id));
+  };
+
+  if (loading) {
+    return (
+      <div className="container py-5 text-center">
+        <h4>Loading Wishlist...</h4>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-5">
 
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex align-items-center mb-4">
 
-        <h2 className="fw-bold">
-          ❤️ My Wishlist
+        <FaHeart
+          className="text-danger me-2"
+          size={28}
+        />
+
+        <h2 className="mb-0">
+          My Wishlist
         </h2>
-
-        <span className="badge bg-primary fs-6">
-          {wishlistItems.length} Items
-        </span>
 
       </div>
 
-      {wishlistItems.length === 0 ? (
+      {wishlist.length === 0 ? (
         <div className="text-center py-5">
 
-          <FaHeart
-            size={90}
-            className="text-danger mb-4"
-          />
-
-          <h3>Your Wishlist is Empty</h3>
-
-          <p className="text-muted">
-            Save your favourite products here.
-          </p>
+          <h3>No Products In Wishlist</h3>
 
           <Link
             to="/shop"
-            className="btn btn-primary px-4 mt-3"
+            className="btn btn-primary mt-3"
           >
             Continue Shopping
           </Link>
 
         </div>
       ) : (
-        <div className="row g-4">
+        <div className="row">
 
-          {wishlistItems.map((item) => (
+          {wishlist.map((item) => (
+
             <div
+              className="col-lg-3 col-md-4 col-sm-6 mb-4"
               key={item._id}
-              className="col-lg-3 col-md-6"
             >
-              <div className="card border-0 shadow h-100 rounded-4">
 
-                <div className="position-relative">
+              <div className="card shadow border-0 h-100">
 
-                  <img
-                    src={
-                      item.images?.[0]?.url ||
-                      item.image
-                    }
-                    alt={item.name}
-                    className="card-img-top"
-                    style={{
-                      height: "250px",
-                      objectFit: "cover",
-                    }}
-                  />
-
-                  <span className="badge bg-danger position-absolute top-0 end-0 m-3">
-                    Wishlist
-                  </span>
-
-                </div>
+                <img
+                  src={
+                    item.product.images?.[0]?.url
+                  }
+                  className="card-img-top"
+                  alt={item.product.name}
+                  style={{
+                    height: 240,
+                    objectFit: "cover",
+                  }}
+                />
 
                 <div className="card-body">
 
-                  <h5 className="fw-bold">
-                    {item.name}
+                  <h5>
+                    {item.product.name}
                   </h5>
 
-                  <p className="text-muted small">
-                    {item.brand?.name ||
-                      item.brand}
+                  <p className="text-muted">
+                    {item.product.brand?.name}
                   </p>
 
                   <h4 className="text-success">
-                    ₹{item.price}
+                    ₹{item.product.price}
                   </h4>
 
                 </div>
 
                 <div className="card-footer bg-white border-0">
 
-                  <div className="d-grid gap-2">
+                  <Link
+                    to={`/product/${item.product._id}`}
+                    className="btn btn-outline-primary w-100 mb-2"
+                  >
+                    View Product
+                  </Link>
 
-                    <button className="btn btn-primary">
+                  <button
+                    className="btn btn-success w-100 mb-2"
+                    onClick={() =>
+                      moveToCart(item)
+                    }
+                  >
+                    <FaShoppingCart className="me-2" />
 
-                      <FaShoppingCart className="me-2" />
+                    Add To Cart
 
-                      Add To Cart
+                  </button>
 
-                    </button>
+                  <button
+                    className="btn btn-outline-danger w-100"
+                    onClick={() =>
+                      removeItem(item._id)
+                    }
+                  >
+                    <FaTrash className="me-2" />
 
-                    <button className="btn btn-outline-danger">
+                    Remove
 
-                      <FaTrashAlt className="me-2" />
-
-                      Remove
-
-                    </button>
-
-                  </div>
+                  </button>
 
                 </div>
 
               </div>
+
             </div>
+
           ))}
 
         </div>
       )}
+
     </div>
   );
 };

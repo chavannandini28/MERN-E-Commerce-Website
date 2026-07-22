@@ -1,100 +1,168 @@
-import { Link } from "react-router-dom";
-import {
-  FaCreditCard,
-  FaMapMarkerAlt,
-  FaPhone,
-  FaUser,
-} from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { fetchCart } from "../redux/cartSlice";
+import { placeOrder } from "../redux/orderSlice";
+import { toast } from "react-toastify";
 
 const Checkout = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const { cart } = useSelector((state) => state.cart);
+  const { loading } = useSelector((state) => state.orders);
+
+  const [shipping, setShipping] = useState({
+    fullName: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    pincode: "",
+  });
+
+  useEffect(() => {
+    dispatch(fetchCart());
+  }, [dispatch]);
+
+  const changeHandler = (e) => {
+    setShipping({
+      ...shipping,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const total =
+    cart?.reduce(
+      (sum, item) =>
+        sum + item.product.price * item.quantity,
+      0
+    ) || 0;
+
+  const submitHandler = async (e) => {
+    e.preventDefault();
+
+    try {
+      const orderData = {
+        shippingInfo: shipping,
+        orderItems: cart.map((item) => ({
+          product: item.product._id,
+          quantity: item.quantity,
+          price: item.product.price,
+        })),
+        totalPrice: total,
+      };
+
+      await dispatch(placeOrder(orderData)).unwrap();
+
+      toast.success("Order Placed Successfully");
+
+      navigate("/payment-success");
+    } catch (error) {
+      toast.error(error || "Order Failed");
+      navigate("/payment-failed");
+    }
+  };
+
   return (
     <div className="container py-5">
 
-      <h2 className="fw-bold mb-4">
-        Checkout
-      </h2>
-
       <div className="row">
 
-        {/* Billing */}
+        {/* Shipping Form */}
+        <div className="col-lg-7">
 
-        <div className="col-lg-8">
+          <div className="card shadow border-0">
 
-          <div className="card border-0 shadow rounded-4">
+            <div className="card-body p-4">
 
-            <div className="card-body">
+              <h3 className="mb-4">
+                Shipping Address
+              </h3>
 
-              <h4 className="mb-4">
-                Billing Details
-              </h4>
+              <form onSubmit={submitHandler}>
 
-              <div className="row">
+                <input
+                  className="form-control mb-3"
+                  placeholder="Full Name"
+                  name="fullName"
+                  value={shipping.fullName}
+                  onChange={changeHandler}
+                  required
+                />
 
-                <div className="col-md-6 mb-3">
+                <input
+                  className="form-control mb-3"
+                  placeholder="Phone Number"
+                  name="phone"
+                  value={shipping.phone}
+                  onChange={changeHandler}
+                  required
+                />
 
-                  <label className="form-label">
-                    Full Name
-                  </label>
+                <textarea
+                  className="form-control mb-3"
+                  placeholder="Address"
+                  rows="3"
+                  name="address"
+                  value={shipping.address}
+                  onChange={changeHandler}
+                  required
+                />
 
-                  <div className="input-group">
+                <div className="row">
 
-                    <span className="input-group-text">
-                      <FaUser />
-                    </span>
+                  <div className="col-md-4">
 
                     <input
-                      className="form-control"
-                      placeholder="John Doe"
+                      className="form-control mb-3"
+                      placeholder="City"
+                      name="city"
+                      value={shipping.city}
+                      onChange={changeHandler}
+                      required
+                    />
+
+                  </div>
+
+                  <div className="col-md-4">
+
+                    <input
+                      className="form-control mb-3"
+                      placeholder="State"
+                      name="state"
+                      value={shipping.state}
+                      onChange={changeHandler}
+                      required
+                    />
+
+                  </div>
+
+                  <div className="col-md-4">
+
+                    <input
+                      className="form-control mb-3"
+                      placeholder="Pincode"
+                      name="pincode"
+                      value={shipping.pincode}
+                      onChange={changeHandler}
+                      required
                     />
 
                   </div>
 
                 </div>
 
-                <div className="col-md-6 mb-3">
+                <button
+                  className="btn btn-success w-100 mt-3"
+                  disabled={loading}
+                >
+                  {loading
+                    ? "Placing Order..."
+                    : "Place Order"}
+                </button>
 
-                  <label className="form-label">
-                    Mobile Number
-                  </label>
-
-                  <div className="input-group">
-
-                    <span className="input-group-text">
-                      <FaPhone />
-                    </span>
-
-                    <input
-                      className="form-control"
-                      placeholder="+91 XXXXX XXXXX"
-                    />
-
-                  </div>
-
-                </div>
-
-                <div className="col-12 mb-3">
-
-                  <label className="form-label">
-                    Delivery Address
-                  </label>
-
-                  <div className="input-group">
-
-                    <span className="input-group-text">
-                      <FaMapMarkerAlt />
-                    </span>
-
-                    <textarea
-                      rows="4"
-                      className="form-control"
-                      placeholder="Enter delivery address..."
-                    ></textarea>
-
-                  </div>
-
-                </div>
-
-              </div>
+              </form>
 
             </div>
 
@@ -103,69 +171,46 @@ const Checkout = () => {
         </div>
 
         {/* Order Summary */}
+        <div className="col-lg-5">
 
-        <div className="col-lg-4">
-
-          <div className="card shadow border-0 rounded-4">
+          <div className="card shadow border-0">
 
             <div className="card-body">
 
-              <h4 className="fw-bold mb-4">
+              <h3 className="mb-4">
                 Order Summary
-              </h4>
+              </h3>
 
-              <div className="d-flex justify-content-between mb-3">
+              {cart.map((item) => (
 
-                <span>Subtotal</span>
+                <div
+                  key={item._id}
+                  className="d-flex justify-content-between mb-3"
+                >
 
-                <span>₹2500</span>
+                  <span>
+                    {item.product.name} × {item.quantity}
+                  </span>
 
-              </div>
+                  <strong>
+                    ₹{item.product.price * item.quantity}
+                  </strong>
 
-              <div className="d-flex justify-content-between mb-3">
+                </div>
 
-                <span>Shipping</span>
-
-                <span className="text-success">
-                  FREE
-                </span>
-
-              </div>
-
-              <div className="d-flex justify-content-between mb-3">
-
-                <span>Tax</span>
-
-                <span>₹150</span>
-
-              </div>
+              ))}
 
               <hr />
 
               <div className="d-flex justify-content-between">
 
-                <h5>Total</h5>
+                <h4>Total</h4>
 
-                <h4 className="text-primary">
-                  ₹2650
+                <h4 className="text-success">
+                  ₹{total}
                 </h4>
 
               </div>
-
-              <button className="btn btn-success w-100 mt-4">
-
-                <FaCreditCard className="me-2" />
-
-                Place Order
-
-              </button>
-
-              <Link
-                to="/cart"
-                className="btn btn-outline-secondary w-100 mt-3"
-              >
-                Back To Cart
-              </Link>
 
             </div>
 

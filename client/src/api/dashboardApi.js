@@ -1,22 +1,57 @@
 import axiosInstance from "./axiosInstance";
 
-export const getAdminDashboard = () =>
-  axiosInstance.get("/dashboard/admin");
+// ======================================
+// Dashboard Statistics
+// GET /api/dashboard
+// ======================================
+export const getDashboardStats = async () => {
+  return await axiosInstance.get("/dashboard");
+};
 
-export const getVendorDashboard = () =>
-  axiosInstance.get("/dashboard/vendor");
+// ======================================
+// Total Revenue
+// GET /api/dashboard/revenue
+// ======================================
+export const getRevenue = async () => {
+  return await axiosInstance.get("/dashboard/revenue");
+};
 
-export const getCustomerDashboard = () =>
-  axiosInstance.get("/dashboard/customer");
+// ======================================
+// Sales Analytics
+// GET /api/dashboard/sales
+// ======================================
+export const getSalesAnalytics = async () => {
+  return await axiosInstance.get("/dashboard/sales");
+};
 
-export const getMonthlySales = () =>
-  axiosInstance.get("/dashboard/monthly-sales");
+// ======================================
+// Order Analytics
+// GET /api/dashboard/orders
+// ======================================
+export const getOrderAnalytics = async () => {
+  return await axiosInstance.get("/dashboard/orders");
+};
 
-export const getTopProducts = () =>
-  axiosInstance.get("/dashboard/top-products");
+// ======================================
+// Product Analytics
+// GET /api/dashboard/products
+// ======================================
+export const getProductAnalytics = async () => {
+  return await axiosInstance.get("/dashboard/products");
+};
 
-export const getRecentOrders = () =>
-  axiosInstance.get("/dashboard/recent-orders");
+// ======================================
+// User Analytics
+// GET /api/dashboard/users
+// ======================================
+export const getUserAnalytics = async () => {
+  return await axiosInstance.get("/dashboard/users");
+};
 
-export const getRevenue = () =>
-  axiosInstance.get("/dashboard/revenue");
+// ======================================
+// Recent Orders
+// GET /api/dashboard/recent-orders
+// ======================================
+export const getRecentOrders = async () => {
+  return await axiosInstance.get("/dashboard/recent-orders");
+};

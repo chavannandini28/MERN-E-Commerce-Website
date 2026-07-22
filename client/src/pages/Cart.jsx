@@ -1,40 +1,105 @@
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { FaTrash, FaMinus, FaPlus, FaShoppingBag } from "react-icons/fa";
-import { useSelector } from "react-redux";
+import {
+  fetchCart,
+  updateQuantity,
+  removeCartItem,
+  clearUserCart,
+} from "../redux/cartSlice";
+
+import {
+  FaTrash,
+  FaMinus,
+  FaPlus,
+  FaShoppingCart,
+} from "react-icons/fa";
 
 const Cart = () => {
-  const cartItems =
-    useSelector((state) => state.cart?.cartItems) || [];
+  const dispatch = useDispatch();
 
-  const total = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
-  );
+  const {
+    cart,
+    loading,
+  } = useSelector((state) => state.cart);
+
+  useEffect(() => {
+    dispatch(fetchCart());
+  }, [dispatch]);
+
+  const increaseQty = (item) => {
+    dispatch(
+      updateQuantity({
+        id: item._id,
+        quantity: item.quantity + 1,
+      })
+    );
+  };
+
+  const decreaseQty = (item) => {
+    if (item.quantity <= 1) return;
+
+    dispatch(
+      updateQuantity({
+        id: item._id,
+        quantity: item.quantity - 1,
+      })
+    );
+  };
+
+  const removeItem = (id) => {
+    dispatch(removeCartItem(id));
+  };
+
+  const clearCart = () => {
+    dispatch(clearUserCart());
+  };
+
+  const total =
+    cart?.reduce(
+      (sum, item) =>
+        sum +
+        item.product.price * item.quantity,
+      0
+    ) || 0;
+
+  if (loading) {
+    return (
+      <div className="container py-5 text-center">
+        <h4>Loading Cart...</h4>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-5">
 
-      <h2 className="fw-bold mb-4">
-        Shopping Cart
-      </h2>
+      <div className="d-flex justify-content-between align-items-center mb-4">
 
-      {cartItems.length === 0 ? (
-        <div className="text-center py-5">
+        <h2>
+          <FaShoppingCart className="me-2" />
+          Shopping Cart
+        </h2>
 
-          <FaShoppingBag
-            size={80}
-            className="text-secondary mb-4"
-          />
+        {cart.length > 0 && (
+          <button
+            className="btn btn-danger"
+            onClick={clearCart}
+          >
+            Clear Cart
+          </button>
+        )}
+
+      </div>
+
+      {cart.length === 0 ? (
+        <div className="text-center">
 
           <h3>Your Cart is Empty</h3>
 
-          <p className="text-muted">
-            Looks like you haven't added any products.
-          </p>
-
           <Link
             to="/shop"
-            className="btn btn-primary px-4"
+            className="btn btn-primary mt-3"
           >
             Continue Shopping
           </Link>
@@ -43,14 +108,12 @@ const Cart = () => {
       ) : (
         <div className="row">
 
-          {/* Cart Items */}
-
           <div className="col-lg-8">
 
-            {cartItems.map((item) => (
+            {cart.map((item) => (
               <div
+                className="card shadow-sm mb-3"
                 key={item._id}
-                className="card mb-4 border-0 shadow-sm rounded-4"
               >
                 <div className="card-body">
 
@@ -60,10 +123,10 @@ const Cart = () => {
 
                       <img
                         src={
-                          item.images?.[0]?.url ||
-                          item.image
+                          item.product.images?.[0]
+                            ?.url
                         }
-                        alt={item.name}
+                        alt={item.product.name}
                         className="img-fluid rounded"
                       />
 
@@ -71,50 +134,61 @@ const Cart = () => {
 
                     <div className="col-md-4">
 
-                      <h5>{item.name}</h5>
-
-                      <small className="text-muted">
-                        ₹{item.price}
-                      </small>
-
-                    </div>
-
-                    <div className="col-md-3">
-
-                      <div className="d-flex align-items-center">
-
-                        <button className="btn btn-outline-secondary">
-                          <FaMinus />
-                        </button>
-
-                        <span className="mx-3 fw-bold">
-                          {item.quantity}
-                        </span>
-
-                        <button className="btn btn-outline-secondary">
-                          <FaPlus />
-                        </button>
-
-                      </div>
-
-                    </div>
-
-                    <div className="col-md-2 text-end">
-
-                      <h5 className="text-success">
-                        ₹
-                        {item.price *
-                          item.quantity}
+                      <h5>
+                        {item.product.name}
                       </h5>
 
+                      <p className="text-muted">
+                        ₹{item.product.price}
+                      </p>
+
                     </div>
 
-                    <div className="col-md-1 text-end">
+                    <div className="col-md-3 d-flex align-items-center">
 
-                      <button className="btn btn-outline-danger">
+                      <button
+                        className="btn btn-outline-secondary"
+                        onClick={() =>
+                          decreaseQty(item)
+                        }
+                      >
+                        <FaMinus />
+                      </button>
 
+                      <span className="mx-3">
+                        {item.quantity}
+                      </span>
+
+                      <button
+                        className="btn btn-outline-secondary"
+                        onClick={() =>
+                          increaseQty(item)
+                        }
+                      >
+                        <FaPlus />
+                      </button>
+
+                    </div>
+
+                    <div className="col-md-2">
+
+                      <strong>
+                        ₹
+                        {item.product.price *
+                          item.quantity}
+                      </strong>
+
+                    </div>
+
+                    <div className="col-md-1">
+
+                      <button
+                        className="btn btn-outline-danger"
+                        onClick={() =>
+                          removeItem(item._id)
+                        }
+                      >
                         <FaTrash />
-
                       </button>
 
                     </div>
@@ -128,55 +202,29 @@ const Cart = () => {
 
           </div>
 
-          {/* Order Summary */}
-
           <div className="col-lg-4">
 
-            <div className="card shadow border-0 rounded-4">
+            <div className="card shadow">
 
               <div className="card-body">
 
-                <h4 className="fw-bold mb-4">
-                  Order Summary
-                </h4>
-
-                <div className="d-flex justify-content-between mb-3">
-
-                  <span>
-                    Products
-                  </span>
-
-                  <span>
-                    {cartItems.length}
-                  </span>
-
-                </div>
-
-                <div className="d-flex justify-content-between mb-3">
-
-                  <span>Shipping</span>
-
-                  <span className="text-success">
-                    FREE
-                  </span>
-
-                </div>
+                <h4>Order Summary</h4>
 
                 <hr />
 
                 <div className="d-flex justify-content-between">
 
-                  <h5>Total</h5>
+                  <span>Total</span>
 
-                  <h4 className="text-primary">
+                  <strong>
                     ₹{total}
-                  </h4>
+                  </strong>
 
                 </div>
 
                 <Link
                   to="/checkout"
-                  className="btn btn-primary w-100 mt-4"
+                  className="btn btn-success w-100 mt-4"
                 >
                   Proceed To Checkout
                 </Link>
@@ -189,6 +237,7 @@ const Cart = () => {
 
         </div>
       )}
+
     </div>
   );
 };

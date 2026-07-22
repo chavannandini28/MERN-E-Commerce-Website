@@ -1,273 +1,214 @@
+import { useEffect, useState } from "react";
 import {
   FaUsers,
   FaBoxOpen,
   FaShoppingCart,
   FaRupeeSign,
-  FaArrowUp,
+  FaStar,
 } from "react-icons/fa";
+import { getDashboardStats } from "../api/dashboardApi";
 
 const AdminDashboard = () => {
+  const [stats, setStats] = useState({
+    users: 0,
+    products: 0,
+    orders: 0,
+    revenue: 0,
+    reviews: 0,
+    recentOrders: [],
+  });
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadDashboard();
+  }, []);
+
+  const loadDashboard = async () => {
+    try {
+      const { data } = await getDashboardStats();
+
+      setStats({
+        users: data.users || 0,
+        products: data.products || 0,
+        orders: data.orders || 0,
+        revenue: data.revenue || 0,
+        reviews: data.reviews || 0,
+        recentOrders: data.recentOrders || [],
+      });
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cards = [
+    {
+      title: "Users",
+      value: stats.users,
+      color: "primary",
+      icon: <FaUsers size={28} />,
+    },
+    {
+      title: "Products",
+      value: stats.products,
+      color: "success",
+      icon: <FaBoxOpen size={28} />,
+    },
+    {
+      title: "Orders",
+      value: stats.orders,
+      color: "warning",
+      icon: <FaShoppingCart size={28} />,
+    },
+    {
+      title: "Revenue",
+      value: `₹${stats.revenue}`,
+      color: "danger",
+      icon: <FaRupeeSign size={28} />,
+    },
+    {
+      title: "Reviews",
+      value: stats.reviews,
+      color: "info",
+      icon: <FaStar size={28} />,
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div className="text-center py-5">
+        <h3>Loading Dashboard...</h3>
+      </div>
+    );
+  }
+
   return (
     <div className="container-fluid">
 
-      {/* Heading */}
+      <h2 className="fw-bold mb-4">
+        Admin Dashboard
+      </h2>
 
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="row g-4 mb-5">
 
-        <div>
-          <h2 className="fw-bold">
-            Dashboard
-          </h2>
+        {cards.map((card) => (
 
-          <p className="text-muted mb-0">
-            Welcome back, Admin 👋
-          </p>
-        </div>
+          <div
+            className="col-lg col-md-4 col-sm-6"
+            key={card.title}
+          >
 
-        <button className="btn btn-primary">
-          Generate Report
-        </button>
+            <div
+              className={`card border-0 shadow bg-${card.color} text-white`}
+            >
+              <div className="card-body">
+
+                <div className="d-flex justify-content-between">
+
+                  <div>
+                    <h6>{card.title}</h6>
+
+                    <h3>{card.value}</h3>
+                  </div>
+
+                  {card.icon}
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        ))}
 
       </div>
 
-      {/* Statistics */}
+      <div className="card shadow border-0">
 
-      <div className="row g-4">
+        <div className="card-body">
 
-        <div className="col-lg-3 col-md-6">
-
-          <div className="card border-0 shadow h-100">
-
-            <div className="card-body d-flex justify-content-between align-items-center">
-
-              <div>
-
-                <small className="text-muted">
-                  Total Users
-                </small>
-
-                <h2 className="fw-bold">
-                  1,250
-                </h2>
-
-                <span className="text-success">
-                  <FaArrowUp /> 12%
-                </span>
-
-              </div>
-
-              <div
-                className="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center"
-                style={{
-                  width: "70px",
-                  height: "70px",
-                }}
-              >
-                <FaUsers size={30} />
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        <div className="col-lg-3 col-md-6">
-
-          <div className="card border-0 shadow h-100">
-
-            <div className="card-body d-flex justify-content-between align-items-center">
-
-              <div>
-
-                <small className="text-muted">
-                  Products
-                </small>
-
-                <h2 className="fw-bold">
-                  520
-                </h2>
-
-                <span className="text-success">
-                  <FaArrowUp /> 8%
-                </span>
-
-              </div>
-
-              <div
-                className="rounded-circle bg-success text-white d-flex justify-content-center align-items-center"
-                style={{
-                  width: "70px",
-                  height: "70px",
-                }}
-              >
-                <FaBoxOpen size={30} />
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        <div className="col-lg-3 col-md-6">
-
-          <div className="card border-0 shadow h-100">
-
-            <div className="card-body d-flex justify-content-between align-items-center">
-
-              <div>
-
-                <small className="text-muted">
-                  Orders
-                </small>
-
-                <h2 className="fw-bold">
-                  385
-                </h2>
-
-                <span className="text-success">
-                  <FaArrowUp /> 15%
-                </span>
-
-              </div>
-
-              <div
-                className="rounded-circle bg-warning text-white d-flex justify-content-center align-items-center"
-                style={{
-                  width: "70px",
-                  height: "70px",
-                }}
-              >
-                <FaShoppingCart size={30} />
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        <div className="col-lg-3 col-md-6">
-
-          <div className="card border-0 shadow h-100">
-
-            <div className="card-body d-flex justify-content-between align-items-center">
-
-              <div>
-
-                <small className="text-muted">
-                  Revenue
-                </small>
-
-                <h2 className="fw-bold">
-                  ₹2.5L
-                </h2>
-
-                <span className="text-success">
-                  <FaArrowUp /> 20%
-                </span>
-
-              </div>
-
-              <div
-                className="rounded-circle bg-danger text-white d-flex justify-content-center align-items-center"
-                style={{
-                  width: "70px",
-                  height: "70px",
-                }}
-              >
-                <FaRupeeSign size={30} />
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* Recent Orders */}
-
-      <div className="card border-0 shadow mt-5">
-
-        <div className="card-header bg-white">
-          <h4 className="fw-bold mb-0">
+          <h4 className="mb-4">
             Recent Orders
           </h4>
-        </div>
 
-        <div className="table-responsive">
+          <div className="table-responsive">
 
-          <table className="table align-middle mb-0">
+            <table className="table table-hover">
 
-            <thead>
+              <thead>
 
-              <tr>
+                <tr>
 
-                <th>Order ID</th>
-                <th>Customer</th>
-                <th>Amount</th>
-                <th>Status</th>
+                  <th>Order ID</th>
 
-              </tr>
+                  <th>Customer</th>
 
-            </thead>
+                  <th>Total</th>
 
-            <tbody>
+                  <th>Status</th>
 
-              <tr>
+                </tr>
 
-                <td>#1001</td>
+              </thead>
 
-                <td>Rahul Sharma</td>
+              <tbody>
 
-                <td>₹24,999</td>
+                {stats.recentOrders.length > 0 ? (
+                  stats.recentOrders.map((order) => (
 
-                <td>
-                  <span className="badge bg-success">
-                    Delivered
-                  </span>
-                </td>
+                    <tr key={order._id}>
 
-              </tr>
+                      <td>
+                        {order._id.slice(-6)}
+                      </td>
 
-              <tr>
+                      <td>
+                        {order.user?.name}
+                      </td>
 
-                <td>#1002</td>
+                      <td>
+                        ₹{order.totalPrice}
+                      </td>
 
-                <td>Priya Patil</td>
+                      <td>
 
-                <td>₹12,500</td>
+                        <span
+                          className={`badge ${
+                            order.orderStatus === "Delivered"
+                              ? "bg-success"
+                              : "bg-warning text-dark"
+                          }`}
+                        >
+                          {order.orderStatus}
+                        </span>
 
-                <td>
-                  <span className="badge bg-warning text-dark">
-                    Pending
-                  </span>
-                </td>
+                      </td>
 
-              </tr>
+                    </tr>
 
-              <tr>
+                  ))
+                ) : (
+                  <tr>
 
-                <td>#1003</td>
+                    <td
+                      colSpan="4"
+                      className="text-center"
+                    >
+                      No Recent Orders
+                    </td>
 
-                <td>Amit Kumar</td>
+                  </tr>
+                )}
 
-                <td>₹9,999</td>
+              </tbody>
 
-                <td>
-                  <span className="badge bg-primary">
-                    Shipped
-                  </span>
-                </td>
+            </table>
 
-              </tr>
-
-            </tbody>
-
-          </table>
+          </div>
 
         </div>
 

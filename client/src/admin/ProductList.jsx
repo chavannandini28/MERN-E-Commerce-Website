@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  FaPlus,
   FaEdit,
   FaTrash,
-  FaPlus,
   FaSearch,
-  FaBoxOpen,
 } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 import {
   getProducts,
@@ -25,8 +25,6 @@ const ProductList = () => {
 
   const loadProducts = async () => {
     try {
-      setLoading(true);
-
       const { data } = await getProducts();
 
       const list = data.products || data || [];
@@ -34,7 +32,7 @@ const ProductList = () => {
       setProducts(list);
       setFilteredProducts(list);
     } catch (error) {
-      console.log(error);
+      toast.error("Failed to load products");
     } finally {
       setLoading(false);
     }
@@ -45,8 +43,10 @@ const ProductList = () => {
 
     setKeyword(value);
 
-    const result = products.filter((item) =>
-      item.name.toLowerCase().includes(value.toLowerCase())
+    const result = products.filter((product) =>
+      product.name
+        ?.toLowerCase()
+        .includes(value.toLowerCase())
     );
 
     setFilteredProducts(result);
@@ -58,16 +58,18 @@ const ProductList = () => {
     try {
       await deleteProduct(id);
 
+      toast.success("Product deleted");
+
       loadProducts();
-    } catch (error) {
-      console.log(error);
+    } catch {
+      toast.error("Delete failed");
     }
   };
 
   if (loading) {
     return (
       <div className="text-center py-5">
-        <h4>Loading...</h4>
+        <h3>Loading Products...</h3>
       </div>
     );
   }
@@ -77,21 +79,10 @@ const ProductList = () => {
 
       <div className="d-flex justify-content-between align-items-center mb-4">
 
-        <div>
-
-          <h2 className="fw-bold">
-            <FaBoxOpen className="me-2 text-primary" />
-            Product Management
-          </h2>
-
-          <p className="text-muted">
-            Manage all products
-          </p>
-
-        </div>
+        <h2>Products</h2>
 
         <Link
-          to="/admin/add-product"
+          to="/admin/products/add"
           className="btn btn-primary"
         >
           <FaPlus className="me-2" />
@@ -100,147 +91,114 @@ const ProductList = () => {
 
       </div>
 
-      <div className="card border-0 shadow">
+      <div className="input-group mb-4">
 
-        <div className="card-body">
+        <span className="input-group-text">
+          <FaSearch />
+        </span>
 
-          <div className="row mb-4">
+        <input
+          className="form-control"
+          placeholder="Search Product..."
+          value={keyword}
+          onChange={searchHandler}
+        />
 
-            <div className="col-md-5">
+      </div>
 
-              <div className="input-group">
+      <div className="card shadow">
 
-                <span className="input-group-text">
-                  <FaSearch />
-                </span>
+        <div className="table-responsive">
 
-                <input
-                  className="form-control"
-                  placeholder="Search Product..."
-                  value={keyword}
-                  onChange={searchHandler}
-                />
+          <table className="table table-hover align-middle">
 
-              </div>
+            <thead className="table-dark">
 
-            </div>
+              <tr>
 
-          </div>
+                <th>Image</th>
 
-          <div className="table-responsive">
+                <th>Name</th>
 
-            <table className="table table-hover align-middle">
+                <th>Price</th>
 
-              <thead className="table-dark">
+                <th>Stock</th>
 
-                <tr>
+                <th>Category</th>
 
-                  <th>Image</th>
-                  <th>Name</th>
-                  <th>Brand</th>
-                  <th>Category</th>
-                  <th>Price</th>
-                  <th>Stock</th>
-                  <th width="170">Action</th>
+                <th>Brand</th>
+
+                <th>Actions</th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              {filteredProducts.map((product) => (
+
+                <tr key={product._id}>
+
+                  <td>
+
+                    <img
+                      src={
+                        product.thumbnail?.url ||
+                        product.images?.[0]?.url
+                      }
+                      alt={product.name}
+                      width="60"
+                      height="60"
+                      style={{
+                        objectFit: "cover",
+                        borderRadius: "8px",
+                      }}
+                    />
+
+                  </td>
+
+                  <td>{product.name}</td>
+
+                  <td>₹{product.price}</td>
+
+                  <td>{product.stock}</td>
+
+                  <td>
+                    {product.category?.name}
+                  </td>
+
+                  <td>
+                    {product.brand?.name}
+                  </td>
+
+                  <td>
+
+                    <Link
+                      to={`/admin/products/edit/${product._id}`}
+                      className="btn btn-warning btn-sm me-2"
+                    >
+                      <FaEdit />
+                    </Link>
+
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() =>
+                        deleteHandler(product._id)
+                      }
+                    >
+                      <FaTrash />
+                    </button>
+
+                  </td>
 
                 </tr>
 
-              </thead>
+              ))}
 
-              <tbody>
+            </tbody>
 
-                {filteredProducts.length > 0 ? (
-                  filteredProducts.map((product) => (
-                    <tr key={product._id}>
-
-                      <td>
-
-                        <img
-                          src={
-                            product.images?.[0]?.url ||
-                            "https://via.placeholder.com/70"
-                          }
-                          alt={product.name}
-                          width="70"
-                          height="70"
-                          style={{
-                            objectFit: "cover",
-                            borderRadius: "10px",
-                          }}
-                        />
-
-                      </td>
-
-                      <td className="fw-semibold">
-                        {product.name}
-                      </td>
-
-                      <td>
-                        {product.brand?.name || "-"}
-                      </td>
-
-                      <td>
-                        {product.category?.name || "-"}
-                      </td>
-
-                      <td className="fw-bold text-success">
-                        ₹{product.price}
-                      </td>
-
-                      <td>
-
-                        <span
-                          className={`badge ${
-                            product.stock > 0
-                              ? "bg-success"
-                              : "bg-danger"
-                          }`}
-                        >
-                          {product.stock}
-                        </span>
-
-                      </td>
-
-                      <td>
-
-                        <Link
-                          to={`/admin/edit-product/${product._id}`}
-                          className="btn btn-warning btn-sm me-2"
-                        >
-                          <FaEdit />
-                        </Link>
-
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() =>
-                            deleteHandler(product._id)
-                          }
-                        >
-                          <FaTrash />
-                        </button>
-
-                      </td>
-
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-
-                    <td
-                      colSpan="7"
-                      className="text-center py-5"
-                    >
-                      No Products Found
-                    </td>
-
-                  </tr>
-                )}
-
-              </tbody>
-
-            </table>
-
-          </div>
+          </table>
 
         </div>
 

@@ -1,186 +1,135 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchMyOrders } from "../redux/orderSlice";
+
 import {
-  FaBoxOpen,
-  FaTruck,
-  FaCheckCircle,
+  FaBox,
   FaEye,
+  FaCalendarAlt,
+  FaMoneyBillWave,
+  FaTruck,
 } from "react-icons/fa";
 
 const MyOrders = () => {
-  // Replace this with your API/Redux data later
-  const orders = [
-    {
-      _id: "ORD1001",
-      date: "20 July 2026",
-      total: 2499,
-      payment: "Paid",
-      status: "Delivered",
-    },
-    {
-      _id: "ORD1002",
-      date: "18 July 2026",
-      total: 1599,
-      payment: "Paid",
-      status: "Shipped",
-    },
-    {
-      _id: "ORD1003",
-      date: "15 July 2026",
-      total: 799,
-      payment: "Pending",
-      status: "Processing",
-    },
-  ];
+  const dispatch = useDispatch();
+
+  const {
+    orders,
+    loading,
+  } = useSelector((state) => state.orders);
+
+  useEffect(() => {
+    dispatch(fetchMyOrders());
+  }, [dispatch]);
+
+  if (loading) {
+    return (
+      <div className="container py-5 text-center">
+        <h4>Loading Orders...</h4>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-5">
 
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex align-items-center mb-4">
 
-        <h2 className="fw-bold">
-          📦 My Orders
+        <FaBox
+          className="text-primary me-2"
+          size={28}
+        />
+
+        <h2 className="mb-0">
+          My Orders
         </h2>
-
-        <span className="badge bg-primary fs-6">
-          {orders.length} Orders
-        </span>
 
       </div>
 
       {orders.length === 0 ? (
         <div className="text-center py-5">
 
-          <FaBoxOpen
-            size={80}
-            className="text-secondary mb-3"
-          />
-
           <h3>No Orders Found</h3>
-
-          <p className="text-muted">
-            Start shopping to place your first order.
-          </p>
 
           <Link
             to="/shop"
-            className="btn btn-primary"
+            className="btn btn-primary mt-3"
           >
-            Shop Now
+            Start Shopping
           </Link>
 
         </div>
       ) : (
-        orders.map((order) => (
-          <div
-            key={order._id}
-            className="card border-0 shadow rounded-4 mb-4"
-          >
-            <div className="card-body">
+        <div className="row">
 
-              <div className="row align-items-center">
+          {orders.map((order) => (
 
-                <div className="col-lg-2 text-center">
+            <div
+              key={order._id}
+              className="col-lg-6 mb-4"
+            >
 
-                  <FaBoxOpen
-                    size={55}
-                    className="text-primary"
-                  />
+              <div className="card shadow border-0 h-100">
 
-                </div>
+                <div className="card-body">
 
-                <div className="col-lg-3">
+                  <div className="d-flex justify-content-between">
 
-                  <h5 className="fw-bold">
-                    #{order._id}
-                  </h5>
+                    <h5>
+                      Order #{order._id.slice(-6)}
+                    </h5>
 
-                  <small className="text-muted">
-                    {order.date}
-                  </small>
+                    <span
+                      className={`badge ${
+                        order.orderStatus === "Delivered"
+                          ? "bg-success"
+                          : order.orderStatus === "Cancelled"
+                          ? "bg-danger"
+                          : "bg-warning text-dark"
+                      }`}
+                    >
+                      {order.orderStatus}
+                    </span>
 
-                </div>
+                  </div>
 
-                <div className="col-lg-2">
+                  <hr />
 
-                  <h5 className="text-success">
-                    ₹{order.total}
-                  </h5>
+                  <p>
+                    <FaCalendarAlt className="me-2" />
+                    {new Date(
+                      order.createdAt
+                    ).toLocaleDateString()}
+                  </p>
 
-                </div>
+                  <p>
+                    <FaMoneyBillWave className="me-2 text-success" />
+                    ₹{order.totalPrice}
+                  </p>
 
-                <div className="col-lg-2">
-
-                  <span
-                    className={`badge ${
-                      order.payment === "Paid"
-                        ? "bg-success"
-                        : "bg-warning text-dark"
-                    }`}
-                  >
-                    {order.payment}
-                  </span>
-
-                </div>
-
-                <div className="col-lg-2">
-
-                  <span
-                    className={`badge ${
-                      order.status === "Delivered"
-                        ? "bg-success"
-                        : order.status === "Shipped"
-                        ? "bg-info"
-                        : "bg-secondary"
-                    }`}
-                  >
-                    {order.status}
-                  </span>
-
-                </div>
-
-                <div className="col-lg-1 text-end">
+                  <p>
+                    <FaTruck className="me-2 text-primary" />
+                    {order.orderItems?.length} Item(s)
+                  </p>
 
                   <Link
-                    to={`/orders/${order._id}`}
-                    className="btn btn-outline-primary"
+                    to={`/order/${order._id}`}
+                    className="btn btn-primary w-100"
                   >
-                    <FaEye />
+                    <FaEye className="me-2" />
+                    View Details
                   </Link>
 
                 </div>
 
               </div>
 
-              <hr />
-
-              <div className="d-flex justify-content-between align-items-center">
-
-                <div>
-
-                  <FaTruck className="text-primary me-2" />
-
-                  <span className="text-muted">
-                    Estimated Delivery: 3-5 Days
-                  </span>
-
-                </div>
-
-                {order.status === "Delivered" && (
-                  <div>
-
-                    <FaCheckCircle className="text-success me-2" />
-
-                    Delivered Successfully
-
-                  </div>
-                )}
-
-              </div>
-
             </div>
 
-          </div>
-        ))
+          ))}
+
+        </div>
       )}
 
     </div>

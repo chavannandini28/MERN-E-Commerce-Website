@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  FaSearch,
   FaPlus,
   FaEdit,
   FaTrash,
-  FaTags,
+  FaSearch,
 } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 import {
   getBrands,
@@ -25,16 +25,14 @@ const BrandList = () => {
 
   const loadBrands = async () => {
     try {
-      setLoading(true);
-
       const { data } = await getBrands();
 
       const list = data.brands || data || [];
 
       setBrands(list);
       setFilteredBrands(list);
-    } catch (err) {
-      console.log(err);
+    } catch {
+      toast.error("Unable to load brands");
     } finally {
       setLoading(false);
     }
@@ -47,7 +45,9 @@ const BrandList = () => {
 
     setFilteredBrands(
       brands.filter((brand) =>
-        brand.name.toLowerCase().includes(value.toLowerCase())
+        brand.name
+          ?.toLowerCase()
+          .includes(value.toLowerCase())
       )
     );
   };
@@ -57,16 +57,19 @@ const BrandList = () => {
 
     try {
       await deleteBrand(id);
+
+      toast.success("Brand deleted");
+
       loadBrands();
-    } catch (err) {
-      console.log(err);
+    } catch {
+      toast.error("Delete failed");
     }
   };
 
   if (loading) {
     return (
       <div className="text-center py-5">
-        <h4>Loading Brands...</h4>
+        <h3>Loading Brands...</h3>
       </div>
     );
   }
@@ -76,21 +79,10 @@ const BrandList = () => {
 
       <div className="d-flex justify-content-between align-items-center mb-4">
 
-        <div>
-
-          <h2 className="fw-bold">
-            <FaTags className="me-2 text-primary" />
-            Brand Management
-          </h2>
-
-          <p className="text-muted">
-            Manage all brands
-          </p>
-
-        </div>
+        <h2>Brands</h2>
 
         <Link
-          to="/admin/add-brand"
+          to="/admin/brands/add"
           className="btn btn-primary"
         >
           <FaPlus className="me-2" />
@@ -99,111 +91,93 @@ const BrandList = () => {
 
       </div>
 
-      <div className="card border-0 shadow">
+      <div className="input-group mb-4">
 
-        <div className="card-body">
+        <span className="input-group-text">
+          <FaSearch />
+        </span>
 
-          <div className="row mb-4">
+        <input
+          className="form-control"
+          placeholder="Search Brand..."
+          value={keyword}
+          onChange={searchHandler}
+        />
 
-            <div className="col-md-5">
+      </div>
 
-              <div className="input-group">
+      <div className="card shadow">
 
-                <span className="input-group-text">
-                  <FaSearch />
-                </span>
+        <div className="table-responsive">
 
-                <input
-                  className="form-control"
-                  placeholder="Search Brand..."
-                  value={keyword}
-                  onChange={searchHandler}
-                />
+          <table className="table table-hover align-middle">
 
-              </div>
+            <thead className="table-dark">
 
-            </div>
+              <tr>
+                <th>Logo</th>
+                <th>Name</th>
+                <th>Slug</th>
+                <th>Actions</th>
+              </tr>
 
-          </div>
+            </thead>
 
-          <div className="table-responsive">
+            <tbody>
 
-            <table className="table table-hover align-middle">
+              {filteredBrands.map((brand) => (
 
-              <thead className="table-dark">
+                <tr key={brand._id}>
 
-                <tr>
+                  <td>
 
-                  <th>#</th>
-                  <th>Brand Name</th>
-                  <th>Slug</th>
-                  <th width="170">
-                    Action
-                  </th>
+                    <img
+                      src={
+                        brand.logo?.url ||
+                        "https://via.placeholder.com/60"
+                      }
+                      alt={brand.name}
+                      width="60"
+                      height="60"
+                      style={{
+                        borderRadius: 8,
+                        objectFit: "cover",
+                      }}
+                    />
+
+                  </td>
+
+                  <td>{brand.name}</td>
+
+                  <td>{brand.slug}</td>
+
+                  <td>
+
+                    <Link
+                      to={`/admin/brands/edit/${brand._id}`}
+                      className="btn btn-warning btn-sm me-2"
+                    >
+                      <FaEdit />
+                    </Link>
+
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() =>
+                        deleteHandler(brand._id)
+                      }
+                    >
+                      <FaTrash />
+                    </button>
+
+                  </td>
 
                 </tr>
 
-              </thead>
+              ))}
 
-              <tbody>
+            </tbody>
 
-                {filteredBrands.length > 0 ? (
-
-                  filteredBrands.map((brand, index) => (
-
-                    <tr key={brand._id}>
-
-                      <td>{index + 1}</td>
-
-                      <td className="fw-semibold">
-                        {brand.name}
-                      </td>
-
-                      <td>
-                        {brand.slug}
-                      </td>
-
-                      <td>
-
-                        <button className="btn btn-warning btn-sm me-2">
-
-                          <FaEdit />
-
-                        </button>
-
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => deleteHandler(brand._id)}
-                        >
-                          <FaTrash />
-                        </button>
-
-                      </td>
-
-                    </tr>
-
-                  ))
-
-                ) : (
-
-                  <tr>
-
-                    <td
-                      colSpan="4"
-                      className="text-center py-5"
-                    >
-                      No Brands Found
-                    </td>
-
-                  </tr>
-
-                )}
-
-              </tbody>
-
-            </table>
-
-          </div>
+          </table>
 
         </div>
 

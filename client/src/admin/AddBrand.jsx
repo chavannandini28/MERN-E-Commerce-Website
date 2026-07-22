@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  FaCloudUploadAlt,
   FaArrowLeft,
-  FaTags,
-  FaSave,
 } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 import { createBrand } from "../api/brandApi";
 
@@ -13,21 +13,31 @@ const AddBrand = () => {
 
   const [loading, setLoading] = useState(false);
 
+  const [preview, setPreview] = useState("");
+
   const [formData, setFormData] = useState({
     name: "",
-    slug: "",
+    logo: null,
   });
 
   const changeHandler = (e) => {
-    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const logoHandler = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
 
     setFormData({
       ...formData,
-      [name]:
-        name === "slug"
-          ? value.toLowerCase().replace(/\s+/g, "-")
-          : value,
+      logo: file,
     });
+
+    setPreview(URL.createObjectURL(file));
   };
 
   const submitHandler = async (e) => {
@@ -36,33 +46,35 @@ const AddBrand = () => {
     try {
       setLoading(true);
 
-      await createBrand(formData);
+      const data = new FormData();
+
+      data.append("name", formData.name);
+
+      if (formData.logo) {
+        data.append("logo", formData.logo);
+      }
+
+      await createBrand(data);
+
+      toast.success("Brand Created Successfully");
 
       navigate("/admin/brands");
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          "Unable to create brand"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container-fluid">
+    <div className="container-fluid py-4">
 
       <div className="d-flex justify-content-between align-items-center mb-4">
 
-        <div>
-
-          <h2 className="fw-bold">
-            <FaTags className="me-2 text-primary" />
-            Add Brand
-          </h2>
-
-          <p className="text-muted">
-            Create a new product brand
-          </p>
-
-        </div>
+        <h2>Add Brand</h2>
 
         <button
           className="btn btn-outline-secondary"
@@ -74,19 +86,19 @@ const AddBrand = () => {
 
       </div>
 
-      <div className="row justify-content-center">
+      <div className="card shadow border-0">
 
-        <div className="col-lg-8">
+        <div className="card-body">
 
-          <div className="card border-0 shadow">
+          <form onSubmit={submitHandler}>
 
-            <div className="card-body p-5">
+            <div className="row">
 
-              <form onSubmit={submitHandler}>
+              <div className="col-lg-8">
 
                 <div className="mb-4">
 
-                  <label className="form-label fw-semibold">
+                  <label className="form-label">
                     Brand Name
                   </label>
 
@@ -94,7 +106,6 @@ const AddBrand = () => {
                     type="text"
                     className="form-control"
                     name="name"
-                    placeholder="Enter brand name"
                     value={formData.name}
                     onChange={changeHandler}
                     required
@@ -102,58 +113,72 @@ const AddBrand = () => {
 
                 </div>
 
-                <div className="mb-4">
+              </div>
 
-                  <label className="form-label fw-semibold">
-                    Slug
-                  </label>
+              <div className="col-lg-4">
 
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="slug"
-                    placeholder="brand-slug"
-                    value={formData.slug}
-                    onChange={changeHandler}
-                    required
-                  />
+                <div className="card">
 
-                  <small className="text-muted">
-                    Example: apple, samsung, sony
-                  </small>
+                  <div className="card-body text-center">
+
+                    <label style={{ cursor: "pointer" }}>
+
+                      {preview ? (
+
+                        <img
+                          src={preview}
+                          alt="Preview"
+                          className="img-fluid rounded"
+                          style={{
+                            height: 220,
+                            objectFit: "cover",
+                          }}
+                        />
+
+                      ) : (
+
+                        <div className="py-5">
+
+                          <FaCloudUploadAlt
+                            size={60}
+                            className="text-primary"
+                          />
+
+                          <h5 className="mt-3">
+                            Upload Brand Logo
+                          </h5>
+
+                        </div>
+
+                      )}
+
+                      <input
+                        hidden
+                        type="file"
+                        accept="image/*"
+                        onChange={logoHandler}
+                      />
+
+                    </label>
+
+                  </div>
 
                 </div>
 
-                <div className="d-flex gap-3">
-
-                  <button
-                    type="submit"
-                    className="btn btn-primary px-5"
-                    disabled={loading}
-                  >
-                    <FaSave className="me-2" />
-
-                    {loading
-                      ? "Saving..."
-                      : "Save Brand"}
-
-                  </button>
-
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary"
-                    onClick={() => navigate("/admin/brands")}
-                  >
-                    Cancel
-                  </button>
-
-                </div>
-
-              </form>
+              </div>
 
             </div>
 
-          </div>
+            <button
+              className="btn btn-primary mt-4 px-5"
+              disabled={loading}
+            >
+              {loading
+                ? "Creating..."
+                : "Create Brand"}
+            </button>
+
+          </form>
 
         </div>
 
