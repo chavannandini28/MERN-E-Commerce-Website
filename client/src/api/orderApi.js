@@ -43,7 +43,15 @@ export const cancelOrder = (id) =>
   axiosInstance.patch(`/orders/cancel/${id}`);
 
 // ===================================
+// Delete Order
+// DELETE /orders/:id
+// ===================================
+export const deleteOrder = (id) =>
+  axiosInstance.delete(`/orders/${id}`);
+
+// ===================================
 // Razorpay Create
+// POST /orders/payment/create-order
 // ===================================
 export const createRazorpayOrder = (data) =>
   axiosInstance.post(
@@ -53,6 +61,7 @@ export const createRazorpayOrder = (data) =>
 
 // ===================================
 // Razorpay Verify
+// POST /orders/payment/verify
 // ===================================
 export const verifyPayment = (data) =>
   axiosInstance.post(

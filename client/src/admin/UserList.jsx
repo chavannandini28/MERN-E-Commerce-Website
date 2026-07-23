@@ -1,239 +1,293 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import {
   FaTrash,
-  FaBan,
-  FaCheckCircle,
-  FaSearch,
+  FaUserShield,
 } from "react-icons/fa";
-import { toast } from "react-toastify";
 
 import {
-  getUsers,
+  getAllUsers,
   deleteUser,
-  blockUser,
-  unblockUser,
+  updateUserRole,
 } from "../api/userApi";
 
+
 const UserList = () => {
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [keyword, setKeyword] = useState("");
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
 
-  const loadUsers = async () => {
-    try {
-      const { data } = await getUsers();
+  const [users,setUsers] = useState([]);
+  const [loading,setLoading] = useState(true);
 
-      const list = data.users || data || [];
 
-      setUsers(list);
-      setFilteredUsers(list);
-    } catch (err) {
-      toast.error("Failed to load users");
-    } finally {
-      setLoading(false);
+
+  // Fetch Users
+  const fetchUsers = async()=>{
+
+    try{
+
+      setLoading(true);
+
+      const res = await getAllUsers();
+
+      setUsers(res.data.users || []);
+
     }
+    catch(error){
+
+      toast.error(
+        error.response?.data?.message ||
+        "Failed to load users"
+      );
+
+    }
+    finally{
+
+      setLoading(false);
+
+    }
+
   };
 
-  const searchHandler = (e) => {
-    const value = e.target.value;
 
-    setKeyword(value);
 
-    const result = users.filter(
-      (user) =>
-        user.name
-          ?.toLowerCase()
-          .includes(value.toLowerCase()) ||
-        user.email
-          ?.toLowerCase()
-          .includes(value.toLowerCase())
-    );
 
-    setFilteredUsers(result);
-  };
+  useEffect(()=>{
 
-  const deleteHandler = async (id) => {
-    if (!window.confirm("Delete this user?")) return;
+    fetchUsers();
 
-    try {
+  },[]);
+
+
+
+
+
+  // Delete User
+  const handleDelete = async(id)=>{
+
+    try{
+
       await deleteUser(id);
 
-      toast.success("User deleted");
+      toast.success(
+        "User deleted successfully"
+      );
 
-      loadUsers();
-    } catch {
-      toast.error("Delete failed");
+      fetchUsers();
+
     }
+    catch(error){
+
+      toast.error(
+        error.response?.data?.message ||
+        "Delete failed"
+      );
+
+    }
+
   };
 
-  const blockHandler = async (id) => {
-    try {
-      await blockUser(id);
 
-      toast.success("User blocked");
 
-      loadUsers();
-    } catch {
-      toast.error("Operation failed");
+
+
+  // Change Role
+  const handleRoleChange = async(id,role)=>{
+
+
+    try{
+
+      await updateUserRole(id,{role});
+
+
+      toast.success(
+        "Role updated"
+      );
+
+
+      fetchUsers();
+
     }
+    catch(error){
+
+      toast.error(
+        "Role update failed"
+      );
+
+    }
+
   };
 
-  const unblockHandler = async (id) => {
-    try {
-      await unblockUser(id);
 
-      toast.success("User unblocked");
 
-      loadUsers();
-    } catch {
-      toast.error("Operation failed");
-    }
-  };
 
-  if (loading) {
+
+
+  if(loading){
+
     return (
-      <div className="text-center py-5">
-        <h3>Loading Users...</h3>
+      <div className="text-center mt-5">
+        Loading Users...
       </div>
     );
+
   }
 
+
+
+
+
+
   return (
-    <div className="container-fluid">
 
-      <div className="d-flex justify-content-between align-items-center mb-4">
+    <div className="container mt-4">
 
-        <h2>User Management</h2>
 
-        <div className="input-group w-25">
+      <h2 className="mb-4">
+        User Management
+      </h2>
 
-          <span className="input-group-text">
-            <FaSearch />
-          </span>
 
-          <input
-            className="form-control"
-            placeholder="Search..."
-            value={keyword}
-            onChange={searchHandler}
-          />
 
-        </div>
+      <div className="table-responsive">
 
-      </div>
+        <table className="table table-bordered table-hover">
 
-      <div className="card shadow">
 
-        <div className="table-responsive">
+          <thead className="table-dark">
 
-          <table className="table table-hover align-middle">
+            <tr>
 
-            <thead className="table-dark">
+              <th>Name</th>
 
+              <th>Email</th>
+
+              <th>Phone</th>
+
+              <th>Role</th>
+
+              <th>Action</th>
+
+            </tr>
+
+          </thead>
+
+
+
+          <tbody>
+
+
+          {
+            users.length === 0 ?
+
+            (
               <tr>
 
-                <th>Name</th>
+                <td
+                 colSpan="5"
+                 className="text-center"
+                >
+                  No Users Found
+                </td>
 
-                <th>Email</th>
+              </tr>
+            )
 
-                <th>Role</th>
 
-                <th>Status</th>
+            :
 
-                <th>Actions</th>
+            users.map((user)=>(
+
+              <tr key={user._id}>
+
+
+                <td>
+                  {user.name}
+                </td>
+
+
+                <td>
+                  {user.email}
+                </td>
+
+
+                <td>
+                  {user.phone || "-"}
+                </td>
+
+
+                <td>
+
+
+                  <select
+                    className="form-select"
+                    value={user.role}
+                    onChange={(e)=>
+                      handleRoleChange(
+                        user._id,
+                        e.target.value
+                      )
+                    }
+                  >
+
+                    <option value="User">
+                      User
+                    </option>
+
+
+                    <option value="Admin">
+                      Admin
+                    </option>
+
+
+                  </select>
+
+
+                </td>
+
+
+
+                <td>
+
+
+                  <button
+                    className="btn btn-danger"
+                    onClick={()=>
+                      handleDelete(user._id)
+                    }
+                  >
+
+                    <FaTrash/>
+
+                  </button>
+
+
+                </td>
+
 
               </tr>
 
-            </thead>
 
-            <tbody>
+            ))
 
-              {filteredUsers.map((user) => (
+          }
 
-                <tr key={user._id}>
 
-                  <td>{user.name}</td>
 
-                  <td>{user.email}</td>
+          </tbody>
 
-                  <td>
 
-                    <span className="badge bg-primary">
-                      {user.role}
-                    </span>
+        </table>
 
-                  </td>
-
-                  <td>
-
-                    {user.isBlocked ? (
-                      <span className="badge bg-danger">
-                        Blocked
-                      </span>
-                    ) : (
-                      <span className="badge bg-success">
-                        Active
-                      </span>
-                    )}
-
-                  </td>
-
-                  <td>
-
-                    {user.isBlocked ? (
-
-                      <button
-                        className="btn btn-success btn-sm me-2"
-                        onClick={() =>
-                          unblockHandler(user._id)
-                        }
-                      >
-                        <FaCheckCircle />
-                      </button>
-
-                    ) : (
-
-                      <button
-                        className="btn btn-warning btn-sm me-2"
-                        onClick={() =>
-                          blockHandler(user._id)
-                        }
-                      >
-                        <FaBan />
-                      </button>
-
-                    )}
-
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() =>
-                        deleteHandler(user._id)
-                      }
-                    >
-                      <FaTrash />
-                    </button>
-
-                  </td>
-
-                </tr>
-
-              ))}
-
-            </tbody>
-
-          </table>
-
-        </div>
 
       </div>
 
+
     </div>
+
   );
+
 };
+
+
 
 export default UserList;

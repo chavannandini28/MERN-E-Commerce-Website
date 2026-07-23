@@ -1,168 +1,407 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchWishlist,
-  removeWishlistItem,
-} from "../redux/wishlistSlice";
-import { addItemToCart } from "../redux/cartSlice";
-
 import {
   FaHeart,
   FaTrash,
   FaShoppingCart,
 } from "react-icons/fa";
+import { toast } from "react-toastify";
+
+import {
+  getWishlist,
+  removeFromWishlist,
+} from "../api/wishlistApi";
+
+import {
+  addToCart,
+} from "../api/cartApi";
+
+
 
 const Wishlist = () => {
-  const dispatch = useDispatch();
 
-  const {
-    wishlist,
-    loading,
-  } = useSelector((state) => state.wishlist);
 
-  useEffect(() => {
-    dispatch(fetchWishlist());
-  }, [dispatch]);
+  const [wishlist,setWishlist] = useState([]);
 
-  const removeItem = (id) => {
-    dispatch(removeWishlistItem(id));
+  const [loading,setLoading] = useState(true);
+
+
+
+
+  useEffect(()=>{
+
+    fetchWishlist();
+
+  },[]);
+
+
+
+
+
+  const fetchWishlist = async()=>{
+
+    try{
+
+
+      const res = await getWishlist();
+
+
+      // IMPORTANT FIX
+      setWishlist(
+        res.data.wishlist?.products || []
+      );
+
+
+    }
+    catch(error){
+
+      toast.error(
+        "Failed to load wishlist"
+      );
+
+    }
+    finally{
+
+      setLoading(false);
+
+    }
+
   };
 
-  const moveToCart = (item) => {
-    dispatch(
-      addItemToCart({
-        productId: item.product._id,
-        quantity: 1,
-      })
-    );
 
-    dispatch(removeWishlistItem(item._id));
+
+
+
+
+  const removeItem = async(productId)=>{
+
+
+    try{
+
+
+      await removeFromWishlist(productId);
+
+
+      toast.success(
+        "Removed from wishlist"
+      );
+
+
+      fetchWishlist();
+
+
+    }
+    catch(error){
+
+      toast.error(
+        "Remove failed"
+      );
+
+    }
+
   };
 
-  if (loading) {
+
+
+
+
+
+
+  const addItemToCart = async(productId)=>{
+
+
+    try{
+
+
+      await addToCart({
+
+        productId,
+
+        quantity:1
+
+      });
+
+
+
+      toast.success(
+        "Added to cart"
+      );
+
+
+    }
+    catch(error){
+
+
+      toast.error(
+        "Add to cart failed"
+      );
+
+
+    }
+
+
+  };
+
+
+
+
+
+
+
+  if(loading){
+
     return (
-      <div className="container py-5 text-center">
-        <h4>Loading Wishlist...</h4>
+
+      <div className="text-center mt-5">
+
+        Loading...
+
       </div>
+
     );
+
   }
 
+
+
+
+
+
+
   return (
-    <div className="container py-5">
 
-      <div className="d-flex align-items-center mb-4">
+    <div className="container py-4">
 
-        <FaHeart
-          className="text-danger me-2"
-          size={28}
-        />
 
-        <h2 className="mb-0">
+      <div className="d-flex justify-content-between mb-4">
+
+
+        <h2>
+
+          <FaHeart className="text-danger me-2"/>
+
           My Wishlist
+
         </h2>
+
+
+
+        <Link
+          to="/products"
+          className="btn btn-primary"
+        >
+
+          Continue Shopping
+
+        </Link>
+
 
       </div>
 
-      {wishlist.length === 0 ? (
-        <div className="text-center py-5">
 
-          <h3>No Products In Wishlist</h3>
 
-          <Link
-            to="/shop"
-            className="btn btn-primary mt-3"
-          >
-            Continue Shopping
-          </Link>
 
-        </div>
-      ) : (
-        <div className="row">
 
-          {wishlist.map((item) => (
+      {
+        wishlist.length === 0 ?
 
-            <div
-              className="col-lg-3 col-md-4 col-sm-6 mb-4"
-              key={item._id}
-            >
 
-              <div className="card shadow border-0 h-100">
+        (
 
-                <img
-                  src={
-                    item.product.images?.[0]?.url
+          <div className="text-center">
+
+            <h4>
+              No Wishlist Items
+            </h4>
+
+
+          </div>
+
+
+        )
+
+
+        :
+
+
+        (
+
+        <table className="table table-bordered align-middle">
+
+
+          <thead>
+
+            <tr>
+
+              <th>
+                Image
+              </th>
+
+              <th>
+                Name
+              </th>
+
+              <th>
+                Price
+              </th>
+
+              <th>
+                Stock
+              </th>
+
+              <th>
+                Action
+              </th>
+
+            </tr>
+
+
+          </thead>
+
+
+
+
+
+          <tbody>
+
+
+          {
+            wishlist.map((item)=>{
+
+
+              const product =
+              item.product || {};
+
+
+
+              return (
+
+              <tr
+                key={product._id}
+              >
+
+
+
+                <td>
+
+                  <img
+
+                    src={
+                      product.thumbnail?.url ||
+                      product.image ||
+                      "/no-image.png"
+                    }
+
+                    alt={product.title}
+
+                    width="70"
+
+                  />
+
+                </td>
+
+
+
+
+                <td>
+
+                  {product.title}
+
+                </td>
+
+
+
+
+                <td>
+
+                  ₹{product.price}
+
+                </td>
+
+
+
+
+                <td>
+
+                  {
+                    product.stock > 0
+                    ?
+                    "In Stock"
+                    :
+                    "Out of Stock"
                   }
-                  className="card-img-top"
-                  alt={item.product.name}
-                  style={{
-                    height: 240,
-                    objectFit: "cover",
-                  }}
-                />
 
-                <div className="card-body">
+                </td>
 
-                  <h5>
-                    {item.product.name}
-                  </h5>
 
-                  <p className="text-muted">
-                    {item.product.brand?.name}
-                  </p>
 
-                  <h4 className="text-success">
-                    ₹{item.product.price}
-                  </h4>
 
-                </div>
+                <td>
 
-                <div className="card-footer bg-white border-0">
-
-                  <Link
-                    to={`/product/${item.product._id}`}
-                    className="btn btn-outline-primary w-100 mb-2"
-                  >
-                    View Product
-                  </Link>
 
                   <button
-                    className="btn btn-success w-100 mb-2"
-                    onClick={() =>
-                      moveToCart(item)
-                    }
-                  >
-                    <FaShoppingCart className="me-2" />
 
-                    Add To Cart
+                    className="btn btn-success btn-sm me-2"
+
+                    onClick={()=>
+                      addItemToCart(product._id)
+                    }
+
+                  >
+
+                    <FaShoppingCart/>
 
                   </button>
 
-                  <button
-                    className="btn btn-outline-danger w-100"
-                    onClick={() =>
-                      removeItem(item._id)
-                    }
-                  >
-                    <FaTrash className="me-2" />
 
-                    Remove
+
+
+                  <button
+
+                    className="btn btn-danger btn-sm"
+
+                    onClick={()=>
+                      removeItem(product._id)
+                    }
+
+                  >
+
+                    <FaTrash/>
 
                   </button>
 
-                </div>
 
-              </div>
+                </td>
 
-            </div>
 
-          ))}
 
-        </div>
-      )}
+              </tr>
+
+              );
+
+
+            })
+          }
+
+
+
+          </tbody>
+
+
+        </table>
+
+        )
+
+      }
+
+
 
     </div>
+
   );
+
 };
+
+
 
 export default Wishlist;

@@ -1,66 +1,187 @@
-import axiosInstance from "./axiosInstance";
+import axios from "axios";
 
-// ==============================
-// Get All Users
-// GET /api/users
-// ==============================
-export const getUsers = () =>
-  axiosInstance.get("/users");
 
-// ==============================
+const API_URL = "http://localhost:5000/api/users";
+
+
+
+// Get All Users (Admin)
+export const getAllUsers = async () => {
+
+  const token = localStorage.getItem("token");
+
+
+  return await axios.get(
+    API_URL,
+    {
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
+    }
+  );
+
+};
+
+
+
+
 // Get Single User
-// GET /api/users/:id
-// ==============================
-export const getUserById = (id) =>
-  axiosInstance.get(`/users/${id}`);
+export const getUserById = async(id)=>{
 
-// ==============================
+  const token = localStorage.getItem("token");
+
+
+  return await axios.get(
+    `${API_URL}/${id}`,
+    {
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
+    }
+  );
+
+};
+
+
+
+
 // Update User
-// PUT /api/users/:id
-// ==============================
-export const updateUser = (id, userData) =>
-  axiosInstance.put(`/users/${id}`, userData);
+export const updateUser = async(id,data)=>{
 
-// ==============================
+
+  const token = localStorage.getItem("token");
+
+
+  return await axios.put(
+
+    `${API_URL}/${id}`,
+
+    data,
+
+    {
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
+    }
+
+  );
+
+};
+
+
+
+
 // Delete User
-// DELETE /api/users/:id
-// ==============================
-export const deleteUser = (id) =>
-  axiosInstance.delete(`/users/${id}`);
+export const deleteUser = async(id)=>{
 
-// ==============================
-// Block User
-// PATCH /api/users/block/:id
-// ==============================
-export const blockUser = (id) =>
-  axiosInstance.patch(`/users/block/${id}`);
 
-// ==============================
-// Unblock User
-// PATCH /api/users/unblock/:id
-// ==============================
-export const unblockUser = (id) =>
-  axiosInstance.patch(`/users/unblock/${id}`);
+  const token = localStorage.getItem("token");
 
-// ==============================
+
+  return await axios.delete(
+
+    `${API_URL}/${id}`,
+
+    {
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
+    }
+
+  );
+
+};
+
+
+
+
 // Update User Role
-// PATCH /api/users/role/:id
-// ==============================
-export const updateUserRole = (id, role) =>
-  axiosInstance.patch(`/users/role/${id}`, {
-    role,
-  });
+export const updateUserRole = async(id,data)=>{
 
-// ==============================
-// Get My Profile
-// GET /api/users/profile
-// ==============================
-export const getProfile = () =>
-  axiosInstance.get("/users/profile");
 
-// ==============================
-// Update My Profile
-// PUT /api/users/profile
-// ==============================
-export const updateProfile = (userData) =>
-  axiosInstance.put("/users/profile", userData);
+  const token = localStorage.getItem("token");
+
+
+  return await axios.patch(
+
+    `${API_URL}/role/${id}`,
+
+    data,
+
+    {
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
+    }
+
+  );
+
+};
+
+
+
+
+// Block User
+export const blockUser = async(id)=>{
+
+
+  const token = localStorage.getItem("token");
+
+
+  return await axios.patch(
+
+    `${API_URL}/block/${id}`,
+
+    {},
+
+    {
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
+    }
+
+  );
+
+};
+
+
+
+
+// Unblock User
+export const unblockUser = async(id)=>{
+
+
+  const token = localStorage.getItem("token");
+
+
+  return await axios.patch(
+
+    `${API_URL}/unblock/${id}`,
+
+    {},
+
+    {
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
+    }
+
+  );
+
+};
+
+// Alias for AdminDashboard
+export const getUsers = async () => {
+
+  const token = localStorage.getItem("token");
+
+  return await axios.get(
+    API_URL,
+    {
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
+    }
+  );
+
+};

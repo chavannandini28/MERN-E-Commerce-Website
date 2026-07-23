@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+
 import {
   fetchProfile,
   updateUserProfile,
@@ -11,6 +12,9 @@ import {
   FaEnvelope,
   FaPhone,
   FaSave,
+  FaShoppingBag,
+  FaHeart,
+  FaShoppingCart,
 } from "react-icons/fa";
 
 const Profile = () => {
@@ -45,7 +49,7 @@ const Profile = () => {
 
   useEffect(() => {
     if (success) {
-      toast.success("Profile Updated Successfully");
+      toast.success("Profile updated successfully");
     }
 
     if (error) {
@@ -69,35 +73,104 @@ const Profile = () => {
   return (
     <div className="container py-5">
 
-      <div className="row justify-content-center">
+      <div className="row">
 
+        {/* Left Side */}
+        <div className="col-lg-4 mb-4">
+
+          <div className="card shadow border-0 rounded-4">
+
+            <div className="card-body text-center p-4">
+
+              <img
+                src={
+                  profile?.avatar?.url ||
+                  "https://via.placeholder.com/150"
+                }
+                alt="Profile"
+                className="rounded-circle shadow"
+                style={{
+                  width: "150px",
+                  height: "150px",
+                  objectFit: "cover",
+                }}
+              />
+
+              <h3 className="mt-3 fw-bold">
+                {profile?.name}
+              </h3>
+
+              <p className="text-muted">
+                {profile?.role}
+              </p>
+
+            </div>
+
+          </div>
+
+          <div className="card shadow border-0 rounded-4 mt-4">
+
+            <div className="card-body">
+
+              <h5 className="mb-4">
+                Account Summary
+              </h5>
+
+              <div className="d-flex justify-content-between mb-3">
+
+                <span>
+                  <FaShoppingBag className="me-2 text-primary" />
+                  Orders
+                </span>
+
+                <strong>
+                  {profile?.ordersCount || 0}
+                </strong>
+
+              </div>
+
+              <div className="d-flex justify-content-between mb-3">
+
+                <span>
+                  <FaHeart className="me-2 text-danger" />
+                  Wishlist
+                </span>
+
+                <strong>
+                  {profile?.wishlistCount || 0}
+                </strong>
+
+              </div>
+
+              <div className="d-flex justify-content-between">
+
+                <span>
+                  <FaShoppingCart className="me-2 text-success" />
+                  Cart
+                </span>
+
+                <strong>
+                  {profile?.cartCount || 0}
+                </strong>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* Right Side */}
         <div className="col-lg-8">
 
           <div className="card shadow border-0 rounded-4">
 
             <div className="card-body p-5">
 
-              <div className="text-center mb-4">
-
-                <img
-                  src={
-                    profile?.avatar?.url ||
-                    "https://via.placeholder.com/150"
-                  }
-                  alt="Profile"
-                  className="rounded-circle shadow"
-                  style={{
-                    width: 140,
-                    height: 140,
-                    objectFit: "cover",
-                  }}
-                />
-
-                <h3 className="mt-3">
-                  {profile?.name}
-                </h3>
-
-              </div>
+              <h3 className="mb-4">
+                Edit Profile
+              </h3>
 
               <form onSubmit={submitHandler}>
 
@@ -174,6 +247,7 @@ const Profile = () => {
                 </div>
 
                 <button
+                  type="submit"
                   className="btn btn-primary w-100"
                   disabled={loading}
                 >
