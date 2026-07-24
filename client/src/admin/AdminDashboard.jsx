@@ -4,114 +4,558 @@ import {
   FaBoxOpen,
   FaShoppingCart,
   FaRupeeSign,
-  FaSyncAlt,
+  FaStar,
+  FaExclamationTriangle,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { getAllUsers } from "../api/userApi";
-import { getProducts } from "../api/productApi";
-import { getOrders } from "../api/orderApi";
+
+import { getDashboardStats } from "../api/dashboardApi";
 
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [orders, setOrders] = useState([]);
 
-  useEffect(() => { loadDashboard(); }, []);
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalProducts: 0,
+    totalOrders: 0,
+    totalRevenue: 0,
+    totalReviews: 0,
+    recentOrders: [],
+    latestUsers: [],
+    lowStockProducts: [],
+  });
 
-  const loadDashboard = async () => {
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  const fetchDashboard = async () => {
     try {
       setLoading(true);
-      const [usersRes, productsRes, ordersRes] = await Promise.all([
-        getUsers(), getProducts(), getOrders()
-      ]);
-      setUsers(usersRes.data.users || []);
-      setProducts(productsRes.data.products || []);
-      setOrders(ordersRes.data.orders || []);
-    } catch (e) {
-      toast.error(e?.response?.data?.message || "Unable to load dashboard");
+
+      const { data } = await getDashboardStats();
+
+      setStats({
+        totalUsers: data?.totalUsers || 0,
+        totalProducts: data?.totalProducts || 0,
+        totalOrders: data?.totalOrders || 0,
+        totalRevenue: data?.totalRevenue || 0,
+        totalReviews: data?.totalReviews || 0,
+        recentOrders: data?.recentOrders || [],
+        latestUsers: data?.latestUsers || [],
+        lowStockProducts: data?.lowStockProducts || [],
+      });
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          "Failed to load dashboard"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const totalRevenue = orders.reduce((s,o)=>s+(o.totalPrice||0),0);
-
-  if (loading) return <div className="container py-5 text-center"><h3>Loading Dashboard...</h3></div>;
-
   return (
     <div className="container-fluid py-4">
+
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="fw-bold">Admin Dashboard</h2>
-        <button className="btn btn-outline-primary" onClick={loadDashboard}>
-          <FaSyncAlt className="me-2"/>Refresh
-        </button>
+
+        <div>
+          <h2 className="fw-bold">Admin Dashboard</h2>
+          <p className="text-muted mb-0">
+            Welcome to your admin panel
+          </p>
+        </div>
+
       </div>
 
-      <div className="row g-4">
-        {[
-          ["primary","Total Users",users.length,<FaUsers size={45}/>],
-          ["success","Total Products",products.length,<FaBoxOpen size={45}/>],
-          ["warning","Total Orders",orders.length,<FaShoppingCart size={45}/>],
-          ["danger","Total Revenue","₹"+totalRevenue.toLocaleString(),<FaRupeeSign size={45}/>],
-        ].map(([bg,title,val,icon],i)=>(
-          <div className="col-lg-3 col-md-6" key={i}>
-            <div className={`card bg-${bg} text-white shadow border-0`}>
-              <div className="card-body d-flex justify-content-between align-items-center">
-                <div><h6>{title}</h6><h2>{val}</h2></div>{icon}
+      {loading ? (
+        <div className="text-center py-5">
+          <div className="spinner-border text-primary"></div>
+        </div>
+      ) : (
+
+        <>
+          {/* Statistics */}
+
+          <div className="row">
+
+            {/* Users */}
+
+            <div className="col-xl-4 col-md-6 mb-4">
+              <div className="card border-0 shadow h-100">
+                <div className="card-body">
+
+                  <div className="d-flex justify-content-between align-items-center">
+
+                    <div>
+                      <h6 className="text-muted">
+                        Total Users
+                      </h6>
+
+                      <h2 className="fw-bold">
+                        {stats.totalUsers}
+                      </h2>
+                    </div>
+
+                    <div
+                      className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                      style={{
+                        width: 65,
+                        height: 65,
+                      }}
+                    >
+                      <FaUsers size={28} />
+                    </div>
+
+                  </div>
+
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
 
-      <div className="row mt-5">
-        <div className="col-lg-8">
-          <div className="card shadow border-0">
-            <div className="card-header bg-dark text-white"><h5 className="mb-0">Recent Orders</h5></div>
-            <div className="table-responsive">
-              <table className="table table-hover mb-0">
-                <thead className="table-light">
-                  <tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Status</th></tr>
-                </thead>
-                <tbody>
-                  {orders.length===0 ? (
-                    <tr><td colSpan={4} className="text-center py-4">No Orders Found</td></tr>
-                  ) : orders.slice(0,8).map(order=>(
-                    <tr key={order._id}>
-                      <td>{order._id.slice(-8)}</td>
-                      <td>{order.user?.name || "Customer"}</td>
-                      <td>₹{Number(order.totalPrice||0).toLocaleString()}</td>
-                      <td><span className={`badge ${order.orderStatus==="Delivered"?"bg-success":order.orderStatus==="Cancelled"?"bg-danger":order.orderStatus==="Processing"?"bg-warning text-dark":"bg-info"}`}>{order.orderStatus}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+            {/* Products */}
 
-        <div className="col-lg-4">
-          <div className="card shadow border-0">
-            <div className="card-header bg-primary text-white"><h5 className="mb-0">Latest Users</h5></div>
-            <div className="list-group list-group-flush">
-              {users.length===0 ? (
-                <div className="p-4 text-center">No Users Found</div>
-              ) : users.slice(0,6).map(user=>(
-                <div key={user._id} className="list-group-item">
-                  <div className="fw-bold">{user.name}</div>
-                  <small className="text-muted">{user.email}</small>
-                  <div className="mt-2">
-                    <span className={`badge ${user.role==="Admin"?"bg-danger":user.role==="Vendor"?"bg-warning text-dark":"bg-success"}`}>{user.role}</span>
-                    {user.isBlocked && <span className="badge bg-dark ms-2">Blocked</span>}
+            <div className="col-xl-4 col-md-6 mb-4">
+              <div className="card border-0 shadow h-100">
+                <div className="card-body">
+
+                  <div className="d-flex justify-content-between align-items-center">
+
+                    <div>
+                      <h6 className="text-muted">
+                        Total Products
+                      </h6>
+
+                      <h2 className="fw-bold">
+                        {stats.totalProducts}
+                      </h2>
+                    </div>
+
+                    <div
+                      className="bg-success text-white rounded-circle d-flex align-items-center justify-content-center"
+                      style={{
+                        width: 65,
+                        height: 65,
+                      }}
+                    >
+                      <FaBoxOpen size={28} />
+                    </div>
+
                   </div>
+
                 </div>
-              ))}
+              </div>
             </div>
+
+            {/* Orders */}
+
+            <div className="col-xl-4 col-md-6 mb-4">
+              <div className="card border-0 shadow h-100">
+                <div className="card-body">
+
+                  <div className="d-flex justify-content-between align-items-center">
+
+                    <div>
+                      <h6 className="text-muted">
+                        Total Orders
+                      </h6>
+
+                      <h2 className="fw-bold">
+                        {stats.totalOrders}
+                      </h2>
+                    </div>
+
+                    <div
+                      className="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center"
+                      style={{
+                        width: 65,
+                        height: 65,
+                      }}
+                    >
+                      <FaShoppingCart size={28} />
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            {/* Revenue */}
+
+            <div className="col-xl-4 col-md-6 mb-4">
+              <div className="card border-0 shadow h-100">
+                <div className="card-body">
+
+                  <div className="d-flex justify-content-between align-items-center">
+
+                    <div>
+                      <h6 className="text-muted">
+                        Total Revenue
+                      </h6>
+
+                      <h2 className="fw-bold text-success">
+                        ₹
+                        {Number(
+                          stats.totalRevenue
+                        ).toLocaleString()}
+                      </h2>
+                    </div>
+
+                    <div
+                      className="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center"
+                      style={{
+                        width: 65,
+                        height: 65,
+                      }}
+                    >
+                      <FaRupeeSign size={28} />
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            {/* Reviews */}
+
+            <div className="col-xl-4 col-md-6 mb-4">
+              <div className="card border-0 shadow h-100">
+                <div className="card-body">
+
+                  <div className="d-flex justify-content-between align-items-center">
+
+                    <div>
+                      <h6 className="text-muted">
+                        Total Reviews
+                      </h6>
+
+                      <h2 className="fw-bold">
+                        {stats.totalReviews}
+                      </h2>
+                    </div>
+
+                    <div
+                      className="bg-info text-white rounded-circle d-flex align-items-center justify-content-center"
+                      style={{
+                        width: 65,
+                        height: 65,
+                      }}
+                    >
+                      <FaStar size={28} />
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            {/* Low Stock */}
+
+            <div className="col-xl-4 col-md-6 mb-4">
+              <div className="card border-0 shadow h-100">
+                <div className="card-body">
+
+                  <div className="d-flex justify-content-between align-items-center">
+
+                    <div>
+                      <h6 className="text-muted">
+                        Low Stock Products
+                      </h6>
+
+                      <h2 className="fw-bold text-danger">
+                        {stats.lowStockProducts.length}
+                      </h2>
+                    </div>
+
+                    <div
+                      className="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center"
+                      style={{
+                        width: 65,
+                        height: 65,
+                      }}
+                    >
+                      <FaExclamationTriangle size={28} />
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
           </div>
-        </div>
-      </div>
+
+          {/* Part B starts here */}
+
+                    {/* Recent Orders & Latest Users */}
+
+          <div className="row">
+
+            {/* Recent Orders */}
+
+            <div className="col-lg-8 mb-4">
+
+              <div className="card border-0 shadow h-100">
+
+                <div className="card-header bg-white">
+                  <h5 className="mb-0 fw-bold">
+                    Recent Orders
+                  </h5>
+                </div>
+
+                <div className="card-body p-0">
+
+                  {stats.recentOrders.length === 0 ? (
+
+                    <div className="text-center p-4">
+                      No recent orders found.
+                    </div>
+
+                  ) : (
+
+                    <div className="table-responsive">
+
+                      <table className="table table-hover mb-0">
+
+                        <thead className="table-light">
+
+                          <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                          </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                          {stats.recentOrders.map((order) => (
+
+                            <tr key={order._id}>
+
+                              <td>
+                                {order._id?.slice(-8)}
+                              </td>
+
+                              <td>
+                                {order.user?.name || "Customer"}
+                              </td>
+
+                              <td>
+                                ₹
+                                {order.totalPrice ||
+                                  order.totalAmount ||
+                                  0}
+                              </td>
+
+                              <td>
+
+                                <span
+                                  className={`badge ${
+                                    order.orderStatus === "Delivered"
+                                      ? "bg-success"
+                                      : order.orderStatus === "Cancelled"
+                                      ? "bg-danger"
+                                      : "bg-warning"
+                                  }`}
+                                >
+                                  {order.orderStatus}
+                                </span>
+
+                              </td>
+
+                            </tr>
+
+                          ))}
+
+                        </tbody>
+
+                      </table>
+
+                    </div>
+
+                  )}
+
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* Latest Users */}
+
+            <div className="col-lg-4 mb-4">
+
+              <div className="card border-0 shadow h-100">
+
+                <div className="card-header bg-white">
+
+                  <h5 className="mb-0 fw-bold">
+                    Latest Users
+                  </h5>
+
+                </div>
+
+                <div className="card-body">
+
+                  {stats.latestUsers.length === 0 ? (
+
+                    <div className="text-center">
+                      No users found.
+                    </div>
+
+                  ) : (
+
+                    stats.latestUsers.map((user) => (
+
+                      <div
+                        key={user._id}
+                        className="d-flex align-items-center mb-3"
+                      >
+
+                        <img
+                          src={
+                            user.avatar?.url ||
+                            "https://via.placeholder.com/50"
+                          }
+                          alt={user.name}
+                          width="50"
+                          height="50"
+                          className="rounded-circle me-3"
+                        />
+
+                        <div>
+
+                          <h6 className="mb-0">
+                            {user.name}
+                          </h6>
+
+                          <small className="text-muted">
+                            {user.email}
+                          </small>
+
+                        </div>
+
+                      </div>
+
+                    ))
+
+                  )}
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* Part C starts here */}
+
+                    {/* Low Stock Products */}
+
+          <div className="row">
+
+            <div className="col-12">
+
+              <div className="card border-0 shadow">
+
+                <div className="card-header bg-white">
+
+                  <h5 className="fw-bold mb-0">
+                    Low Stock Products
+                  </h5>
+
+                </div>
+
+                <div className="card-body p-0">
+
+                  {stats.lowStockProducts.length === 0 ? (
+
+                    <div className="text-center p-4">
+                      No low stock products found.
+                    </div>
+
+                  ) : (
+
+                    <div className="table-responsive">
+
+                      <table className="table table-striped table-hover mb-0">
+
+                        <thead className="table-light">
+
+                          <tr>
+
+                            <th>Product</th>
+                            <th>Brand</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+
+                          </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                          {stats.lowStockProducts.map((product) => (
+
+                            <tr key={product._id}>
+
+                              <td>{product.title}</td>
+
+                              <td>
+                                {product.brand?.name || "-"}
+                              </td>
+
+                              <td>
+                                ₹{product.price}
+                              </td>
+
+                              <td>
+
+                                <span
+                                  className={`badge ${
+                                    product.stock <= 5
+                                      ? "bg-danger"
+                                      : "bg-warning"
+                                  }`}
+                                >
+                                  {product.stock}
+                                </span>
+
+                              </td>
+
+                            </tr>
+
+                          ))}
+
+                        </tbody>
+
+                      </table>
+
+                    </div>
+
+                  )}
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </>
+
+      )}
+
     </div>
+
   );
 };
 

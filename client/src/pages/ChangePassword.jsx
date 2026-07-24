@@ -1,6 +1,13 @@
-import { useState } from "react";
-import { FaLock, FaEye, FaEyeSlash, FaSave } from "react-icons/fa";
+import { useMemo, useState } from "react";
+import {
+  FaLock,
+  FaEye,
+  FaEyeSlash,
+  FaSave,
+  FaShieldAlt,
+} from "react-icons/fa";
 import { toast } from "react-toastify";
+
 import { changePassword } from "../api/userApi";
 
 const ChangePassword = () => {
@@ -17,26 +24,57 @@ const ChangePassword = () => {
   });
 
   const changeHandler = (e) => {
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    });
+    }));
   };
+
+  const passwordStrength = useMemo(() => {
+    const password = formData.newPassword;
+
+    if (!password) return "";
+
+    let score = 0;
+
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+
+    if (score <= 2) return "Weak";
+    if (score <= 4) return "Medium";
+
+    return "Strong";
+  }, [formData.newPassword]);
+
+  const isFormValid =
+    formData.currentPassword &&
+    formData.newPassword &&
+    formData.confirmPassword &&
+    formData.newPassword === formData.confirmPassword &&
+    formData.newPassword.length >= 6;
 
   const submitHandler = async (e) => {
     e.preventDefault();
 
-    if (
-      !formData.currentPassword ||
-      !formData.newPassword ||
-      !formData.confirmPassword
-    ) {
-      return toast.error("Please fill all fields");
+    if (!formData.currentPassword.trim()) {
+      return toast.error("Current password is required");
     }
 
     if (formData.newPassword.length < 6) {
       return toast.error(
-        "Password must be at least 6 characters"
+        "New password must be at least 6 characters"
+      );
+    }
+
+    if (
+      formData.currentPassword ===
+      formData.newPassword
+    ) {
+      return toast.error(
+        "New password must be different"
       );
     }
 
@@ -58,7 +96,8 @@ const ChangePassword = () => {
       });
 
       toast.success(
-        data.message || "Password changed successfully"
+        data.message ||
+          "Password changed successfully"
       );
 
       setFormData({
@@ -81,15 +120,32 @@ const ChangePassword = () => {
 
       <div className="row justify-content-center">
 
-        <div className="col-lg-6">
+        <div className="col-lg-6 col-md-8">
 
-          <div className="card shadow border-0 rounded-4">
+          <div className="card shadow-lg border-0 rounded-4">
 
-            <div className="card-body p-5">
+            <div className="card-header bg-primary text-white text-center py-4 rounded-top-4">
 
-              <h2 className="fw-bold text-center mb-4">
+              <FaShieldAlt size={42} />
+
+              <h3 className="mt-3 mb-0 fw-bold">
                 Change Password
-              </h2>
+              </h3>
+
+            </div>
+
+            <div className="card-body p-4">
+
+              <div className="alert alert-info">
+
+                Password should contain at least
+                <strong>
+                  {" "}6 characters
+                </strong>
+                . For better security use uppercase,
+                lowercase, numbers and symbols.
+
+              </div>
 
               <form onSubmit={submitHandler}>
 
@@ -97,7 +153,7 @@ const ChangePassword = () => {
 
                 <div className="mb-3">
 
-                  <label className="form-label">
+                  <label className="form-label fw-semibold">
                     Current Password
                   </label>
 
@@ -115,9 +171,8 @@ const ChangePassword = () => {
                       }
                       className="form-control"
                       name="currentPassword"
-                      value={
-                        formData.currentPassword
-                      }
+                      autoComplete="current-password"
+                      value={formData.currentPassword}
                       onChange={changeHandler}
                     />
 
@@ -125,7 +180,9 @@ const ChangePassword = () => {
                       type="button"
                       className="btn btn-outline-secondary"
                       onClick={() =>
-                        setShowCurrent(!showCurrent)
+                        setShowCurrent(
+                          !showCurrent
+                        )
                       }
                     >
                       {showCurrent ? (
@@ -143,7 +200,7 @@ const ChangePassword = () => {
 
                 <div className="mb-3">
 
-                  <label className="form-label">
+                  <label className="form-label fw-semibold">
                     New Password
                   </label>
 
@@ -161,9 +218,8 @@ const ChangePassword = () => {
                       }
                       className="form-control"
                       name="newPassword"
-                      value={
-                        formData.newPassword
-                      }
+                      autoComplete="new-password"
+                      value={formData.newPassword}
                       onChange={changeHandler}
                     />
 
@@ -183,13 +239,29 @@ const ChangePassword = () => {
 
                   </div>
 
+                  {passwordStrength && (
+
+                    <small
+                      className={`fw-bold ${
+                        passwordStrength === "Strong"
+                          ? "text-success"
+                          : passwordStrength === "Medium"
+                          ? "text-warning"
+                          : "text-danger"
+                      }`}
+                    >
+                      Strength: {passwordStrength}
+                    </small>
+
+                  )}
+
                 </div>
 
                 {/* Confirm Password */}
 
                 <div className="mb-4">
 
-                  <label className="form-label">
+                  <label className="form-label fw-semibold">
                     Confirm Password
                   </label>
 
@@ -207,9 +279,8 @@ const ChangePassword = () => {
                       }
                       className="form-control"
                       name="confirmPassword"
-                      value={
-                        formData.confirmPassword
-                      }
+                      autoComplete="new-password"
+                      value={formData.confirmPassword}
                       onChange={changeHandler}
                     />
 
@@ -217,7 +288,9 @@ const ChangePassword = () => {
                       type="button"
                       className="btn btn-outline-secondary"
                       onClick={() =>
-                        setShowConfirm(!showConfirm)
+                        setShowConfirm(
+                          !showConfirm
+                        )
                       }
                     >
                       {showConfirm ? (
@@ -229,18 +302,39 @@ const ChangePassword = () => {
 
                   </div>
 
+                  {formData.confirmPassword && (
+
+                    <small
+                      className={
+                        formData.newPassword ===
+                        formData.confirmPassword
+                          ? "text-success"
+                          : "text-danger"
+                      }
+                    >
+                      {formData.newPassword ===
+                      formData.confirmPassword
+                        ? "Passwords match"
+                        : "Passwords do not match"}
+                    </small>
+
+                  )}
+
                 </div>
 
                 <button
                   type="submit"
                   className="btn btn-primary w-100 py-2"
-                  disabled={loading}
+                  disabled={
+                    loading || !isFormValid
+                  }
                 >
                   <FaSave className="me-2" />
 
                   {loading
-                    ? "Updating..."
+                    ? "Updating Password..."
                     : "Change Password"}
+
                 </button>
 
               </form>
