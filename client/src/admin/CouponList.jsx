@@ -1,89 +1,69 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  FaUsers,
+  FaTags,
   FaSearch,
   FaEdit,
   FaTrash,
-  FaUserPlus,
+  FaPlus,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 
 import {
-  getUsers,
-  deleteUser,
-} from "../api/userApi";
+  getCoupons,
+  deleteCoupon,
+} from "../api/couponApi";
 
-const UserList = () => {
+const CouponList = () => {
   const [loading, setLoading] = useState(true);
-
-  const [users, setUsers] = useState([]);
-
+  const [coupons, setCoupons] = useState([]);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetchUsers();
+    fetchCoupons();
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchCoupons = async () => {
     try {
-
       setLoading(true);
 
-      const { data } = await getUsers();
+      const { data } = await getCoupons();
 
-      setUsers(
-        data.users ||
+      setCoupons(
+        data.coupons ||
         data.data ||
         []
       );
-
     } catch (error) {
-
       toast.error(
         error?.response?.data?.message ||
-        "Failed to load users."
+        "Failed to load coupons."
       );
-
     } finally {
-
       setLoading(false);
-
     }
   };
 
   const deleteHandler = async (id) => {
-
-    if (
-      !window.confirm(
-        "Delete this user?"
-      )
-    )
-      return;
+    if (!window.confirm("Delete this coupon?")) return;
 
     try {
+      await deleteCoupon(id);
 
-      await deleteUser(id);
+      toast.success("Coupon deleted.");
 
-      toast.success(
-        "User deleted successfully."
-      );
-
-      fetchUsers();
-
+      fetchCoupons();
     } catch (error) {
-
       toast.error(
         error?.response?.data?.message ||
-        "Unable to delete user."
+        "Unable to delete coupon."
       );
-
     }
   };
 
-  const filteredUsers = users.filter((user) =>
-    `${user.name} ${user.email}`
-      .toLowerCase()
+  const filteredCoupons = coupons.filter((coupon) =>
+    coupon.code
+      ?.toLowerCase()
       .includes(search.toLowerCase())
   );
 
@@ -96,26 +76,26 @@ const UserList = () => {
 
           <h2 className="fw-bold">
 
-            <FaUsers className="me-2 text-primary" />
+            <FaTags className="me-2 text-success" />
 
-            User Management
+            Coupon Management
 
           </h2>
 
           <p className="text-muted mb-0">
-            Manage all registered users
+            Manage all discount coupons
           </p>
 
         </div>
 
         <Link
-          to="/admin/users/add"
-          className="btn btn-primary"
+          to="/admin/coupons/add"
+          className="btn btn-success"
         >
 
-          <FaUserPlus className="me-2" />
+          <FaPlus className="me-2" />
 
-          Add User
+          Add Coupon
 
         </Link>
 
@@ -136,7 +116,7 @@ const UserList = () => {
             <input
               type="text"
               className="form-control"
-              placeholder="Search by name or email..."
+              placeholder="Search coupon code..."
               value={search}
               onChange={(e) =>
                 setSearch(e.target.value)
@@ -149,7 +129,7 @@ const UserList = () => {
 
             <div className="text-center py-5">
 
-              <div className="spinner-border text-primary" />
+              <div className="spinner-border text-success" />
 
             </div>
 
@@ -165,11 +145,11 @@ const UserList = () => {
 
                     <th>#</th>
 
-                    <th>User</th>
+                    <th>Coupon Code</th>
 
-                    <th>Email</th>
+                    <th>Discount</th>
 
-                    <th>Role</th>
+                    <th>Expiry</th>
 
                     <th>Status</th>
 
@@ -182,7 +162,8 @@ const UserList = () => {
                 </thead>
 
                 <tbody>
-                                    {filteredUsers.length === 0 ? (
+
+                                      {filteredCoupons.length === 0 ? (
 
                     <tr>
 
@@ -190,82 +171,57 @@ const UserList = () => {
                         colSpan="6"
                         className="text-center py-5 text-muted"
                       >
-                        No users found.
+                        No coupons found.
                       </td>
 
                     </tr>
 
                   ) : (
 
-                    filteredUsers.map((user, index) => (
+                    filteredCoupons.map((coupon, index) => (
 
-                      <tr key={user._id}>
+                      <tr key={coupon._id}>
 
                         <td>{index + 1}</td>
 
                         <td>
 
-                          <div className="d-flex align-items-center">
-
-                            <img
-                              src={
-                                user.avatar?.url ||
-                                "https://via.placeholder.com/45"
-                              }
-                              alt={user.name}
-                              className="rounded-circle me-3"
-                              width="45"
-                              height="45"
-                            />
-
-                            <div>
-
-                              <h6 className="mb-0">
-                                {user.name}
-                              </h6>
-
-                              <small className="text-muted">
-                                ID:
-                                {" "}
-                                {user._id.slice(-6)}
-                              </small>
-
-                            </div>
-
-                          </div>
-
-                        </td>
-
-                        <td>{user.email}</td>
-
-                        <td>
-
-                          <span
-                            className={`badge ${
-                              user.role === "Admin"
-                                ? "bg-danger"
-                                : user.role === "Vendor"
-                                ? "bg-warning text-dark"
-                                : "bg-primary"
-                            }`}
-                          >
-                            {user.role}
+                          <span className="fw-bold">
+                            {coupon.code}
                           </span>
 
                         </td>
 
                         <td>
 
+                          <span className="badge bg-success">
+                            {coupon.discount}%
+                          </span>
+
+                        </td>
+
+                        <td>
+
+                          {coupon.expiryDate
+                            ? new Date(
+                                coupon.expiryDate
+                              ).toLocaleDateString()
+                            : "-"}
+
+                        </td>
+
+                        <td>
+
                           <span
                             className={`badge ${
-                              user.isBlocked
-                                ? "bg-danger"
-                                : "bg-success"
+                              coupon.isActive
+                                ? "bg-success"
+                                : "bg-danger"
                             }`}
                           >
-                            {user.isBlocked
-                              ? "Blocked"
-                              : "Active"}
+                            {coupon.isActive
+                              ? "Active"
+                              : "Inactive"}
                           </span>
 
                         </td>
@@ -273,7 +229,7 @@ const UserList = () => {
                         <td className="text-center">
 
                           <Link
-                            to={`/admin/users/edit/${user._id}`}
+                            to={`/admin/coupons/edit/${coupon._id}`}
                             className="btn btn-sm btn-warning me-2"
                           >
                             <FaEdit />
@@ -282,7 +238,7 @@ const UserList = () => {
                           <button
                             className="btn btn-sm btn-danger"
                             onClick={() =>
-                              deleteHandler(user._id)
+                              deleteHandler(coupon._id)
                             }
                           >
                             <FaTrash />
@@ -312,5 +268,5 @@ const UserList = () => {
   );
 };
 
-export default UserList;
+export default CouponList;
                 

@@ -319,7 +319,7 @@ const Footer = () => {
                 className="me-2 text-warning"
               />
 
-              +91 7709881028
+              +91 7702561023
 
             </p>
 

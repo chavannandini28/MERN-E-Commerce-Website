@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  FaEdit,
+  FaUserEdit,
   FaSave,
   FaArrowLeft,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 
 import {
-  getBrandById,
-  updateBrand,
-} from "../api/brandApi";
+  getUserById,
+  updateUser,
+} from "../api/userApi";
 
-const EditBrand = () => {
+const EditUser = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -20,38 +20,38 @@ const EditBrand = () => {
 
   const [formData, setFormData] = useState({
     name: "",
-    description: "",
-    featured: false,
+    email: "",
+    role: "Customer",
+    isBlocked: false,
   });
 
   useEffect(() => {
-    fetchBrand();
+    fetchUser();
   }, []);
 
-  const fetchBrand = async () => {
+  const fetchUser = async () => {
     try {
       setLoading(true);
 
-      const { data } = await getBrandById(id);
+      const { data } = await getUserById(id);
 
-      const brand =
-        data.brand ||
+      const user =
+        data.user ||
         data.data ||
         {};
 
       setFormData({
-        name: brand.name || "",
-        description:
-          brand.description || "",
-        featured:
-          brand.featured || false,
+        name: user.name || "",
+        email: user.email || "",
+        role: user.role || "Customer",
+        isBlocked: user.isBlocked || false,
       });
 
     } catch (error) {
 
       toast.error(
         error?.response?.data?.message ||
-        "Failed to load brand."
+        "Failed to load user."
       );
 
     } finally {
@@ -83,9 +83,12 @@ const EditBrand = () => {
 
     e.preventDefault();
 
-    if (!formData.name.trim()) {
+    if (
+      !formData.name.trim() ||
+      !formData.email.trim()
+    ) {
       return toast.error(
-        "Brand name is required."
+        "Name and Email are required."
       );
     }
 
@@ -93,19 +96,19 @@ const EditBrand = () => {
 
       setLoading(true);
 
-      await updateBrand(id, formData);
+      await updateUser(id, formData);
 
       toast.success(
-        "Brand updated successfully."
+        "User updated successfully."
       );
 
-      navigate("/admin/brands");
+      navigate("/admin/users");
 
     } catch (error) {
 
       toast.error(
         error?.response?.data?.message ||
-        "Unable to update brand."
+        "Unable to update user."
       );
 
     } finally {
@@ -124,14 +127,14 @@ const EditBrand = () => {
 
           <h2 className="fw-bold">
 
-            <FaEdit className="me-2 text-warning" />
+            <FaUserEdit className="me-2 text-warning" />
 
-            Edit Brand
+            Edit User
 
           </h2>
 
           <p className="text-muted mb-0">
-            Update brand information
+            Update user information
           </p>
 
         </div>
@@ -167,67 +170,97 @@ const EditBrand = () => {
 
               <div className="row">
 
+                              {/* Name */}
 
-                              {/* Brand Name */}
-
-              <div className="col-12 mb-3">
+              <div className="col-md-6 mb-3">
 
                 <label className="form-label fw-semibold">
-                  Brand Name
-                  <span className="text-danger"> *</span>
+                  Full Name
                 </label>
 
                 <input
                   type="text"
                   className="form-control"
                   name="name"
-                  placeholder="Enter brand name"
                   value={formData.name}
                   onChange={changeHandler}
+                  placeholder="Enter full name"
                   required
                 />
 
               </div>
 
-              {/* Description */}
+              {/* Email */}
 
-              <div className="col-12 mb-3">
+              <div className="col-md-6 mb-3">
 
                 <label className="form-label fw-semibold">
-                  Description
+                  Email
                 </label>
 
-                <textarea
+                <input
+                  type="email"
                   className="form-control"
-                  rows="5"
-                  name="description"
-                  placeholder="Enter brand description"
-                  value={formData.description}
+                  name="email"
+                  value={formData.email}
                   onChange={changeHandler}
+                  placeholder="Enter email"
+                  required
                 />
 
               </div>
 
-              {/* Featured */}
+              {/* Role */}
 
-              <div className="col-12 mb-4">
+              <div className="col-md-6 mb-3">
 
-                <div className="form-check form-switch">
+                <label className="form-label fw-semibold">
+                  Role
+                </label>
+
+                <select
+                  className="form-select"
+                  name="role"
+                  value={formData.role}
+                  onChange={changeHandler}
+                >
+
+                  <option value="Customer">
+                    Customer
+                  </option>
+
+                  <option value="Vendor">
+                    Vendor
+                  </option>
+
+                  <option value="Admin">
+                    Admin
+                  </option>
+
+                </select>
+
+              </div>
+
+              {/* Block User */}
+
+              <div className="col-md-6 mb-3 d-flex align-items-center">
+
+                <div className="form-check form-switch mt-4">
 
                   <input
                     className="form-check-input"
                     type="checkbox"
-                    id="featured"
-                    name="featured"
-                    checked={formData.featured}
+                    id="isBlocked"
+                    name="isBlocked"
+                    checked={formData.isBlocked}
                     onChange={changeHandler}
                   />
 
                   <label
-                    htmlFor="featured"
-                    className="form-check-label fw-semibold"
+                    className="form-check-label fw-semibold ms-2"
+                    htmlFor="isBlocked"
                   >
-                    Featured Brand
+                    Block User
                   </label>
 
                 </div>
@@ -236,7 +269,7 @@ const EditBrand = () => {
 
               {/* Buttons */}
 
-              <div className="col-12">
+              <div className="col-12 mt-4">
 
                 <button
                   type="submit"
@@ -248,14 +281,14 @@ const EditBrand = () => {
 
                   {loading
                     ? "Updating..."
-                    : "Update Brand"}
+                    : "Update User"}
 
                 </button>
 
                 <button
                   type="button"
                   className="btn btn-secondary ms-3"
-                  onClick={() => navigate("/admin/brands")}
+                  onClick={() => navigate("/admin/users")}
                 >
                   Cancel
                 </button>
@@ -276,5 +309,5 @@ const EditBrand = () => {
   );
 };
 
-export default EditBrand;
-            
+export default EditUser;
+              

@@ -1,65 +1,71 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  FaArrowLeft,
+  FaImage,
+  FaSave,
+} from "react-icons/fa";
 import { toast } from "react-toastify";
 
 import { createProduct } from "../api/productApi";
-import { getCategories } from "../api/categoryApi";
 import { getBrands } from "../api/brandApi";
+import { getCategories } from "../api/categoryApi";
 
 const AddProduct = () => {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
 
-  const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [categories, setCategories] = useState([]);
 
-  const [thumbnailPreview, setThumbnailPreview] = useState("");
-
-  const [imagePreviews, setImagePreviews] = useState([]);
+  const [images, setImages] = useState([]);
+  const [preview, setPreview] = useState([]);
 
   const [formData, setFormData] = useState({
-    name: "",
-    slug: "",
+    title: "",
     description: "",
-    sku: "",
+    shortDescription: "",
+    category: "",
+    brand: "",
     price: "",
     discountPrice: "",
     stock: "",
-    category: "",
-    brand: "",
+    sku: "",
     featured: false,
-    thumbnail: null,
-    images: [],
   });
 
   useEffect(() => {
-    loadCategories();
     loadBrands();
+    loadCategories();
   }, []);
-
-  const loadCategories = async () => {
-    try {
-      const { data } = await getCategories();
-
-      setCategories(data.categories || data || []);
-    } catch (error) {
-      toast.error("Unable to load categories");
-    }
-  };
 
   const loadBrands = async () => {
     try {
       const { data } = await getBrands();
-
-      setBrands(data.brands || data || []);
+      setBrands(data?.brands || data?.data || []);
     } catch (error) {
-      toast.error("Unable to load brands");
+      toast.error(
+        error?.response?.data?.message ||
+          "Unable to load brands"
+      );
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      const { data } = await getCategories();
+      setCategories(data?.categories || data?.data || []);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          "Unable to load categories"
+      );
     }
   };
 
   const changeHandler = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, checked, type } = e.target;
 
     setFormData((prev) => ({
       ...prev,
@@ -70,46 +76,29 @@ const AddProduct = () => {
     }));
   };
 
-  const thumbnailHandler = (e) => {
-    const file = e.target.files[0];
-
-    if (!file) return;
-
-    setFormData((prev) => ({
-      ...prev,
-      thumbnail: file,
-    }));
-
-    setThumbnailPreview(
-      URL.createObjectURL(file)
-    );
-  };
-
-  const imagesHandler = (e) => {
+  const imageHandler = (e) => {
     const files = Array.from(e.target.files);
 
-    setFormData((prev) => ({
-      ...prev,
-      images: files,
-    }));
+    setImages(files);
 
-    const previews = files.map((file) =>
-      URL.createObjectURL(file)
+    setPreview(
+      files.map((file) =>
+        URL.createObjectURL(file)
+      )
     );
-
-    setImagePreviews(previews);
   };
 
   const submitHandler = async (e) => {
     e.preventDefault();
 
-    if (!formData.thumbnail) {
-      return toast.error("Thumbnail is required");
-    }
-
-    if (formData.images.length === 0) {
+    if (
+      !formData.title ||
+      !formData.category ||
+      !formData.brand ||
+      !formData.price
+    ) {
       return toast.error(
-        "Please upload product images"
+        "Please fill all required fields."
       );
     }
 
@@ -118,49 +107,27 @@ const AddProduct = () => {
 
       const data = new FormData();
 
-      data.append("name", formData.name);
-      data.append("slug", formData.slug);
-      data.append(
-        "description",
-        formData.description
-      );
-      data.append("sku", formData.sku);
-      data.append("price", formData.price);
-      data.append(
-        "discountPrice",
-        formData.discountPrice
-      );
-      data.append("stock", formData.stock);
-      data.append(
-        "category",
-        formData.category
-      );
-      data.append("brand", formData.brand);
-      data.append(
-        "featured",
-        formData.featured
+      Object.entries(formData).forEach(
+        ([key, value]) => {
+          data.append(key, value);
+        }
       );
 
-      data.append(
-        "thumbnail",
-        formData.thumbnail
-      );
-
-      formData.images.forEach((image) => {
+      images.forEach((image) => {
         data.append("images", image);
       });
 
-      // API call will be added in Part 3
-            await createProduct(data);
+      await createProduct(data);
 
-      toast.success("Product Added Successfully");
+      toast.success(
+        "Product Added Successfully"
+      );
 
       navigate("/admin/products");
-
     } catch (error) {
       toast.error(
         error?.response?.data?.message ||
-          "Failed to create product"
+          "Unable to add product"
       );
     } finally {
       setLoading(false);
@@ -170,337 +137,294 @@ const AddProduct = () => {
   return (
     <div className="container-fluid py-4">
 
-      <div className="card shadow border-0">
+      <div className="d-flex justify-content-between align-items-center mb-4">
 
-        <div className="card-header bg-dark text-white">
-
-          <h3 className="mb-0">
+        <div>
+          <h2 className="fw-bold">
             Add New Product
-          </h3>
+          </h2>
 
+          <p className="text-muted">
+            Create a new product
+          </p>
         </div>
+
+        <button
+          className="btn btn-outline-secondary"
+          onClick={() => navigate(-1)}
+        >
+          <FaArrowLeft className="me-2" />
+          Back
+        </button>
+
+      </div>
+
+      <div className="card shadow border-0">
 
         <div className="card-body">
 
           <form onSubmit={submitHandler}>
 
             <div className="row">
-
-              {/* Product Name */}
-
-              <div className="col-md-6 mb-3">
-
-                <label className="form-label">
-                  Product Name
-                </label>
-
-                <input
-                  type="text"
-                  name="name"
-                  className="form-control"
-                  value={formData.name}
-                  onChange={changeHandler}
-                  required
-                />
-
-              </div>
-
-              {/* Slug */}
-
-              <div className="col-md-6 mb-3">
-
-                <label className="form-label">
-                  Slug
-                </label>
-
-                <input
-                  type="text"
-                  name="slug"
-                  className="form-control"
-                  value={formData.slug}
-                  onChange={changeHandler}
-                  required
-                />
-
-              </div>
-
-              {/* SKU */}
-
-              <div className="col-md-6 mb-3">
-
-                <label className="form-label">
-                  SKU
-                </label>
-
-                <input
-                  type="text"
-                  name="sku"
-                  className="form-control"
-                  value={formData.sku}
-                  onChange={changeHandler}
-                  required
-                />
-
-              </div>
-
-              {/* Price */}
-
-              <div className="col-md-3 mb-3">
-
-                <label className="form-label">
-                  Price
-                </label>
-
-                <input
-                  type="number"
-                  name="price"
-                  className="form-control"
-                  value={formData.price}
-                  onChange={changeHandler}
-                  required
-                />
-
-              </div>
-
-              {/* Discount Price */}
-
-              <div className="col-md-3 mb-3">
-
-                <label className="form-label">
-                  Discount Price
-                </label>
-
-                <input
-                  type="number"
-                  name="discountPrice"
-                  className="form-control"
-                  value={formData.discountPrice}
-                  onChange={changeHandler}
-                />
-
-              </div>
-
-              {/* Stock */}
-
-              <div className="col-md-4 mb-3">
-
-                <label className="form-label">
-                  Stock
-                </label>
-
-                <input
-                  type="number"
-                  name="stock"
-                  className="form-control"
-                  value={formData.stock}
-                  onChange={changeHandler}
-                  required
-                />
-
-              </div>
-
-              {/* Category */}
-
-              <div className="col-md-4 mb-3">
-
-                <label className="form-label">
-                  Category
-                </label>
-
-                <select
-                  name="category"
-                  className="form-select"
-                  value={formData.category}
-                  onChange={changeHandler}
-                  required
-                >
-
-                  <option value="">
-                    Select Category
-                  </option>
-
-                  {categories.map((cat) => (
-
-                    <option
-                      key={cat._id}
-                      value={cat._id}
-                    >
-                      {cat.name}
-                    </option>
-
-                  ))}
-
-                </select>
-
-              </div>
-
-              {/* Brand */}
-
-              <div className="col-md-4 mb-3">
-
-                <label className="form-label">
-                  Brand
-                </label>
-
-                <select
-                  name="brand"
-                  className="form-select"
-                  value={formData.brand}
-                  onChange={changeHandler}
-                  required
-                >
-
-                  <option value="">
-                    Select Brand
-                  </option>
-
-                  {brands.map((brand) => (
-
-                    <option
-                      key={brand._id}
-                      value={brand._id}
-                    >
-                      {brand.name}
-                    </option>
-
-                  ))}
-
-                </select>
-
-              </div>
-
-              {/* Description */}
-
-              <div className="col-12 mb-3">
-
-                <label className="form-label">
-                  Description
-                </label>
-
-                <textarea
-                  rows="5"
-                  name="description"
-                  className="form-control"
-                  value={formData.description}
-                  onChange={changeHandler}
-                  required
-                />
-
-              </div>
-
-              {/* Featured */}
-
-              <div className="col-12 mb-4">
-
-                <div className="form-check">
-
-                  <input
-                    type="checkbox"
-                    name="featured"
-                    className="form-check-input"
-                    checked={formData.featured}
-                    onChange={changeHandler}
-                  />
-
-                  <label className="form-check-label">
-                    Featured Product
-                  </label>
-
-                </div>
-
-              </div>
-
-              {/* Thumbnail */}
-
-              <div className="col-md-6 mb-4">
-
-                <label className="form-label">
-                  Thumbnail
-                </label>
-
-                <input
-                  type="file"
-                  className="form-control"
-                  accept="image/*"
-                  onChange={thumbnailHandler}
-                />
-
-                {thumbnailPreview && (
-
-                  <img
-                    src={thumbnailPreview}
-                    alt="Thumbnail Preview"
-                    className="img-thumbnail mt-3"
-                    style={{
-                      width: 180,
-                      height: 180,
-                      objectFit: "cover",
-                    }}
-                  />
-
-                )}
-
-              </div>
-
-              {/* Product Images */}
-
-              <div className="col-md-6 mb-4">
-
-                <label className="form-label">
-                  Product Images
-                </label>
-
-                <input
-                  type="file"
-                  multiple
-                  className="form-control"
-                  accept="image/*"
-                  onChange={imagesHandler}
-                />
-
-                <div className="d-flex flex-wrap gap-2 mt-3">
-
-                  {imagePreviews.map((image, index) => (
-
-                    <img
-                      key={index}
-                      src={image}
-                      alt=""
-                      className="img-thumbnail"
-                      style={{
-                        width: 100,
-                        height: 100,
-                        objectFit: "cover",
-                      }}
-                    />
-
-                  ))}
-
-                </div>
-
-              </div>
+              {/* Product Title */}
+<div className="col-md-6 mb-3">
+  <label className="form-label fw-semibold">
+    Product Title
+  </label>
+
+  <input
+    type="text"
+    className="form-control"
+    name="title"
+    value={formData.title}
+    onChange={changeHandler}
+    placeholder="Enter product title"
+    required
+  />
+</div>
+
+{/* SKU */}
+<div className="col-md-6 mb-3">
+  <label className="form-label fw-semibold">
+    SKU
+  </label>
+
+  <input
+    type="text"
+    className="form-control"
+    name="sku"
+    value={formData.sku}
+    onChange={changeHandler}
+    placeholder="Product SKU"
+  />
+</div>
+
+{/* Description */}
+<div className="col-12 mb-3">
+  <label className="form-label fw-semibold">
+    Description
+  </label>
+
+  <textarea
+    rows={5}
+    className="form-control"
+    name="description"
+    value={formData.description}
+    onChange={changeHandler}
+    placeholder="Full product description"
+  />
+</div>
+
+{/* Short Description */}
+<div className="col-12 mb-3">
+  <label className="form-label fw-semibold">
+    Short Description
+  </label>
+
+  <textarea
+    rows={3}
+    className="form-control"
+    name="shortDescription"
+    value={formData.shortDescription}
+    onChange={changeHandler}
+    placeholder="Short description"
+  />
+</div>
+
+{/* Category */}
+<div className="col-md-6 mb-3">
+  <label className="form-label fw-semibold">
+    Category
+  </label>
+
+  <select
+    className="form-select"
+    name="category"
+    value={formData.category}
+    onChange={changeHandler}
+    required
+  >
+    <option value="">Select Category</option>
+
+    {categories.map((category) => (
+      <option
+        key={category._id}
+        value={category._id}
+      >
+        {category.name}
+      </option>
+    ))}
+  </select>
+</div>
+
+{/* Brand */}
+<div className="col-md-6 mb-3">
+  <label className="form-label fw-semibold">
+    Brand
+  </label>
+
+  <select
+    className="form-select"
+    name="brand"
+    value={formData.brand}
+    onChange={changeHandler}
+    required
+  >
+    <option value="">Select Brand</option>
+
+    {brands.map((brand) => (
+      <option
+        key={brand._id}
+        value={brand._id}
+      >
+        {brand.name}
+      </option>
+    ))}
+  </select>
+</div>
+
+{/* Price */}
+<div className="col-md-4 mb-3">
+  <label className="form-label fw-semibold">
+    Price
+  </label>
+
+  <input
+    type="number"
+    className="form-control"
+    name="price"
+    value={formData.price}
+    onChange={changeHandler}
+    required
+  />
+</div>
+
+{/* Discount Price */}
+<div className="col-md-4 mb-3">
+  <label className="form-label fw-semibold">
+    Discount Price
+  </label>
+
+  <input
+    type="number"
+    className="form-control"
+    name="discountPrice"
+    value={formData.discountPrice}
+    onChange={changeHandler}
+  />
+</div>
+
+{/* Stock */}
+<div className="col-md-4 mb-3">
+  <label className="form-label fw-semibold">
+    Stock
+  </label>
+
+  <input
+    type="number"
+    className="form-control"
+    name="stock"
+    value={formData.stock}
+    onChange={changeHandler}
+    required
+  />
+</div>
+
+{/* Featured */}
+<div className="col-12 mb-4">
+  <div className="form-check form-switch">
+    <input
+      className="form-check-input"
+      type="checkbox"
+      id="featured"
+      name="featured"
+      checked={formData.featured}
+      onChange={changeHandler}
+    />
+
+    <label
+      className="form-check-label"
+      htmlFor="featured"
+    >
+      Featured Product
+    </label>
+  </div>
+</div>
+{/* Product Images */}
+<div className="col-12 mb-4">
+  <label className="form-label fw-semibold">
+    <FaImage className="me-2" />
+    Product Images
+  </label>
+
+  <input
+    type="file"
+    className="form-control"
+    accept="image/*"
+    multiple
+    onChange={imageHandler}
+  />
+</div>
+
+{/* Image Preview */}
+{preview.length > 0 && (
+  <div className="col-12 mb-4">
+    <div className="row">
+      {preview.map((image, index) => (
+        <div
+          className="col-lg-2 col-md-3 col-4 mb-3"
+          key={index}
+        >
+          <img
+            src={image}
+            alt="Preview"
+            className="img-fluid rounded shadow-sm border"
+            style={{
+              width: "100%",
+              height: "140px",
+              objectFit: "cover",
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
+{/* Submit Button */}
+<div className="col-12">
+  <div className="d-flex justify-content-end gap-2">
+
+    <button
+      type="button"
+      className="btn btn-secondary"
+      onClick={() => navigate(-1)}
+    >
+      Cancel
+    </button>
+
+    <button
+      type="submit"
+      className="btn btn-primary"
+      disabled={loading}
+    >
+      <FaSave className="me-2" />
+
+      {loading
+        ? "Saving..."
+        : "Save Product"}
+    </button>
+
+  </div>
+</div>
 
             </div>
-
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={loading}
-            >
-              {loading
-                ? "Creating Product..."
-                : "Create Product"}
-            </button>
-
           </form>
-
         </div>
-
       </div>
-
     </div>
   );
-
-  };
+};
 
 export default AddProduct;
+            

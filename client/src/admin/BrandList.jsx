@@ -5,6 +5,7 @@ import {
   FaEdit,
   FaTrash,
   FaSearch,
+  FaTags,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 
@@ -14,72 +15,96 @@ import {
 } from "../api/brandApi";
 
 const BrandList = () => {
-  const [brands, setBrands] = useState([]);
-  const [filteredBrands, setFilteredBrands] = useState([]);
-  const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const [brands, setBrands] = useState([]);
+
+  const [search, setSearch] = useState("");
+
   useEffect(() => {
-    loadBrands();
+    fetchBrands();
   }, []);
 
-  const loadBrands = async () => {
+  const fetchBrands = async () => {
     try {
+
+      setLoading(true);
+
       const { data } = await getBrands();
 
-      const list = data.brands || data || [];
+      setBrands(
+        data.brands ||
+        data.data ||
+        []
+      );
 
-      setBrands(list);
-      setFilteredBrands(list);
-    } catch {
-      toast.error("Unable to load brands");
+    } catch (error) {
+
+      toast.error(
+        error?.response?.data?.message ||
+        "Failed to load brands."
+      );
+
     } finally {
+
       setLoading(false);
+
     }
-  };
-
-  const searchHandler = (e) => {
-    const value = e.target.value;
-
-    setKeyword(value);
-
-    setFilteredBrands(
-      brands.filter((brand) =>
-        brand.name
-          ?.toLowerCase()
-          .includes(value.toLowerCase())
-      )
-    );
   };
 
   const deleteHandler = async (id) => {
-    if (!window.confirm("Delete this brand?")) return;
+
+    if (
+      !window.confirm(
+        "Delete this brand?"
+      )
+    )
+      return;
 
     try {
+
       await deleteBrand(id);
 
-      toast.success("Brand deleted");
+      toast.success(
+        "Brand deleted successfully."
+      );
 
-      loadBrands();
-    } catch {
-      toast.error("Delete failed");
+      fetchBrands();
+
+    } catch (error) {
+
+      toast.error(
+        error?.response?.data?.message ||
+        "Unable to delete brand."
+      );
+
     }
   };
 
-  if (loading) {
-    return (
-      <div className="text-center py-5">
-        <h3>Loading Brands...</h3>
-      </div>
+  const filteredBrands =
+    brands.filter((brand) =>
+      brand.name
+        ?.toLowerCase()
+        .includes(search.toLowerCase())
     );
-  }
 
   return (
-    <div className="container-fluid">
+    <div className="container-fluid py-4">
 
       <div className="d-flex justify-content-between align-items-center mb-4">
 
-        <h2>Brands</h2>
+        <div>
+
+          <h2 className="fw-bold">
+            <FaTags className="me-2 text-primary" />
+            Brand Management
+          </h2>
+
+          <p className="text-muted mb-0">
+            Manage all brands
+          </p>
+
+        </div>
 
         <Link
           to="/admin/brands/add"
@@ -91,93 +116,144 @@ const BrandList = () => {
 
       </div>
 
-      <div className="input-group mb-4">
+      <div className="card border-0 shadow">
 
-        <span className="input-group-text">
-          <FaSearch />
-        </span>
+        <div className="card-body">
 
-        <input
-          className="form-control"
-          placeholder="Search Brand..."
-          value={keyword}
-          onChange={searchHandler}
-        />
+          <div className="input-group mb-4">
 
-      </div>
+            <span className="input-group-text">
 
-      <div className="card shadow">
+              <FaSearch />
 
-        <div className="table-responsive">
+            </span>
 
-          <table className="table table-hover align-middle">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search brands..."
+              value={search}
+              onChange={(e) =>
+                setSearch(e.target.value)
+              }
+            />
 
-            <thead className="table-dark">
+          </div>
 
-              <tr>
-                <th>Logo</th>
-                <th>Name</th>
-                <th>Slug</th>
-                <th>Actions</th>
-              </tr>
+          {loading ? (
 
-            </thead>
+            <div className="text-center py-5">
 
-            <tbody>
+              <div className="spinner-border text-primary" />
 
-              {filteredBrands.map((brand) => (
+            </div>
 
-                <tr key={brand._id}>
+          ) : (
 
-                  <td>
+            <div className="table-responsive">
 
-                    <img
-                      src={
-                        brand.logo?.url ||
-                        "https://via.placeholder.com/60"
-                      }
-                      alt={brand.name}
-                      width="60"
-                      height="60"
-                      style={{
-                        borderRadius: 8,
-                        objectFit: "cover",
-                      }}
-                    />
+              <table className="table table-hover align-middle">
 
-                  </td>
+                <thead className="table-dark">
 
-                  <td>{brand.name}</td>
+                  <tr>
 
-                  <td>{brand.slug}</td>
+                    <th>#</th>
 
-                  <td>
+                    <th>Brand</th>
 
-                    <Link
-                      to={`/admin/brands/edit/${brand._id}`}
-                      className="btn btn-warning btn-sm me-2"
+                    <th>Description</th>
+
+                    <th>Featured</th>
+
+                    <th className="text-center">
+                      Actions
+                    </th>
+
+                  </tr>
+
+                </thead>
+
+                <tbody>
+
+                                  {filteredBrands.length === 0 ? (
+
+                  <tr>
+
+                    <td
+                      colSpan="5"
+                      className="text-center py-5 text-muted"
                     >
-                      <FaEdit />
-                    </Link>
+                      No brands found.
+                    </td>
 
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() =>
-                        deleteHandler(brand._id)
-                      }
-                    >
-                      <FaTrash />
-                    </button>
+                  </tr>
 
-                  </td>
+                ) : (
 
-                </tr>
+                  filteredBrands.map((brand, index) => (
 
-              ))}
+                    <tr key={brand._id}>
 
-            </tbody>
+                      <td>{index + 1}</td>
 
-          </table>
+                      <td className="fw-semibold">
+                        {brand.name}
+                      </td>
+
+                      <td>
+                        {brand.description || "-"}
+                      </td>
+
+                      <td>
+
+                        <span
+                          className={`badge ${
+                            brand.featured
+                              ? "bg-success"
+                              : "bg-secondary"
+                          }`}
+                        >
+                          {brand.featured
+                            ? "Yes"
+                            : "No"}
+                        </span>
+
+                      </td>
+
+                      <td className="text-center">
+
+                        <Link
+                          to={`/admin/brands/edit/${brand._id}`}
+                          className="btn btn-sm btn-warning me-2"
+                        >
+                          <FaEdit />
+                        </Link>
+
+                        <button
+                          className="btn btn-sm btn-danger"
+                          onClick={() =>
+                            deleteHandler(brand._id)
+                          }
+                        >
+                          <FaTrash />
+                        </button>
+
+                      </td>
+
+                    </tr>
+
+                  ))
+
+                )}
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          )}
 
         </div>
 
@@ -188,3 +264,4 @@ const BrandList = () => {
 };
 
 export default BrandList;
+                

@@ -1,11 +1,19 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { FaFolderPlus, FaSave, FaArrowLeft } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  FaFolderOpen,
+  FaSave,
+  FaArrowLeft,
+} from "react-icons/fa";
 import { toast } from "react-toastify";
 
-import { createCategory } from "../api/categoryApi";
+import {
+  getCategoryById,
+  updateCategory,
+} from "../api/categoryApi";
 
-const AddCategory = () => {
+const EditCategory = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
@@ -16,8 +24,57 @@ const AddCategory = () => {
     featured: false,
   });
 
+  useEffect(() => {
+    fetchCategory();
+  }, [id]);
+
+  // ===========================
+  // Fetch Category
+  // ===========================
+
+  const fetchCategory = async () => {
+    try {
+      setLoading(true);
+
+      const { data } =
+        await getCategoryById(id);
+
+      const category =
+        data.category || data.data;
+
+      setFormData({
+        name: category.name || "",
+        description:
+          category.description || "",
+        featured:
+          category.featured || false,
+      });
+
+    } catch (error) {
+
+      toast.error(
+        error?.response?.data?.message ||
+        "Unable to load category."
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+  };
+
+  // ===========================
+  // Input Change
+  // ===========================
+
   const changeHandler = (e) => {
-    const { name, value, checked, type } = e.target;
+    const {
+      name,
+      value,
+      checked,
+      type,
+    } = e.target;
 
     setFormData((prev) => ({
       ...prev,
@@ -28,40 +85,6 @@ const AddCategory = () => {
     }));
   };
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
-
-    if (!formData.name.trim()) {
-      return toast.error(
-        "Category name is required."
-      );
-    }
-
-    try {
-      setLoading(true);
-
-      await createCategory(formData);
-
-      toast.success(
-        "Category created successfully."
-      );
-
-      navigate("/admin/categories");
-
-    } catch (error) {
-
-      toast.error(
-        error?.response?.data?.message ||
-        "Unable to create category."
-      );
-
-    } finally {
-
-      setLoading(false);
-
-    }
-  };
-
   return (
     <div className="container-fluid py-4">
 
@@ -70,12 +93,12 @@ const AddCategory = () => {
         <div>
 
           <h2 className="fw-bold">
-            <FaFolderPlus className="me-2" />
-            Add Category
+            <FaFolderOpen className="me-2" />
+            Edit Category
           </h2>
 
           <p className="text-muted mb-0">
-            Create a new product category
+            Update category information
           </p>
 
         </div>
@@ -94,16 +117,15 @@ const AddCategory = () => {
 
         <div className="card-body p-4">
 
-          <form onSubmit={submitHandler}>
-
+          <form>
             <div className="row">
 
-                            {/* Category Name */}
+                              {/* Category Name */}
 
-              <div className="col-md-12 mb-3">
+              <div className="col-12 mb-3">
 
                 <label className="form-label fw-semibold">
-                  Category Name <span className="text-danger">*</span>
+                  Category Name
                 </label>
 
                 <input
@@ -113,13 +135,14 @@ const AddCategory = () => {
                   placeholder="Enter category name"
                   value={formData.name}
                   onChange={changeHandler}
+                  required
                 />
 
               </div>
 
               {/* Description */}
 
-              <div className="col-md-12 mb-3">
+              <div className="col-12 mb-3">
 
                 <label className="form-label fw-semibold">
                   Description
@@ -138,7 +161,7 @@ const AddCategory = () => {
 
               {/* Featured */}
 
-              <div className="col-md-12 mb-4">
+              <div className="col-12 mb-4">
 
                 <div className="form-check form-switch">
 
@@ -152,8 +175,8 @@ const AddCategory = () => {
                   />
 
                   <label
-                    className="form-check-label fw-semibold"
                     htmlFor="featured"
+                    className="form-check-label"
                   >
                     Featured Category
                   </label>
@@ -167,22 +190,57 @@ const AddCategory = () => {
               <div className="col-12">
 
                 <button
-                  type="submit"
-                  className="btn btn-primary px-5"
+                  type="button"
+                  className="btn btn-primary px-4"
                   disabled={loading}
+                  onClick={async () => {
+
+                    if (!formData.name.trim()) {
+                      return toast.error(
+                        "Category name is required."
+                      );
+                    }
+
+                    try {
+
+                      setLoading(true);
+
+                      await updateCategory(id, formData);
+
+                      toast.success(
+                        "Category updated successfully."
+                      );
+
+                      navigate("/admin/categories");
+
+                    } catch (error) {
+
+                      toast.error(
+                        error?.response?.data?.message ||
+                        "Unable to update category."
+                      );
+
+                    } finally {
+
+                      setLoading(false);
+
+                    }
+
+                  }}
                 >
+
                   <FaSave className="me-2" />
 
                   {loading
-                    ? "Creating..."
-                    : "Create Category"}
+                    ? "Updating..."
+                    : "Update Category"}
 
                 </button>
 
                 <button
                   type="button"
-                  className="btn btn-outline-secondary ms-3"
-                  onClick={() => navigate("/admin/categories")}
+                  className="btn btn-secondary ms-3"
+                  onClick={() => navigate(-1)}
                 >
                   Cancel
                 </button>
@@ -201,5 +259,5 @@ const AddCategory = () => {
   );
 };
 
-export default AddCategory;
+export default EditCategory;
             
