@@ -1,238 +1,136 @@
-import axios from "axios";
-
-
-// ======================================
-// Axios Instance
-// ======================================
-
-const API = axios.create({
-
-  baseURL: "http://localhost:5000/api/auth",
-
-  headers: {
-    "Content-Type": "application/json",
-  },
-
-});
-
-
-
+import axiosInstance from "./axiosInstance";
 
 // ======================================
-// Attach JWT Token Automatically
+// Register
 // ======================================
-
-API.interceptors.request.use(
-
-  (config) => {
-
-    const token = localStorage.getItem("token");
-
-
-    if (token) {
-
-      config.headers.Authorization =
-        `Bearer ${token}`;
-
-    }
-
-
-    return config;
-
-  },
-
-
-  (error) => {
-
-    return Promise.reject(error);
-
-  }
-
-);
-
-
-
-
-
-// ======================================
-// Register User
-// POST /api/auth/register
-// ======================================
-
-export const registerUser = (userData) => {
-
-  return API.post(
-    "/register",
+export const registerUser = async (userData) => {
+  const { data } = await axiosInstance.post(
+    "/auth/register",
     userData
   );
 
+  return data;
 };
 
-
-
-
-
 // ======================================
-// Login User
-// POST /api/auth/login
+// Login
 // ======================================
-
-export const loginUser = (loginData) => {
-
-  return API.post(
-    "/login",
+export const loginUser = async (loginData) => {
+  const { data } = await axiosInstance.post(
+    "/auth/login",
     loginData
   );
 
+  if (data.token) {
+    localStorage.setItem("token", data.token);
+  }
+
+  if (data.user) {
+    localStorage.setItem(
+      "user",
+      JSON.stringify(data.user)
+    );
+  }
+
+  return data;
 };
 
-
-
-
-
 // ======================================
-// Logout User
-// POST /api/auth/logout
+// Logout
 // ======================================
-
-export const logoutUser = () => {
-
-  return API.post(
-    "/logout"
+export const logoutUser = async () => {
+  const { data } = await axiosInstance.post(
+    "/auth/logout"
   );
 
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+
+  return data;
 };
 
-
-
-
-
 // ======================================
-// Get Logged User Profile
-// GET /api/auth/profile
+// Get Profile
 // ======================================
-
-export const getMyProfile = () => {
-
-  return API.get(
-    "/profile"
+export const getMyProfile = async () => {
+  const { data } = await axiosInstance.get(
+    "/auth/profile"
   );
 
+  return data;
 };
-
-
-
-
 
 // ======================================
 // Update Profile
-// PUT /api/auth/profile
 // ======================================
-
-export const updateProfile = (userData) => {
-
-  return API.put(
-    "/profile",
+export const updateProfile = async (userData) => {
+  const { data } = await axiosInstance.put(
+    "/auth/profile",
     userData
   );
 
+  return data;
 };
-
-
-
-
 
 // ======================================
 // Change Password
-// PUT /api/auth/change-password
 // ======================================
-
-export const changePassword = (passwordData) => {
-
-  return API.put(
-    "/change-password",
+export const changePassword = async (passwordData) => {
+  const { data } = await axiosInstance.put(
+    "/auth/change-password",
     passwordData
   );
 
+  return data;
 };
-
-
-
-
 
 // ======================================
 // Forgot Password
-// POST /api/auth/forgot-password
 // ======================================
-
-export const forgotPassword = (email) => {
-
-  return API.post(
-    "/forgot-password",
-    email
+export const forgotPassword = async (email) => {
+  const { data } = await axiosInstance.post(
+    "/auth/forgot-password",
+    { email }
   );
 
+  return data;
 };
-
-
-
-
 
 // ======================================
 // Reset Password
-// POST /api/auth/reset-password/:token
 // ======================================
-
-export const resetPassword = (
+export const resetPassword = async (
   token,
-  password
+  passwordData
 ) => {
-
-  return API.post(
-    `/reset-password/${token}`,
-    password
+  const { data } = await axiosInstance.put(
+    `/auth/reset-password/${token}`,
+    passwordData
   );
 
+  return data;
 };
-
-
-
-
 
 // ======================================
 // Verify OTP
-// POST /api/auth/verify-otp
 // ======================================
-
-export const verifyOTP = (data) => {
-
-  return API.post(
-    "/verify-otp",
-    data
+export const verifyOTP = async (otpData) => {
+  const { data } = await axiosInstance.post(
+    "/auth/verify-otp",
+    otpData
   );
 
+  return data;
 };
-
-
-
-
 
 // ======================================
 // Resend OTP
-// POST /api/auth/resend-otp
 // ======================================
-
-export const resendOTP = (data) => {
-
-  return API.post(
-    "/resend-otp",
-    data
+export const resendOTP = async (emailData) => {
+  const { data } = await axiosInstance.post(
+    "/auth/resend-otp",
+    emailData
   );
 
+  return data;
 };
-
-
-
-
-
-export default API;

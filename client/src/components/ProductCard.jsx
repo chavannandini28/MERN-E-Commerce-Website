@@ -12,6 +12,11 @@ import ProductQuickView from "./ProductQuickView";
 const ProductCard = ({ product }) => {
   const [showQuickView, setShowQuickView] = useState(false);
 
+  const image =
+    product.thumbnail?.url ||
+    product.images?.[0]?.url ||
+    "https://via.placeholder.com/400x400?text=No+Image";
+
   return (
     <>
       <div
@@ -31,11 +36,8 @@ const ProductCard = ({ product }) => {
           }}
         >
           <img
-            src={
-              product.images?.[0]?.url ||
-              "https://via.placeholder.com/400x400?text=No+Image"
-            }
-            alt={product.name}
+            src={image}
+            alt={product.title}
             className="card-img-top"
             style={{
               height: "260px",
@@ -44,15 +46,17 @@ const ProductCard = ({ product }) => {
             }}
           />
 
-          <span
-            className="badge bg-danger position-absolute"
-            style={{
-              top: "15px",
-              left: "15px",
-            }}
-          >
-            New
-          </span>
+          {product.discountPercentage > 0 && (
+            <span
+              className="badge bg-danger position-absolute"
+              style={{
+                top: "15px",
+                left: "15px",
+              }}
+            >
+              {product.discountPercentage}% OFF
+            </span>
+          )}
 
           <button
             className="btn btn-light rounded-circle position-absolute"
@@ -76,26 +80,56 @@ const ProductCard = ({ product }) => {
           </small>
 
           <h5 className="fw-bold mt-2">
-            {product.name}
+            {product.title}
           </h5>
 
           <div className="mb-2">
 
-            <FaStar className="text-warning" />
-            <FaStar className="text-warning" />
-            <FaStar className="text-warning" />
-            <FaStar className="text-warning" />
-            <FaStar className="text-warning me-2" />
+            <FaStar className="text-warning me-1" />
 
-            <small className="text-muted">
-              (4.8)
+            <small className="fw-semibold">
+              {product.rating?.toFixed(1) || "0.0"}
+            </small>
+
+            <small className="text-muted ms-2">
+              ({product.numReviews || 0} Reviews)
             </small>
 
           </div>
 
-          <h4 className="text-success fw-bold mb-3">
-            ₹{product.price}
-          </h4>
+          <div className="mb-3">
+
+            {product.discountPrice > 0 ? (
+              <>
+                <h4 className="text-success fw-bold d-inline">
+                  ₹{product.discountPrice}
+                </h4>
+
+                <span className="text-muted text-decoration-line-through ms-2">
+                  ₹{product.price}
+                </span>
+              </>
+            ) : (
+              <h4 className="text-success fw-bold">
+                ₹{product.price}
+              </h4>
+            )}
+
+          </div>
+
+          <div className="mb-3">
+
+            {product.stock > 0 ? (
+              <span className="badge bg-success">
+                In Stock
+              </span>
+            ) : (
+              <span className="badge bg-danger">
+                Out of Stock
+              </span>
+            )}
+
+          </div>
 
           <div className="mt-auto">
 
@@ -116,9 +150,13 @@ const ProductCard = ({ product }) => {
 
             <button
               className="btn btn-success w-100"
+              disabled={product.stock === 0}
             >
               <FaShoppingCart className="me-2" />
-              Add To Cart
+
+              {product.stock > 0
+                ? "Add To Cart"
+                : "Out Of Stock"}
             </button>
 
           </div>

@@ -2,134 +2,78 @@ const express = require("express");
 
 const router = express.Router();
 
-
 const {
+  register,
+  login,
+  logout,
+  getProfile,
+  updateProfile,
+  changePassword,
+  forgotPassword,
+  resetPassword,
+  verifyOTP,
+  resendOTP,
+} = require("../controllers/authController");
 
-register,
-login,
-logout,
-getProfile,
-updateProfile,
-changePassword,
-forgotPassword,
-resetPassword,
-verifyOTP,
-resendOTP
+const { protect } = require("../middleware/authMiddleware");
+const authorize = require("../middleware/roleMiddleware");
 
-}=require("../controllers/authController");
+// ======================================
+// PUBLIC ROUTES
+// ======================================
 
+// Register
+router.post("/register", register);
 
+// Login
+router.post("/login", login);
 
-const {
-protect
-}=require("../middleware/authMiddleware");
+// Forgot Password
+router.post("/forgot-password", forgotPassword);
 
+// Reset Password
+router.put("/reset-password/:token", resetPassword);
 
-const authorize =
-require("../middleware/roleMiddleware");
+// Verify OTP
+router.post("/verify-otp", verifyOTP);
 
+// Resend OTP
+router.post("/resend-otp", resendOTP);
 
+// ======================================
+// PRIVATE ROUTES
+// ======================================
 
+// Logout
+router.post("/logout", protect, logout);
 
-// PUBLIC
+// Get Profile
+router.get("/profile", protect, getProfile);
 
-router.post(
-"/register",
-register
-);
+// Alternative Profile Route
+router.get("/me", protect, getProfile);
 
+// Update Profile
+router.put("/profile", protect, updateProfile);
 
-router.post(
-"/login",
-login
-);
+// Change Password
+router.put("/change-password", protect, changePassword);
 
-
-router.post(
-"/logout",
-logout
-);
-
-
-
-router.post(
-"/forgot-password",
-forgotPassword
-);
-
-
-
-router.post(
-"/reset-password/:token",
-resetPassword
-);
-
-
-
-router.post(
-"/verify-otp",
-verifyOTP
-);
-
-
-
-router.post(
-"/resend-otp",
-resendOTP
-);
-
-
-
-
-
-// PRIVATE
-
+// ======================================
+// ADMIN TEST ROUTE
+// ======================================
 
 router.get(
-"/profile",
-protect,
-getProfile
+  "/admin",
+  protect,
+  authorize("Admin"),
+  (req, res) => {
+    res.status(200).json({
+      success: true,
+      message: "Welcome Admin",
+      user: req.user,
+    });
+  }
 );
-
-
-
-router.put(
-"/profile",
-protect,
-updateProfile
-);
-
-
-
-router.put(
-"/change-password",
-protect,
-changePassword
-);
-
-
-
-
-
-// ADMIN TEST
-
-
-router.get(
-"/admin",
-protect,
-authorize("Admin"),
-(req,res)=>{
-
-res.json({
-
-success:true,
-message:"Welcome Admin"
-
-});
-
-
-});
-
-
 
 module.exports = router;

@@ -5,9 +5,16 @@ import {
   FaShoppingCart,
   FaStar,
   FaTruck,
+  FaUndo,
+  FaShieldAlt,
 } from "react-icons/fa";
 
+import { toast } from "react-toastify";
+
 import { getProductById } from "../api/productApi";
+import { addToCart } from "../api/cartApi";
+import { addToWishlist } from "../api/wishlistApi";
+
 import Loader from "../components/Loader";
 import ProductCarousel from "../components/ProductCarousel";
 
@@ -15,8 +22,8 @@ const ProductDetails = () => {
   const { id } = useParams();
 
   const [product, setProduct] = useState(null);
-
   const [qty, setQty] = useState(1);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadProduct();
@@ -24,32 +31,74 @@ const ProductDetails = () => {
 
   const loadProduct = async () => {
     try {
+      setLoading(true);
+
       const { data } = await getProductById(id);
 
       setProduct(data.product);
     } catch (error) {
       console.log(error);
+      toast.error("Unable to load product");
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!product) return <Loader />;
+  const addCartHandler = async () => {
+    try {
+      await addToCart({
+        productId: product._id,
+        quantity: qty,
+      });
+
+      toast.success("Added to cart");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Unable to add cart");
+    }
+  };
+
+  const wishlistHandler = async () => {
+    try {
+      await addToWishlist(product._id);
+
+      toast.success("Added to wishlist");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Unable to add wishlist");
+    }
+  };
+
+  if (loading) return <Loader />;
+
+  if (!product)
+    return (
+      <div className="container py-5 text-center">
+        <h3>Product not found</h3>
+      </div>
+    );
+
+  const images =
+    product.images?.length > 0
+      ? product.images
+      : [
+          {
+            url:
+              product.thumbnail?.url ||
+              "https://via.placeholder.com/600x600?text=No+Image",
+          },
+        ];
 
   return (
     <div className="container py-5">
 
       <div className="row g-5">
 
-        {/* Product Images */}
+        {/* Images */}
 
         <div className="col-lg-6">
-
-          <ProductCarousel
-            images={product.images || []}
-          />
-
+          <ProductCarousel images={images} />
         </div>
 
-        {/* Product Details */}
+        {/* Details */}
 
         <div className="col-lg-6">
 
@@ -57,46 +106,115 @@ const ProductDetails = () => {
             {product.category?.name || "Category"}
           </span>
 
-          <h1 className="fw-bold mb-3">
-            {product.name}
-          </h1>
+          <h2 className="fw-bold">
+            {product.title}
+          </h2>
 
-          <div className="d-flex align-items-center mb-3">
+          <div className="mb-3">
 
-            <FaStar className="text-warning me-1" />
-            <FaStar className="text-warning me-1" />
-            <FaStar className="text-warning me-1" />
-            <FaStar className="text-warning me-1" />
-            <FaStar className="text-warning me-3" />
+            {[1,2,3,4,5].map((i)=>(
+              <FaStar
+                key={i}
+                className={
+                  i<=Math.round(product.rating)
+                    ? "text-warning me-1"
+                    : "text-secondary me-1"
+                }
+              />
+            ))}
 
-            <span className="text-muted">
-              4.8 (120 Reviews)
+            <span className="ms-2 text-muted">
+              ({product.numReviews} Reviews)
             </span>
 
           </div>
 
-          <h2 className="fw-bold text-success mb-4">
-            ₹{product.price}
-          </h2>
+          <div className="mb-3">
+
+            {product.discountPrice > 0 ? (
+              <>
+                <h2 className="text-success fw-bold">
+
+                  ₹{product.discountPrice}
+
+                  <small className="text-decoration-line-through text-muted ms-3">
+
+                    ₹{product.price}
+
+                  </small>
+
+                </h2>
+
+                <span className="badge bg-danger">
+                  {product.discountPercentage}% OFF
+                </span>
+              </>
+            ) : (
+              <h2 className="text-success fw-bold">
+                ₹{product.price}
+              </h2>
+            )}
+
+          </div>
 
           <p className="text-secondary">
             {product.description}
           </p>
 
-          <div className="mb-2">
-            <strong>Brand : </strong>
-            {product.brand?.name || "N/A"}
-          </div>
+          <table className="table">
 
-          <div className="mb-4">
-            <strong>Status : </strong>
+            <tbody>
 
-            <span className="badge bg-success ms-2">
-              In Stock
-            </span>
-          </div>
+              <tr>
+                <th>Brand</th>
+                <td>{product.brand?.name}</td>
+              </tr>
 
-          {/* Quantity */}
+              <tr>
+                <th>SKU</th>
+                <td>{product.sku}</td>
+              </tr>
+
+              <tr>
+                <th>Stock</th>
+
+                <td>
+
+                  {product.stock > 0 ? (
+                    <span className="badge bg-success">
+                      {product.stock} Available
+                    </span>
+                  ) : (
+                    <span className="badge bg-danger">
+                      Out Of Stock
+                    </span>
+                  )}
+
+                </td>
+
+              </tr>
+
+              <tr>
+                <th>Warranty</th>
+                <td>{product.warranty || "No Warranty"}</td>
+              </tr>
+
+              <tr>
+                <th>Shipping</th>
+
+                <td>
+
+                  {product.freeShipping
+                    ? "Free Shipping"
+                    : `₹${product.shippingCharge}`}
+
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
 
           <div className="d-flex align-items-center mb-4">
 
@@ -106,9 +224,8 @@ const ProductDetails = () => {
 
             <button
               className="btn btn-outline-secondary"
-              onClick={() =>
-                qty > 1 && setQty(qty - 1)
-              }
+              disabled={qty === 1}
+              onClick={() => setQty(qty - 1)}
             >
               -
             </button>
@@ -119,84 +236,69 @@ const ProductDetails = () => {
 
             <button
               className="btn btn-outline-secondary"
-              onClick={() =>
-                setQty(qty + 1)
-              }
+              disabled={qty >= product.stock}
+              onClick={() => setQty(qty + 1)}
             >
               +
             </button>
 
           </div>
 
-          {/* Buttons */}
+          <div className="d-flex gap-3 flex-wrap">
 
-          <div className="d-flex flex-wrap gap-3 mb-5">
-
-            <button className="btn btn-primary btn-lg">
-
-              <FaShoppingCart className="me-2" />
-
+            <button
+              className="btn btn-primary btn-lg"
+              onClick={addCartHandler}
+              disabled={product.stock === 0}
+            >
+              <FaShoppingCart className="me-2"/>
               Add To Cart
-
             </button>
 
-            <button className="btn btn-outline-danger btn-lg">
-
-              <FaHeart className="me-2" />
-
+            <button
+              className="btn btn-outline-danger btn-lg"
+              onClick={wishlistHandler}
+            >
+              <FaHeart className="me-2"/>
               Wishlist
-
             </button>
 
           </div>
 
-          {/* Features */}
+          <hr />
 
-          <div className="row g-3">
+          <div className="row text-center mt-4">
 
-            <div className="col-md-6">
+            <div className="col-md-4">
 
-              <div className="card shadow-sm border-0">
+              <FaTruck
+                className="text-primary mb-2"
+                size={35}
+              />
 
-                <div className="card-body text-center">
-
-                  <FaTruck
-                    size={40}
-                    className="text-primary mb-3"
-                  />
-
-                  <h5>Free Delivery</h5>
-
-                  <small className="text-muted">
-                    Delivery within 3-5 business days
-                  </small>
-
-                </div>
-
-              </div>
+              <h6>Fast Delivery</h6>
 
             </div>
 
-            <div className="col-md-6">
+            <div className="col-md-4">
 
-              <div className="card shadow-sm border-0">
+              <FaUndo
+                className="text-success mb-2"
+                size={35}
+              />
 
-                <div className="card-body text-center">
+              <h6>Easy Return</h6>
 
-                  <FaShoppingCart
-                    size={40}
-                    className="text-success mb-3"
-                  />
+            </div>
 
-                  <h5>Easy Returns</h5>
+            <div className="col-md-4">
 
-                  <small className="text-muted">
-                    7 Days Replacement Policy
-                  </small>
+              <FaShieldAlt
+                className="text-warning mb-2"
+                size={35}
+              />
 
-                </div>
-
-              </div>
+              <h6>Secure Payment</h6>
 
             </div>
 
@@ -206,26 +308,36 @@ const ProductDetails = () => {
 
       </div>
 
-      {/* Reviews */}
-
       <div className="mt-5">
 
-        <h3 className="fw-bold mb-4">
-          Customer Reviews
+        <h3 className="fw-bold mb-3">
+          Product Specifications
         </h3>
 
-        <div className="card border-0 shadow">
+        <div className="card shadow-sm">
 
           <div className="card-body">
 
-            <h5>
-              ⭐⭐⭐⭐⭐ Amazing Product
-            </h5>
+            {product.specifications?.length > 0 ? (
+              <table className="table">
 
-            <p className="text-muted mb-0">
-              Excellent quality, premium packaging,
-              and fast delivery. Highly recommended!
-            </p>
+                <tbody>
+
+                  {product.specifications.map((item,index)=>(
+                    <tr key={index}>
+                      <th>{item.key}</th>
+                      <td>{item.value}</td>
+                    </tr>
+                  ))}
+
+                </tbody>
+
+              </table>
+            ) : (
+              <p className="text-muted">
+                No specifications available.
+              </p>
+            )}
 
           </div>
 
