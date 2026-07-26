@@ -1,50 +1,65 @@
 import axiosInstance from "./axiosInstance";
 
-// ===================================
-// Add Product To Cart
-// POST /cart/addToCart
-// ===================================
-export const addToCart = (data) =>
-  axiosInstance.post("/cart/addToCart", data);
+// ======================================
+// Add To Cart
+// POST /api/cart/addToCart
+// ======================================
+export const addToCart = (cartData) =>
+  axiosInstance.post("/cart/addToCart", cartData);
 
-// ===================================
-// Get Logged In User Cart
-// GET /cart/getMyCart
-// ===================================
+// ======================================
+// Get My Cart
+// GET /api/cart/getMyCart
+// ======================================
 export const getMyCart = () =>
   axiosInstance.get("/cart/getMyCart");
 
-// ===================================
-// Update Product Quantity
-// PATCH /cart/updateQuantity/:id
-// ===================================
-export const updateCartQuantity = (id, data) =>
-  axiosInstance.patch(`/cart/updateQuantity/${id}`, data);
+// ======================================
+// Update Quantity
+// PATCH /api/cart/updateQuantity/:id
+// ======================================
+export const updateQuantity = (id, quantity) =>
+  axiosInstance.patch(`/cart/updateQuantity/${id}`, {
+    quantity,
+  });
 
-// ===================================
-// Remove Product From Cart
-// DELETE /cart/removeFromCart/:id
-// ===================================
+// ======================================
+// Remove Item
+// DELETE /api/cart/removeFromCart/:id
+// ======================================
 export const removeFromCart = (id) =>
   axiosInstance.delete(`/cart/removeFromCart/${id}`);
 
-// ===================================
-// Clear Complete Cart
-// DELETE /cart/clearCart
-// ===================================
+// ======================================
+// Clear Cart
+// DELETE /api/cart/clearCart
+// ======================================
 export const clearCart = () =>
   axiosInstance.delete("/cart/clearCart");
 
-// ===================================
-// Cart Item Count
-// GET /cart/getCartCount
-// ===================================
+// ======================================
+// Cart Count
+// GET /api/cart/getCartCount
+// ======================================
 export const getCartCount = () =>
   axiosInstance.get("/cart/getCartCount");
 
-// ===================================
-// Cart Total Amount
-// GET /cart/getCartTotal
-// ===================================
+// ======================================
+// Cart Total
+// GET /api/cart/getCartTotal
+// ======================================
 export const getCartTotal = () =>
   axiosInstance.get("/cart/getCartTotal");
+
+// ======================================
+// Default Export
+// ======================================
+export default {
+  addToCart,
+  getMyCart,
+  updateQuantity,
+  removeFromCart,
+  clearCart,
+  getCartCount,
+  getCartTotal,
+};

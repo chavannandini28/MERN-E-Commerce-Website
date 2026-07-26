@@ -2,14 +2,20 @@ const mongoose = require("mongoose");
 
 const brandSchema = new mongoose.Schema(
   {
+    // ===============================
+    // Brand Name
+    // ===============================
     name: {
       type: String,
       required: [true, "Brand name is required"],
       unique: true,
       trim: true,
-      maxlength: [100, "Brand name cannot exceed 100 characters"],
+      maxlength: 100,
     },
 
+    // ===============================
+    // Slug
+    // ===============================
     slug: {
       type: String,
       required: true,
@@ -18,13 +24,17 @@ const brandSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // ===============================
+    // Description
+    // ===============================
     description: {
       type: String,
-      trim: true,
       default: "",
-      maxlength: [1000, "Description cannot exceed 1000 characters"],
     },
 
+    // ===============================
+    // Logo
+    // ===============================
     logo: {
       public_id: {
         type: String,
@@ -36,35 +46,33 @@ const brandSchema = new mongoose.Schema(
       },
     },
 
+    // ===============================
+    // Website
+    // ===============================
     website: {
       type: String,
       default: "",
-      trim: true,
     },
 
-    country: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-
-    isFeatured: {
+    // ===============================
+    // Featured Brand
+    // ===============================
+    featured: {
       type: Boolean,
       default: false,
     },
 
+    // ===============================
+    // Active Status
+    // ===============================
     isActive: {
       type: Boolean,
       default: true,
     },
 
-    products: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
-      },
-    ],
-
+    // ===============================
+    // Created By
+    // ===============================
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -75,16 +83,34 @@ const brandSchema = new mongoose.Schema(
   }
 );
 
-// Create Index
-brandSchema.index({ name: 1 });
-brandSchema.index({ slug: 1 });
+// =====================================
+// Indexes
+// =====================================
 
-// Virtual Product Count
-brandSchema.virtual("productCount").get(function () {
-  return this.products.length;
+brandSchema.index({
+  name: "text",
 });
 
+brandSchema.index({
+  slug: 1,
+});
+
+brandSchema.index({
+  featured: 1,
+});
+
+// =====================================
+// Virtual
+// =====================================
+
+brandSchema.virtual("isFeatured").get(function () {
+  return this.featured;
+});
+
+// =====================================
 // Enable Virtuals
+// =====================================
+
 brandSchema.set("toJSON", {
   virtuals: true,
 });
@@ -93,4 +119,7 @@ brandSchema.set("toObject", {
   virtuals: true,
 });
 
-module.exports = mongoose.model("Brand", brandSchema);
+module.exports = mongoose.model(
+  "Brand",
+  brandSchema
+);

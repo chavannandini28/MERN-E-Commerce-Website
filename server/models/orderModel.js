@@ -1,8 +1,5 @@
 const mongoose = require("mongoose");
 
-// ======================================
-// Order Item Schema
-// ======================================
 const orderItemSchema = new mongoose.Schema(
   {
     product: {
@@ -11,38 +8,26 @@ const orderItemSchema = new mongoose.Schema(
       required: true,
     },
 
-    name: {
-      type: String,
-      required: true,
-    },
+    title: String,
 
-    image: {
-      type: String,
-      default: "",
-    },
-
-    quantity: {
-      type: Number,
-      required: true,
-      min: 1,
-    },
+    image: String,
 
     price: {
       type: Number,
       required: true,
     },
 
-    subtotal: {
+    quantity: {
       type: Number,
       required: true,
     },
 
-    color: {
+    selectedColor: {
       type: String,
       default: "",
     },
 
-    size: {
+    selectedSize: {
       type: String,
       default: "",
     },
@@ -52,9 +37,6 @@ const orderItemSchema = new mongoose.Schema(
   }
 );
 
-// ======================================
-// Shipping Address Schema
-// ======================================
 const shippingSchema = new mongoose.Schema(
   {
     fullName: {
@@ -84,7 +66,7 @@ const shippingSchema = new mongoose.Schema(
 
     country: {
       type: String,
-      required: true,
+      default: "India",
     },
 
     pincode: {
@@ -97,102 +79,34 @@ const shippingSchema = new mongoose.Schema(
   }
 );
 
-// ======================================
-// Payment Result Schema
-// ======================================
-const paymentResultSchema = new mongoose.Schema(
-  {
-    paymentId: String,
-    orderId: String,
-    signature: String,
-    transactionId: String,
-  },
-  {
-    _id: false,
-  }
-);
-
-// ======================================
-// Order Schema
-// ======================================
 const orderSchema = new mongoose.Schema(
   {
-    // Customer
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
 
-    // Ordered Products
-    products: [orderItemSchema],
+    orderItems: [orderItemSchema],
 
-    // Shipping
     shippingAddress: shippingSchema,
 
-    // Payment
     paymentMethod: {
       type: String,
-      enum: ["COD", "Razorpay"],
-      required: true,
+      enum: ["Cash On Delivery", "Razorpay"],
+      default: "Cash On Delivery",
     },
 
-    paymentStatus: {
-      type: String,
-      enum: [
-        "Pending",
-        "Paid",
-        "Failed",
-        "Refunded",
-      ],
-      default: "Pending",
-    },
-
-    paymentResult: paymentResultSchema,
-
-    // Order Status
-    orderStatus: {
-      type: String,
-      enum: [
-        "Pending",
-        "Confirmed",
-        "Processing",
-        "Shipped",
-        "Out for Delivery",
-        "Delivered",
-        "Cancelled",
-        "Returned",
-      ],
-      default: "Pending",
-    },
-
-    // Coupon
-    coupon: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Coupon",
-    },
-
-    couponDiscount: {
-      type: Number,
-      default: 0,
-    },
-
-        // ======================================
-    // Order Summary
-    // ======================================
-    totalItems: {
-      type: Number,
-      required: true,
-      default: 0,
+    paymentInfo: {
+      orderId: String,
+      paymentId: String,
+      status: {
+        type: String,
+        default: "Pending",
+      },
     },
 
     itemsPrice: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
-
-    shippingPrice: {
       type: Number,
       default: 0,
     },
@@ -202,121 +116,60 @@ const orderSchema = new mongoose.Schema(
       default: 0,
     },
 
-    totalPrice: {
+    shippingPrice: {
       type: Number,
-      required: true,
       default: 0,
     },
 
-    // ======================================
-    // Delivery Information
-    // ======================================
-    isDelivered: {
+    discountPrice: {
+      type: Number,
+      default: 0,
+    },
+
+    totalPrice: {
+      type: Number,
+      required: true,
+    },
+
+    orderStatus: {
+      type: String,
+      enum: [
+        "Pending",
+        "Processing",
+        "Packed",
+        "Shipped",
+        "Delivered",
+        "Cancelled",
+      ],
+      default: "Pending",
+    },
+
+    isPaid: {
       type: Boolean,
       default: false,
     },
 
-    deliveredAt: {
-      type: Date,
-    },
+    paidAt: Date,
 
-    expectedDelivery: {
-      type: Date,
-    },
+    deliveredAt: Date,
 
-    cancelledAt: {
-      type: Date,
-    },
+    cancelledAt: Date,
 
-    // ======================================
-    // Tracking
-    // ======================================
-    trackingNumber: {
-      type: String,
-      default: "",
-    },
-
-    courierPartner: {
-      type: String,
-      default: "",
-    },
-
-    // ======================================
-    // Invoice
-    // ======================================
-    invoiceNumber: {
-      type: String,
-      default: "",
-    },
-
-    // ======================================
-    // Notes
-    // ======================================
-    customerNote: {
-      type: String,
-      default: "",
-    },
-
-    adminNote: {
-      type: String,
-      default: "",
-    },
-
-    // ======================================
-    // Refund
-    // ======================================
-    refundAmount: {
-      type: Number,
-      default: 0,
-    },
-
-    refundReason: {
-      type: String,
-      default: "",
-    },
+    cancelReason: String,
   },
   {
     timestamps: true,
   }
 );
 
-// ======================================
+// ===============================
 // Indexes
-// ======================================
+// ===============================
+
 orderSchema.index({ user: 1 });
-orderSchema.index({ paymentStatus: 1 });
-orderSchema.index({ orderStatus: 1 });
+
 orderSchema.index({ createdAt: -1 });
 
-// ======================================
-// Virtual
-// ======================================
-orderSchema.virtual("canCancel").get(function () {
-  return (
-    this.orderStatus === "Pending" ||
-    this.orderStatus === "Confirmed"
-  );
-});
+orderSchema.index({ orderStatus: 1 });
 
-// ======================================
-// Virtual
-// ======================================
-orderSchema.virtual("canReturn").get(function () {
-  return this.orderStatus === "Delivered";
-});
-
-// ======================================
-// Enable Virtuals
-// ======================================
-orderSchema.set("toJSON", {
-  virtuals: true,
-});
-
-orderSchema.set("toObject", {
-  virtuals: true,
-});
-
-// ======================================
-// Export Model
-// ======================================
 module.exports = mongoose.model("Order", orderSchema);

@@ -1,213 +1,182 @@
 const asyncHandler = require("express-async-handler");
+const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
-const razorpay = require("../config/razorpay");
 const Order = require("../models/orderModel");
+const Cart = require("../models/cartModel");
+
+// ======================================
+// Razorpay Instance
+// ======================================
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 // ======================================
 // Create Razorpay Order
+// POST /api/payment/create-order
 // ======================================
-exports.createRazorpayOrder = asyncHandler(async (req, res) => {
-  try {
-    const { amount } = req.body;
 
-    if (!amount) {
-      return res.status(400).json({
-        success: false,
-        message: "Amount is required",
-      });
-    }
+exports.createOrder = asyncHandler(async (req, res) => {
+  const cart = await Cart.findOne({
+    user: req.user._id,
+  });
 
-    const options = {
-      amount: Number(amount) * 100,
-      currency: "INR",
-      receipt: `receipt_${Date.now()}`,
-    };
-
-    console.log("Options:", options);
-
-    const order = await razorpay.orders.create(options);
-
-    console.log("Razorpay Order:", order);
-
-    res.status(200).json({
-      success: true,
-      order,
-    });
-
-  } catch (err) {
-    console.log(err);
-
-    res.status(500).json({
+  if (!cart || cart.items.length === 0) {
+    return res.status(400).json({
       success: false,
-      message: err.message,
+      message: "Cart is empty",
     });
   }
+
+  const options = {
+    amount: Math.round(cart.totalAmount * 100),
+    currency: "INR",
+    receipt: `receipt_${Date.now()}`,
+  };
+
+  const razorpayOrder =
+    await razorpay.orders.create(options);
+
+  res.status(200).json({
+    success: true,
+    order: razorpayOrder,
+  });
 });
 
 // ======================================
 // Verify Razorpay Payment
+// POST /api/payment/verify-payment
 // ======================================
+
 exports.verifyPayment = asyncHandler(async (req, res) => {
   const {
     razorpay_order_id,
     razorpay_payment_id,
     razorpay_signature,
-    orderId,
+    shippingAddress,
   } = req.body;
 
-  const body = razorpay_order_id + "|" + razorpay_payment_id;
-
-  const expectedSignature = crypto
-    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-    .update(body)
+  const generatedSignature = crypto
+    .createHmac(
+      "sha256",
+      process.env.RAZORPAY_KEY_SECRET
+    )
+    .update(
+      `${razorpay_order_id}|${razorpay_payment_id}`
+    )
     .digest("hex");
 
-  if (expectedSignature !== razorpay_signature) {
+  if (generatedSignature !== razorpay_signature) {
     return res.status(400).json({
       success: false,
       message: "Payment verification failed",
     });
   }
 
-  if (orderId) {
-    const order = await Order.findById(orderId);
+  const cart = await Cart.findOne({
+    user: req.user._id,
+  }).populate("items.product");
 
-    if (order) {
-      order.paymentStatus = "Paid";
-      order.orderStatus = "Processing";
-      order.razorpayOrderId = razorpay_order_id;
-      order.razorpayPaymentId = razorpay_payment_id;
-      order.razorpaySignature = razorpay_signature;
-
-      await order.save();
-    }
+  if (!cart) {
+    return res.status(404).json({
+      success: false,
+      message: "Cart not found",
+    });
   }
+
+  const order = await Order.create({
+    user: req.user._id,
+
+    orderItems: cart.items.map((item) => ({
+      product: item.product._id,
+      quantity: item.quantity,
+      price: item.price,
+      selectedColor: item.selectedColor,
+      selectedSize: item.selectedSize,
+    })),
+
+    shippingAddress,
+
+    itemsPrice: cart.subtotal,
+    taxPrice: cart.tax,
+    shippingPrice: cart.shippingCharge,
+    totalPrice: cart.totalAmount,
+
+    paymentMethod: "Razorpay",
+
+    paymentInfo: {
+      orderId: razorpay_order_id,
+      paymentId: razorpay_payment_id,
+      status: "Paid",
+    },
+
+    isPaid: true,
+    paidAt: new Date(),
+  });
+
+  cart.items = [];
+  cart.calculateTotals();
+  await cart.save();
 
   res.status(200).json({
     success: true,
-    message: "Payment verified successfully",
+    message: "Payment successful",
+    order,
   });
 });
 
 // ======================================
 // Cash On Delivery
+// POST /api/payment/cod
 // ======================================
+
 exports.cashOnDelivery = asyncHandler(async (req, res) => {
-  const { orderId } = req.body;
+  const { shippingAddress } = req.body;
 
-  const order = await Order.findById(orderId);
+  const cart = await Cart.findOne({
+    user: req.user._id,
+  }).populate("items.product");
 
-  if (!order) {
-    return res.status(404).json({
+  if (!cart || cart.items.length === 0) {
+    return res.status(400).json({
       success: false,
-      message: "Order not found",
+      message: "Cart is empty",
     });
   }
 
-  order.paymentMethod = "COD";
-  order.paymentStatus = "Pending";
+  const order = await Order.create({
+    user: req.user._id,
 
-  await order.save();
+    orderItems: cart.items.map((item) => ({
+      product: item.product._id,
+      quantity: item.quantity,
+      price: item.price,
+      selectedColor: item.selectedColor,
+      selectedSize: item.selectedSize,
+    })),
 
-  res.status(200).json({
+    shippingAddress,
+
+    itemsPrice: cart.subtotal,
+    taxPrice: cart.tax,
+    shippingPrice: cart.shippingCharge,
+    totalPrice: cart.totalAmount,
+
+    paymentMethod: "Cash On Delivery",
+
+    isPaid: false,
+  });
+
+  cart.items = [];
+  cart.calculateTotals();
+  await cart.save();
+
+  res.status(201).json({
     success: true,
-    message: "Cash on Delivery selected",
+    message: "Order placed successfully",
     order,
-  });
-});
-
-// ======================================
-// Get Payment Details
-// ======================================
-exports.getPaymentDetails = asyncHandler(async (req, res) => {
-  const order = await Order.findById(req.params.id);
-
-  if (!order) {
-    return res.status(404).json({
-      success: false,
-      message: "Order not found",
-    });
-  }
-
-  res.status(200).json({
-    success: true,
-    payment: {
-      paymentMethod: order.paymentMethod,
-      paymentStatus: order.paymentStatus,
-      razorpayOrderId: order.razorpayOrderId,
-      razorpayPaymentId: order.razorpayPaymentId,
-    },
-  });
-});
-
-// ======================================
-// Refund Payment (Dummy)
-// ======================================
-exports.refundPayment = asyncHandler(async (req, res) => {
-  const order = await Order.findById(req.params.id);
-
-  if (!order) {
-    return res.status(404).json({
-      success: false,
-      message: "Order not found",
-    });
-  }
-
-  order.paymentStatus = "Refunded";
-
-  await order.save();
-
-  res.status(200).json({
-    success: true,
-    message: "Refund processed successfully",
-    order,
-  });
-});
-
-
-exports.paymentSuccess = asyncHandler(async (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Payment successful",
-  });
-});
-
-exports.paymentFailed = asyncHandler(async (req, res) => {
-  res.status(400).json({
-    success: false,
-    message: "Payment failed",
-  });
-});
-
-exports.getPaymentHistory = asyncHandler(async (req, res) => {
-  const orders = await Order.find({ user: req.user.id });
-
-  res.status(200).json({
-    success: true,
-    orders,
-  });
-});
-
-exports.getPaymentById = asyncHandler(async (req, res) => {
-  const order = await Order.findById(req.params.paymentId);
-
-  if (!order) {
-    return res.status(404).json({
-      success: false,
-      message: "Payment not found",
-    });
-  }
-
-  res.status(200).json({
-    success: true,
-    order,
-  });
-});
-
-exports.webhookHandler = asyncHandler(async (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Webhook received",
   });
 });

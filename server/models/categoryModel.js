@@ -2,16 +2,14 @@ const mongoose = require("mongoose");
 
 const categorySchema = new mongoose.Schema(
   {
-    // Category Name
     name: {
       type: String,
       required: [true, "Category name is required"],
-      unique: true,
       trim: true,
-      maxlength: [100, "Category name cannot exceed 100 characters"],
+      unique: true,
+      maxlength: 100,
     },
 
-    // URL Slug
     slug: {
       type: String,
       required: true,
@@ -20,15 +18,12 @@ const categorySchema = new mongoose.Schema(
       trim: true,
     },
 
-    // Description
     description: {
       type: String,
-      trim: true,
       default: "",
-      maxlength: [1000, "Description cannot exceed 1000 characters"],
+      maxlength: 500,
     },
 
-    // Category Image
     image: {
       public_id: {
         type: String,
@@ -40,45 +35,35 @@ const categorySchema = new mongoose.Schema(
       },
     },
 
-    // Parent Category
     parentCategory: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
       default: null,
     },
 
-    // Child Categories
-    subCategories: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Category",
-      },
-    ],
-
-    // Products
-    products: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
-      },
-    ],
-
-    // Featured Category
-    isFeatured: {
+    featured: {
       type: Boolean,
       default: false,
     },
 
-    // Active / Inactive
     isActive: {
       type: Boolean,
       default: true,
     },
 
-    // Created By
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+    sortOrder: {
+      type: Number,
+      default: 0,
+    },
+
+    seoTitle: {
+      type: String,
+      default: "",
+    },
+
+    seoDescription: {
+      type: String,
+      default: "",
     },
   },
   {
@@ -86,22 +71,18 @@ const categorySchema = new mongoose.Schema(
   }
 );
 
-// ===============================
 // Indexes
-// ===============================
-categorySchema.index({ name: 1 });
 categorySchema.index({ slug: 1 });
+categorySchema.index({ name: "text" });
 
-// ===============================
-// Virtual Product Count
-// ===============================
-categorySchema.virtual("productCount").get(function () {
-  return this.products.length;
+// Virtual
+categorySchema.virtual("productCount", {
+  ref: "Product",
+  localField: "_id",
+  foreignField: "category",
+  count: true,
 });
 
-// ===============================
-// Enable Virtuals
-// ===============================
 categorySchema.set("toJSON", {
   virtuals: true,
 });
@@ -110,4 +91,7 @@ categorySchema.set("toObject", {
   virtuals: true,
 });
 
-module.exports = mongoose.model("Category", categorySchema);
+module.exports = mongoose.model(
+  "Category",
+  categorySchema
+);

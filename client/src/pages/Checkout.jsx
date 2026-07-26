@@ -1,179 +1,271 @@
 import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import {
+  FaMapMarkerAlt,
+  FaMoneyBillWave,
+  FaCreditCard,
+  FaTruck,
+} from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+
 import { fetchCart } from "../redux/cartSlice";
-import { placeOrder } from "../redux/orderSlice";
-import { toast } from "react-toastify";
+import {
+  createOrder,
+  verifyPayment,
+  cashOnDelivery,
+} from "../api/paymentApi";
 
 const Checkout = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const { cart } = useSelector((state) => state.cart);
-  const { loading } = useSelector((state) => state.orders);
+  const { cart, loading } = useSelector(
+    (state) => state.cart
+  );
 
-  const [shipping, setShipping] = useState({
+  // Shipping Address
+  const [shippingAddress, setShippingAddress] = useState({
     fullName: "",
     phone: "",
     address: "",
     city: "",
     state: "",
+    country: "India",
     pincode: "",
   });
 
+  // Payment Method
+  const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [placingOrder, setPlacingOrder] = useState(false);
+
+  // Load Cart
   useEffect(() => {
     dispatch(fetchCart());
   }, [dispatch]);
 
+  // Handle Input
   const changeHandler = (e) => {
-    setShipping({
-      ...shipping,
+    setShippingAddress({
+      ...shippingAddress,
       [e.target.name]: e.target.value,
     });
   };
 
-  const total =
-    cart?.reduce(
-      (sum, item) =>
-        sum + item.product.price * item.quantity,
-      0
-    ) || 0;
+  // Price Details
+  const subtotal = cart?.subtotal || 0;
+  const shipping = cart?.shippingCharge || 0;
+  const tax = cart?.tax || 0;
+  const discount = cart?.discount || 0;
+  const total = cart?.totalAmount || 0;
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
-
+  // Place Order
+  const placeOrderHandler = async () => {
     try {
-      const orderData = {
-        shippingInfo: shipping,
-        orderItems: cart.map((item) => ({
-          product: item.product._id,
-          quantity: item.quantity,
-          price: item.product.price,
-        })),
-        totalPrice: total,
+      if (
+        !shippingAddress.fullName ||
+        !shippingAddress.phone ||
+        !shippingAddress.address ||
+        !shippingAddress.city ||
+        !shippingAddress.state ||
+        !shippingAddress.pincode
+      ) {
+        alert("Please fill all shipping details.");
+        return;
+      }
+
+      setPlacingOrder(true);
+
+      // Cash On Delivery
+      if (paymentMethod === "COD") {
+        const { data } = await cashOnDelivery({
+          shippingAddress,
+        });
+
+        if (data.success) {
+          alert("Order Placed Successfully");
+          navigate("/payment-success");
+        }
+
+        return;
+      }
+
+      // Razorpay Order
+      const { data } = await createOrder();
+
+      if (!data.success) {
+        alert("Unable to create payment.");
+        return;
+      }
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY,
+        amount: data.order.amount,
+        currency: data.order.currency,
+        name: "Nandini Shop",
+        description: "Order Payment",
+        order_id: data.order.id,
+
+        handler: async function (response) {
+          const verify = await verifyPayment({
+            razorpay_order_id:
+              response.razorpay_order_id,
+            razorpay_payment_id:
+              response.razorpay_payment_id,
+            razorpay_signature:
+              response.razorpay_signature,
+            shippingAddress,
+          });
+
+          if (verify.data.success) {
+            alert("Payment Successful");
+            navigate("/payment-success");
+          } else {
+            navigate("/payment-failed");
+          }
+        },
+
+        theme: {
+          color: "#0d6efd",
+        },
       };
 
-      await dispatch(placeOrder(orderData)).unwrap();
-
-      toast.success("Order Placed Successfully");
-
-      navigate("/payment-success");
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
     } catch (error) {
-      toast.error(error || "Order Failed");
-      navigate("/payment-failed");
+      console.log(error);
+
+      alert(
+        error.response?.data?.message ||
+          "Something went wrong"
+      );
+    } finally {
+      setPlacingOrder(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="container py-5 text-center">
+        <h3>Loading Checkout...</h3>
+      </div>
+    );
+  }
+
   return (
     <div className="container py-5">
-
       <div className="row">
 
-        {/* Shipping Form */}
-        <div className="col-lg-7">
-
-          <div className="card shadow border-0">
-
-            <div className="card-body p-4">
+        {/* Shipping Address */}
+        <div className="col-lg-8">
+          <div className="card shadow border-0 mb-4">
+            <div className="card-body">
 
               <h3 className="mb-4">
+                <FaMapMarkerAlt className="me-2 text-primary" />
                 Shipping Address
               </h3>
 
-              <form onSubmit={submitHandler}>
+              <div className="row">
 
-                <input
-                  className="form-control mb-3"
-                  placeholder="Full Name"
-                  name="fullName"
-                  value={shipping.fullName}
-                  onChange={changeHandler}
-                  required
-                />
+                                <div className="col-md-6 mb-3">
+                  <label className="form-label">
+                    Full Name
+                  </label>
 
-                <input
-                  className="form-control mb-3"
-                  placeholder="Phone Number"
-                  name="phone"
-                  value={shipping.phone}
-                  onChange={changeHandler}
-                  required
-                />
-
-                <textarea
-                  className="form-control mb-3"
-                  placeholder="Address"
-                  rows="3"
-                  name="address"
-                  value={shipping.address}
-                  onChange={changeHandler}
-                  required
-                />
-
-                <div className="row">
-
-                  <div className="col-md-4">
-
-                    <input
-                      className="form-control mb-3"
-                      placeholder="City"
-                      name="city"
-                      value={shipping.city}
-                      onChange={changeHandler}
-                      required
-                    />
-
-                  </div>
-
-                  <div className="col-md-4">
-
-                    <input
-                      className="form-control mb-3"
-                      placeholder="State"
-                      name="state"
-                      value={shipping.state}
-                      onChange={changeHandler}
-                      required
-                    />
-
-                  </div>
-
-                  <div className="col-md-4">
-
-                    <input
-                      className="form-control mb-3"
-                      placeholder="Pincode"
-                      name="pincode"
-                      value={shipping.pincode}
-                      onChange={changeHandler}
-                      required
-                    />
-
-                  </div>
-
+                  <input
+                    type="text"
+                    name="fullName"
+                    className="form-control"
+                    value={shippingAddress.fullName}
+                    onChange={changeHandler}
+                  />
                 </div>
 
-                <button
-                  className="btn btn-success w-100 mt-3"
-                  disabled={loading}
-                >
-                  {loading
-                    ? "Placing Order..."
-                    : "Place Order"}
-                </button>
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">
+                    Mobile Number
+                  </label>
 
-              </form>
+                  <input
+                    type="text"
+                    name="phone"
+                    className="form-control"
+                    value={shippingAddress.phone}
+                    onChange={changeHandler}
+                  />
+                </div>
 
+                <div className="col-12 mb-3">
+                  <label className="form-label">
+                    Address
+                  </label>
+
+                  <textarea
+                    rows="3"
+                    name="address"
+                    className="form-control"
+                    value={shippingAddress.address}
+                    onChange={changeHandler}
+                  />
+                </div>
+
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">
+                    City
+                  </label>
+
+                  <input
+                    type="text"
+                    name="city"
+                    className="form-control"
+                    value={shippingAddress.city}
+                    onChange={changeHandler}
+                  />
+                </div>
+
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">
+                    State
+                  </label>
+
+                  <input
+                    type="text"
+                    name="state"
+                    className="form-control"
+                    value={shippingAddress.state}
+                    onChange={changeHandler}
+                  />
+                </div>
+
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">
+                    Pincode
+                  </label>
+
+                  <input
+                    type="text"
+                    name="pincode"
+                    className="form-control"
+                    value={shippingAddress.pincode}
+                    onChange={changeHandler}
+                  />
+                </div>
+
+              </div>
             </div>
-
           </div>
-
         </div>
 
-        {/* Order Summary */}
-        <div className="col-lg-5">
+        {/* ===============================
+            Order Summary
+        ================================ */}
 
-          <div className="card shadow border-0">
+        <div className="col-lg-4">
+
+          <div
+            className="card shadow border-0 sticky-top"
+            style={{ top: "100px" }}
+          >
 
             <div className="card-body">
 
@@ -181,45 +273,142 @@ const Checkout = () => {
                 Order Summary
               </h3>
 
-              {cart.map((item) => (
+              <div
+                style={{
+                  maxHeight: "300px",
+                  overflowY: "auto",
+                }}
+              >
 
-                <div
-                  key={item._id}
-                  className="d-flex justify-content-between mb-3"
-                >
+                {cart?.items?.length > 0 ? (
 
-                  <span>
-                    {item.product.name} × {item.quantity}
-                  </span>
+                  cart.items.map((item) => (
 
-                  <strong>
-                    ₹{item.product.price * item.quantity}
-                  </strong>
+                    <div
+                      key={item._id}
+                      className="d-flex justify-content-between align-items-center mb-3"
+                    >
 
-                </div>
+                      <div>
+                        <h6 className="mb-1">
+                          {item.product?.title}
+                        </h6>
 
-              ))}
+                        <small className="text-muted">
+                          Qty : {item.quantity}
+                        </small>
+                      </div>
+
+                      <strong>
+                        ₹
+                        {(item.price * item.quantity).toFixed(2)}
+                      </strong>
+
+                    </div>
+
+                  ))
+
+                ) : (
+
+                  <p className="text-center text-muted">
+                    Cart is Empty
+                  </p>
+
+                )}
+
+              </div>
 
               <hr />
 
               <div className="d-flex justify-content-between">
-
-                <h4>Total</h4>
-
-                <h4 className="text-success">
-                  ₹{total}
-                </h4>
-
+                <span>Subtotal</span>
+                <strong>₹{subtotal.toFixed(2)}</strong>
               </div>
 
+              <div className="d-flex justify-content-between mt-2">
+                <span>Shipping</span>
+                <strong>₹{shipping.toFixed(2)}</strong>
+              </div>
+
+              <div className="d-flex justify-content-between mt-2">
+                <span>GST</span>
+                <strong>₹{tax.toFixed(2)}</strong>
+              </div>
+
+              <div className="d-flex justify-content-between mt-2">
+                <span>Discount</span>
+                <strong className="text-success">
+                  - ₹{discount.toFixed(2)}
+                </strong>
+              </div>
+
+              <hr />
+
+              <div className="d-flex justify-content-between">
+                <h5>Total</h5>
+                <h4 className="text-success">
+                  ₹{total.toFixed(2)}
+                </h4>
+              </div>
+
+              <hr />
+              
+                            {/* Payment Method */}
+
+              <h5 className="mb-3">
+                <FaMoneyBillWave className="me-2" />
+                Payment Method
+              </h5>
+
+              <div className="form-check mb-2">
+                <input
+                  type="radio"
+                  className="form-check-input"
+                  name="paymentMethod"
+                  checked={paymentMethod === "COD"}
+                  onChange={() => setPaymentMethod("COD")}
+                />
+
+                <label className="form-check-label">
+                  Cash On Delivery
+                </label>
+              </div>
+
+              <div className="form-check mb-4">
+                <input
+                  type="radio"
+                  className="form-check-input"
+                  name="paymentMethod"
+                  checked={paymentMethod === "Razorpay"}
+                  onChange={() => setPaymentMethod("Razorpay")}
+                />
+
+                <label className="form-check-label">
+                  <FaCreditCard className="me-2" />
+                  Razorpay
+                </label>
+              </div>
+
+              <button
+                className="btn btn-primary w-100 py-3"
+                onClick={placeOrderHandler}
+                disabled={
+                  placingOrder ||
+                  cart?.items?.length === 0
+                }
+              >
+                <FaTruck className="me-2" />
+
+                {placingOrder
+                  ? "Processing..."
+                  : "Place Order"}
+              </button>
+
             </div>
-
           </div>
-
         </div>
 
       </div>
-
     </div>
   );
 };

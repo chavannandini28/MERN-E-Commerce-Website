@@ -3,10 +3,14 @@ const Brand = require("../models/brandModel");
 
 // ======================================
 // Create Brand
-// POST /api/brands
 // ======================================
 exports.createBrand = asyncHandler(async (req, res) => {
-  const { name, description, website, country } = req.body;
+  const {
+    name,
+    description,
+    website,
+    featured,
+  } = req.body;
 
   if (!name) {
     return res.status(400).json({
@@ -15,9 +19,9 @@ exports.createBrand = asyncHandler(async (req, res) => {
     });
   }
 
-  const brandExists = await Brand.findOne({ name });
+  const existingBrand = await Brand.findOne({ name });
 
-  if (brandExists) {
+  if (existingBrand) {
     return res.status(400).json({
       success: false,
       message: "Brand already exists",
@@ -35,12 +39,14 @@ exports.createBrand = asyncHandler(async (req, res) => {
     slug,
     description,
     website,
-    country,
+    featured,
+
     logo: {
       public_id: "",
       url: req.file ? req.file.path : "",
     },
-    createdBy: req.user ? req.user._id : null,
+
+    createdBy: req.user._id,
   });
 
   res.status(201).json({
@@ -52,21 +58,21 @@ exports.createBrand = asyncHandler(async (req, res) => {
 
 // ======================================
 // Get All Brands
-// GET /api/brands
 // ======================================
 exports.getBrands = asyncHandler(async (req, res) => {
-  const brands = await Brand.find().sort({ createdAt: -1 });
+  const brands = await Brand.find().sort({
+    createdAt: -1,
+  });
 
   res.status(200).json({
     success: true,
-    total: brands.length,
+    count: brands.length,
     brands,
   });
 });
 
 // ======================================
-// Get Single Brand
-// GET /api/brands/:id
+// Get Brand By ID
 // ======================================
 exports.getBrandById = asyncHandler(async (req, res) => {
   const brand = await Brand.findById(req.params.id);
@@ -85,8 +91,28 @@ exports.getBrandById = asyncHandler(async (req, res) => {
 });
 
 // ======================================
+// Get Brand By Slug
+// ======================================
+exports.getBrandBySlug = asyncHandler(async (req, res) => {
+  const brand = await Brand.findOne({
+    slug: req.params.slug,
+  });
+
+  if (!brand) {
+    return res.status(404).json({
+      success: false,
+      message: "Brand not found",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    brand,
+  });
+});
+
+// ======================================
 // Update Brand
-// PUT /api/brands/:id
 // ======================================
 exports.updateBrand = asyncHandler(async (req, res) => {
   const brand = await Brand.findById(req.params.id);
@@ -108,16 +134,14 @@ exports.updateBrand = asyncHandler(async (req, res) => {
       .replace(/[^\w-]+/g, "");
   }
 
-  if (req.body.description) {
-    brand.description = req.body.description;
-  }
+  brand.description =
+    req.body.description || brand.description;
 
-  if (req.body.website) {
-    brand.website = req.body.website;
-  }
+  brand.website =
+    req.body.website || brand.website;
 
-  if (req.body.country) {
-    brand.country = req.body.country;
+  if (req.body.featured !== undefined) {
+    brand.featured = req.body.featured;
   }
 
   if (req.file) {
@@ -138,7 +162,6 @@ exports.updateBrand = asyncHandler(async (req, res) => {
 
 // ======================================
 // Delete Brand
-// DELETE /api/brands/:id
 // ======================================
 exports.deleteBrand = asyncHandler(async (req, res) => {
   const brand = await Brand.findById(req.params.id);
@@ -155,5 +178,109 @@ exports.deleteBrand = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Brand deleted successfully",
+  });
+});
+
+// ======================================
+// Featured Brands
+// ======================================
+exports.getFeaturedBrands = asyncHandler(async (req, res) => {
+  const brands = await Brand.find({
+    featured: true,
+    isActive: true,
+  });
+
+  res.status(200).json({
+    success: true,
+    brands,
+  });
+});
+
+// ======================================
+// Search Brands
+// ======================================
+exports.searchBrands = asyncHandler(async (req, res) => {
+  const keyword = req.query.keyword || "";
+
+  const brands = await Brand.find({
+    name: {
+      $regex: keyword,
+      $options: "i",
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    brands,
+  });
+});
+
+// ======================================
+// Toggle Brand Status
+// ======================================
+exports.toggleBrandStatus = asyncHandler(async (req, res) => {
+  const brand = await Brand.findById(req.params.id);
+
+  if (!brand) {
+    return res.status(404).json({
+      success: false,
+      message: "Brand not found",
+    });
+  }
+
+  brand.isActive = !brand.isActive;
+
+  await brand.save();
+
+  res.status(200).json({
+    success: true,
+    message: `Brand ${
+      brand.isActive ? "Activated" : "Deactivated"
+    } Successfully`,
+    brand,
+  });
+});
+
+// ======================================
+// Brand Statistics
+// ======================================
+exports.getBrandStatistics = asyncHandler(async (req, res) => {
+  const totalBrands =
+    await Brand.countDocuments();
+
+  const activeBrands =
+    await Brand.countDocuments({
+      isActive: true,
+    });
+
+  const featuredBrands =
+    await Brand.countDocuments({
+      featured: true,
+    });
+
+  res.status(200).json({
+    success: true,
+    statistics: {
+      totalBrands,
+      activeBrands,
+      featuredBrands,
+    },
+  });
+});
+
+// ======================================
+// Brand Dropdown
+// ======================================
+exports.getBrandDropdown = asyncHandler(async (req, res) => {
+  const brands = await Brand.find(
+    { isActive: true },
+    "_id name slug"
+  ).sort({
+    name: 1,
+  });
+
+  res.status(200).json({
+    success: true,
+    brands,
   });
 });

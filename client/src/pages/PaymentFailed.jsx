@@ -1,133 +1,112 @@
 import { Link } from "react-router-dom";
 import {
   FaTimesCircle,
-  FaRedo,
-  FaShoppingCart,
-  FaHome,
+  FaRedoAlt,
+  FaShoppingBag,
+  FaArrowLeft,
 } from "react-icons/fa";
 
 const PaymentFailed = () => {
   return (
-    <div className="container py-5">
+    <div
+      className="container-fluid d-flex align-items-center justify-content-center"
+      style={{
+        minHeight: "100vh",
+        background:
+          "linear-gradient(135deg,#fff5f5,#f8f9fa)",
+      }}
+    >
+      <div
+        className="card border-0 shadow-lg text-center p-5"
+        style={{
+          maxWidth: "650px",
+          width: "100%",
+          borderRadius: "25px",
+        }}
+      >
+        {/* Failed Icon */}
 
-      <div className="row justify-content-center">
+        <div className="mb-4">
+          <FaTimesCircle
+            size={90}
+            className="text-danger"
+          />
+        </div>
 
-        <div className="col-lg-7">
+        {/* Heading */}
 
-          <div className="card border-0 shadow-lg rounded-4">
+        <h1 className="fw-bold text-danger mb-3">
+          Payment Failed
+        </h1>
 
-            <div className="card-body text-center p-5">
+        <p className="text-muted fs-5 mb-4">
+          Unfortunately, your payment could not be
+          completed.
+          <br />
+          Please try again or choose another payment
+          method.
+        </p>
 
-              {/* Failed Icon */}
+        {/* Status */}
 
-              <div
-                className="mx-auto mb-4 d-flex justify-content-center align-items-center rounded-circle"
-                style={{
-                  width: "120px",
-                  height: "120px",
-                  background: "#fee2e2",
-                }}
-              >
-                <FaTimesCircle
-                  size={70}
-                  className="text-danger"
-                />
-              </div>
+        <div className="bg-light rounded p-4 mb-4">
 
-              <h1 className="fw-bold text-danger">
-                Payment Failed
-              </h1>
+          <h5 className="mb-3">
+            Payment Status
+          </h5>
 
-              <p className="text-muted fs-5 mt-3">
-                We couldn't process your payment.
-                <br />
-                Please verify your payment details and try again.
-              </p>
+          <p className="mb-2">
+            ❌ Transaction Failed
+          </p>
 
-              <div className="alert alert-danger mt-4">
+          <p className="mb-2">
+            🔄 Retry Payment
+          </p>
 
-                <strong>Reason :</strong>
-
-                Payment could not be completed.
-
-                <br />
-
-                Please try again or choose another payment method.
-
-              </div>
-
-              <div className="row mt-5">
-
-                <div className="col-md-4 mb-3">
-
-                  <Link
-                    to="/checkout"
-                    className="btn btn-danger w-100 py-3"
-                  >
-
-                    <FaRedo className="me-2" />
-
-                    Retry
-
-                  </Link>
-
-                </div>
-
-                <div className="col-md-4 mb-3">
-
-                  <Link
-                    to="/cart"
-                    className="btn btn-warning w-100 py-3"
-                  >
-
-                    <FaShoppingCart className="me-2" />
-
-                    Cart
-
-                  </Link>
-
-                </div>
-
-                <div className="col-md-4 mb-3">
-
-                  <Link
-                    to="/"
-                    className="btn btn-outline-primary w-100 py-3"
-                  >
-
-                    <FaHome className="me-2" />
-
-                    Home
-
-                  </Link>
-
-                </div>
-
-              </div>
-
-              <hr className="my-4" />
-
-              <p className="text-muted mb-0">
-
-                Need help?
-
-                <Link
-                  to="/contact"
-                  className="ms-2 text-decoration-none"
-                >
-                  Contact Support
-                </Link>
-
-              </p>
-
-            </div>
-
-          </div>
+          <p className="mb-0">
+            📞 Contact Support if the issue continues
+          </p>
 
         </div>
 
-      </div>
+        {/* Buttons */}
 
+        <div className="d-grid gap-3">
+
+          <Link
+            to="/checkout"
+            className="btn btn-danger btn-lg"
+          >
+            <FaRedoAlt className="me-2" />
+            Retry Payment
+          </Link>
+
+          <Link
+            to="/cart"
+            className="btn btn-outline-secondary btn-lg"
+          >
+            <FaArrowLeft className="me-2" />
+            Back to Cart
+          </Link>
+
+          <Link
+            to="/shop"
+            className="btn btn-outline-primary btn-lg"
+          >
+            <FaShoppingBag className="me-2" />
+            Continue Shopping
+          </Link>
+
+        </div>
+
+        <hr className="my-4" />
+
+        <small className="text-muted">
+          If money was deducted from your account,
+          it will usually be refunded automatically
+          according to your bank's processing time.
+        </small>
+      </div>
     </div>
   );
 };

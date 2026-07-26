@@ -1,13 +1,18 @@
 const asyncHandler = require("express-async-handler");
+
 const Cart = require("../models/cartModel");
 const Product = require("../models/productModel");
 
-// ===============================
-// Add Product To Cart
-// POST /cart/addToCart
-// ===============================
+// ======================================
+// Add To Cart
+// ======================================
 exports.addToCart = asyncHandler(async (req, res) => {
-  const { productId, quantity } = req.body;
+  const {
+    productId,
+    quantity,
+    selectedColor,
+    selectedSize,
+  } = req.body;
 
   const product = await Product.findById(productId);
 
@@ -18,44 +23,37 @@ exports.addToCart = asyncHandler(async (req, res) => {
     });
   }
 
-  let cart = await Cart.findOne({ user: req.user.id });
+  let cart = await Cart.findOne({
+    user: req.user._id,
+  });
 
   if (!cart) {
     cart = await Cart.create({
-      user: req.user.id,
-      products: [],
-      totalItems: 0,
-      totalPrice: 0,
+      user: req.user._id,
+      items: [],
     });
   }
 
-  const itemIndex = cart.products.findIndex(
-    item => item.product.toString() === productId
+  const existingItem = cart.items.find(
+    (item) =>
+      item.product.toString() === productId &&
+      item.selectedColor === (selectedColor || "") &&
+      item.selectedSize === (selectedSize || "")
   );
 
-  if (itemIndex > -1) {
-    cart.products[itemIndex].quantity += Number(quantity);
-
-    cart.products[itemIndex].subtotal =
-      cart.products[itemIndex].quantity * product.price;
+  if (existingItem) {
+    existingItem.quantity += Number(quantity || 1);
   } else {
-    cart.products.push({
+    cart.items.push({
       product: product._id,
-      quantity,
-      price: product.price,
-      subtotal: quantity * product.price,
+      quantity: Number(quantity || 1),
+      price: product.discountPrice || product.price,
+      selectedColor: selectedColor || "",
+      selectedSize: selectedSize || "",
     });
   }
 
-  cart.totalItems = cart.products.reduce(
-    (sum, item) => sum + item.quantity,
-    0
-  );
-
-  cart.totalPrice = cart.products.reduce(
-    (sum, item) => sum + item.subtotal,
-    0
-  );
+  cart.calculateTotals();
 
   await cart.save();
 
@@ -66,19 +64,34 @@ exports.addToCart = asyncHandler(async (req, res) => {
   });
 });
 
-// ===============================
+// ======================================
 // Get My Cart
-// GET /cart/getMyCart
-// ===============================
+// ======================================
 exports.getMyCart = asyncHandler(async (req, res) => {
-
-  const cart = await Cart.findOne({ user: req.user.id })
-    .populate("products.product");
+  const cart = await Cart.findOne({
+    user: req.user._id,
+  }).populate({
+    path: "items.product",
+    populate: [
+      {
+        path: "brand",
+      },
+      {
+        path: "category",
+      },
+    ],
+  });
 
   if (!cart) {
-    return res.status(404).json({
-      success: false,
-      message: "Cart is empty",
+    return res.status(200).json({
+      success: true,
+      cart: {
+        items: [],
+        subtotal: 0,
+        totalAmount: 0,
+        totalItems: 0,
+        totalQuantity: 0,
+      },
     });
   }
 
@@ -88,15 +101,15 @@ exports.getMyCart = asyncHandler(async (req, res) => {
   });
 });
 
-// ===============================
+// ======================================
 // Update Quantity
-// PATCH /cart/updateQuantity/:id
-// ===============================
+// ======================================
 exports.updateQuantity = asyncHandler(async (req, res) => {
   const { quantity } = req.body;
-  const productId = req.params.id;
 
-  const cart = await Cart.findOne({ user: req.user.id });
+  const cart = await Cart.findOne({
+    user: req.user._id,
+  });
 
   if (!cart) {
     return res.status(404).json({
@@ -105,9 +118,7 @@ exports.updateQuantity = asyncHandler(async (req, res) => {
     });
   }
 
-  const item = cart.products.find(
-    (item) => item.product.toString() === productId
-  );
+  const item = cart.items.id(req.params.id);
 
   if (!item) {
     return res.status(404).json({
@@ -117,7 +128,6 @@ exports.updateQuantity = asyncHandler(async (req, res) => {
   }
 
   item.quantity = Number(quantity);
-  item.subtotal = item.quantity * item.price;
 
   cart.calculateTotals();
 
@@ -125,18 +135,18 @@ exports.updateQuantity = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: "Quantity updated successfully",
+    message: "Quantity updated",
     cart,
   });
 });
 
-// ===============================
-// Remove From Cart
-// DELETE /cart/removeFromCart/:id
-// ===============================
+// ======================================
+// Remove Item
+// ======================================
 exports.removeFromCart = asyncHandler(async (req, res) => {
-
-  const cart = await Cart.findOne({ user: req.user.id });
+  const cart = await Cart.findOne({
+    user: req.user._id,
+  });
 
   if (!cart) {
     return res.status(404).json({
@@ -145,37 +155,28 @@ exports.removeFromCart = asyncHandler(async (req, res) => {
     });
   }
 
-  cart.products = cart.products.filter(
-    item => item._id.toString() !== req.params.id
+  cart.items = cart.items.filter(
+    (item) => item._id.toString() !== req.params.id
   );
 
-  cart.totalItems = cart.products.reduce(
-    (sum, item) => sum + item.quantity,
-    0
-  );
-
-  cart.totalPrice = cart.products.reduce(
-    (sum, item) => sum + item.subtotal,
-    0
-  );
+  cart.calculateTotals();
 
   await cart.save();
 
   res.status(200).json({
     success: true,
-    message: "Item removed from cart",
+    message: "Item removed successfully",
     cart,
   });
-
 });
 
-// ===============================
+// ======================================
 // Clear Cart
-// DELETE /cart/clearCart
-// ===============================
+// ======================================
 exports.clearCart = asyncHandler(async (req, res) => {
-
-  const cart = await Cart.findOne({ user: req.user.id });
+  const cart = await Cart.findOne({
+    user: req.user._id,
+  });
 
   if (!cart) {
     return res.status(404).json({
@@ -184,9 +185,9 @@ exports.clearCart = asyncHandler(async (req, res) => {
     });
   }
 
-  cart.products = [];
-  cart.totalItems = 0;
-  cart.totalPrice = 0;
+  cart.items = [];
+
+  cart.calculateTotals();
 
   await cart.save();
 
@@ -194,44 +195,36 @@ exports.clearCart = asyncHandler(async (req, res) => {
     success: true,
     message: "Cart cleared successfully",
   });
-
 });
 
-// ===============================
-// Get Cart Count
-// GET /cart/getCartCount
-// ===============================
+// ======================================
+// Cart Count
+// ======================================
 exports.getCartCount = asyncHandler(async (req, res) => {
-
-  const cart = await Cart.findOne({ user: req.user.id });
-
-  const count = cart
-    ? cart.products.reduce(
-        (sum, item) => sum + item.quantity,
-        0
-      )
-    : 0;
+  const cart = await Cart.findOne({
+    user: req.user._id,
+  });
 
   res.status(200).json({
     success: true,
-    count,
+    count: cart ? cart.totalQuantity : 0,
   });
-
 });
 
-// ===============================
-// Get Cart Total
-// GET /cart/getCartTotal
-// ===============================
+// ======================================
+// Cart Total
+// ======================================
 exports.getCartTotal = asyncHandler(async (req, res) => {
-
-  const cart = await Cart.findOne({ user: req.user.id });
-
-  const total = cart ? cart.totalPrice : 0;
+  const cart = await Cart.findOne({
+    user: req.user._id,
+  });
 
   res.status(200).json({
     success: true,
-    totalPrice: total,
+    subtotal: cart ? cart.subtotal : 0,
+    tax: cart ? cart.tax : 0,
+    shippingCharge: cart ? cart.shippingCharge : 0,
+    discount: cart ? cart.discount : 0,
+    totalAmount: cart ? cart.totalAmount : 0,
   });
-
 });

@@ -2,109 +2,101 @@ import { Link } from "react-router-dom";
 import {
   FaCheckCircle,
   FaShoppingBag,
-  FaBoxOpen,
+  FaClipboardList,
 } from "react-icons/fa";
 
 const PaymentSuccess = () => {
   return (
-    <div className="container py-5">
+    <div
+      className="container-fluid d-flex align-items-center justify-content-center"
+      style={{
+        minHeight: "100vh",
+        background:
+          "linear-gradient(135deg,#e8fff4,#f7f9fc)",
+      }}
+    >
+      <div
+        className="card border-0 shadow-lg text-center p-5"
+        style={{
+          maxWidth: "650px",
+          width: "100%",
+          borderRadius: "25px",
+        }}
+      >
+        {/* Success Icon */}
 
-      <div className="row justify-content-center">
+        <div className="mb-4">
 
-        <div className="col-lg-7">
-
-          <div className="card border-0 shadow-lg rounded-4">
-
-            <div className="card-body text-center p-5">
-
-              {/* Success Icon */}
-
-              <div
-                className="mx-auto mb-4 d-flex justify-content-center align-items-center rounded-circle"
-                style={{
-                  width: "120px",
-                  height: "120px",
-                  background: "#d1fae5",
-                }}
-              >
-                <FaCheckCircle
-                  size={70}
-                  className="text-success"
-                />
-              </div>
-
-              <h1 className="fw-bold text-success">
-                Payment Successful!
-              </h1>
-
-              <p className="text-muted fs-5 mt-3">
-                Thank you for your purchase.
-                <br />
-                Your order has been placed successfully.
-              </p>
-
-              <div className="alert alert-success mt-4">
-
-                <strong>Order ID :</strong> #ORD1001
-
-                <br />
-
-                Estimated Delivery :
-                <strong> 3 - 5 Business Days</strong>
-
-              </div>
-
-              <div className="row mt-5">
-
-                <div className="col-md-6 mb-3">
-
-                  <Link
-                    to="/my-orders"
-                    className="btn btn-success w-100 py-3"
-                  >
-
-                    <FaBoxOpen className="me-2" />
-
-                    View My Orders
-
-                  </Link>
-
-                </div>
-
-                <div className="col-md-6 mb-3">
-
-                  <Link
-                    to="/shop"
-                    className="btn btn-outline-primary w-100 py-3"
-                  >
-
-                    <FaShoppingBag className="me-2" />
-
-                    Continue Shopping
-
-                  </Link>
-
-                </div>
-
-              </div>
-
-              <hr className="my-4" />
-
-              <p className="text-muted mb-0">
-
-                Thank you for shopping with
-                <strong> MERN SHOP</strong> ❤️
-
-              </p>
-
-            </div>
-
-          </div>
+          <FaCheckCircle
+            size={90}
+            className="text-success"
+          />
 
         </div>
 
-      </div>
+        {/* Heading */}
 
+        <h1 className="fw-bold text-success mb-3">
+          Payment Successful
+        </h1>
+
+        <p className="text-muted fs-5 mb-4">
+          Thank you for shopping with us.
+          <br />
+          Your order has been placed successfully.
+        </p>
+
+        {/* Order Information */}
+
+        <div className="bg-light rounded p-4 mb-4">
+
+          <h5 className="mb-3">
+            Order Status
+          </h5>
+
+          <p className="mb-2">
+            ✅ Payment Received
+          </p>
+
+          <p className="mb-2">
+            📦 Order Confirmed
+          </p>
+
+          <p className="mb-0">
+            🚚 Processing for Shipment
+          </p>
+
+        </div>
+
+        {/* Buttons */}
+
+        <div className="d-grid gap-3">
+
+          <Link
+            to="/my-orders"
+            className="btn btn-primary btn-lg"
+          >
+            <FaClipboardList className="me-2" />
+            View My Orders
+          </Link>
+
+          <Link
+            to="/shop"
+            className="btn btn-outline-success btn-lg"
+          >
+            <FaShoppingBag className="me-2" />
+            Continue Shopping
+          </Link>
+
+        </div>
+
+        <hr className="my-4" />
+
+        <small className="text-muted">
+          A confirmation email will be sent to your
+          registered email address shortly.
+        </small>
+      </div>
     </div>
   );
 };

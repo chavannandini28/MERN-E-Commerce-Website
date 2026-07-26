@@ -1,4 +1,5 @@
 const express = require("express");
+
 const router = express.Router();
 
 const {
@@ -11,58 +12,83 @@ const {
   getCartTotal,
 } = require("../controllers/cartController");
 
-const { protect } = require("../middleware/authMiddleware");
+const {
+  protect,
+} = require("../middleware/authMiddleware");
 
-// ==========================================
+// ======================================
 // All Cart Routes Require Login
-// ==========================================
+// ======================================
 
+router.use(protect);
+
+// ======================================
 // Add Product To Cart
+// POST /api/cart/addToCart
+// ======================================
+
 router.post(
   "/addToCart",
-  protect,
   addToCart
 );
 
-// Get Logged In User Cart
+// ======================================
+// Get Logged User Cart
+// GET /api/cart/getMyCart
+// ======================================
+
 router.get(
   "/getMyCart",
-  protect,
   getMyCart
 );
 
-// Update Product Quantity
+// ======================================
+// Update Quantity
+// PATCH /api/cart/updateQuantity/:id
+// ======================================
+
 router.patch(
   "/updateQuantity/:id",
-  protect,
   updateQuantity
 );
 
-// Remove Product From Cart
+// ======================================
+// Remove Cart Item
+// DELETE /api/cart/removeFromCart/:id
+// ======================================
+
 router.delete(
   "/removeFromCart/:id",
-  protect,
   removeFromCart
 );
 
+// ======================================
 // Clear Cart
+// DELETE /api/cart/clearCart
+// ======================================
+
 router.delete(
   "/clearCart",
-  protect,
   clearCart
 );
 
-// Get Cart Item Count
+// ======================================
+// Cart Count
+// GET /api/cart/getCartCount
+// ======================================
+
 router.get(
   "/getCartCount",
-  protect,
   getCartCount
 );
 
-// Get Cart Total
+// ======================================
+// Cart Total
+// GET /api/cart/getCartTotal
+// ======================================
+
 router.get(
   "/getCartTotal",
-  protect,
   getCartTotal
 );
 

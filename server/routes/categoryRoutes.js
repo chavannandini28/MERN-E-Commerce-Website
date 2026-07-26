@@ -1,12 +1,19 @@
 const express = require("express");
+
 const router = express.Router();
 
 const {
   createCategory,
   getCategories,
   getCategoryById,
+  getCategoryBySlug,
   updateCategory,
   deleteCategory,
+  getFeaturedCategories,
+  searchCategories,
+  toggleCategoryStatus,
+  getCategoryStatistics,
+  getCategoryDropdown,
 } = require("../controllers/categoryController");
 
 const { protect } = require("../middleware/authMiddleware");
@@ -24,7 +31,19 @@ const {
 // Get All Categories
 router.get("/", getCategories);
 
-// Get Single Category
+// Featured Categories
+router.get("/featured", getFeaturedCategories);
+
+// Search Categories
+router.get("/search", searchCategories);
+
+// Dropdown Categories
+router.get("/dropdown", getCategoryDropdown);
+
+// Category By Slug
+router.get("/slug/:slug", getCategoryBySlug);
+
+// Category By ID
 router.get("/:id", getCategoryById);
 
 // ======================================
@@ -57,6 +76,22 @@ router.delete(
   protect,
   authorize("Admin"),
   deleteCategory
+);
+
+// Activate / Deactivate Category
+router.patch(
+  "/status/:id",
+  protect,
+  authorize("Admin"),
+  toggleCategoryStatus
+);
+
+// Category Statistics
+router.get(
+  "/admin/statistics",
+  protect,
+  authorize("Admin"),
+  getCategoryStatistics
 );
 
 module.exports = router;

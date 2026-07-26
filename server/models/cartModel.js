@@ -1,45 +1,41 @@
 const mongoose = require("mongoose");
 
-// =====================================
-// Cart Item Schema
-// =====================================
-const cartItemSchema = new mongoose.Schema({
-  product: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Product",
-    required: true,
-  },
+const cartItemSchema = new mongoose.Schema(
+  {
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+    },
 
-  quantity: {
-    type: Number,
-    default: 1,
-    min: 1,
-  },
+    quantity: {
+      type: Number,
+      required: true,
+      default: 1,
+      min: 1,
+    },
 
-  price: {
-    type: Number,
-    required: true,
-  },
+    price: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
 
-  subtotal: {
-    type: Number,
-    required: true,
-  },
+    selectedColor: {
+      type: String,
+      default: "",
+    },
 
-  color: {
-    type: String,
-    default: "",
+    selectedSize: {
+      type: String,
+      default: "",
+    },
   },
+  {
+    _id: true,
+  }
+);
 
-  size: {
-    type: String,
-    default: "",
-  },
-});
-
-// =====================================
-// Cart Schema
-// =====================================
 const cartSchema = new mongoose.Schema(
   {
     user: {
@@ -49,19 +45,19 @@ const cartSchema = new mongoose.Schema(
       unique: true,
     },
 
-    products: [cartItemSchema],
+    items: [cartItemSchema],
 
     totalItems: {
       type: Number,
       default: 0,
     },
 
-    totalPrice: {
+    totalQuantity: {
       type: Number,
       default: 0,
     },
 
-    totalDiscount: {
+    subtotal: {
       type: Number,
       default: 0,
     },
@@ -76,25 +72,14 @@ const cartSchema = new mongoose.Schema(
       default: 0,
     },
 
-    grandTotal: {
+    discount: {
       type: Number,
       default: 0,
     },
 
-    coupon: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Coupon",
-      default: null,
-    },
-
-    couponDiscount: {
+    totalAmount: {
       type: Number,
       default: 0,
-    },
-
-    isCheckedOut: {
-      type: Boolean,
-      default: false,
     },
   },
   {
@@ -103,47 +88,35 @@ const cartSchema = new mongoose.Schema(
 );
 
 // =====================================
-// Calculate Totals
+// Calculate Cart
 // =====================================
+
 cartSchema.methods.calculateTotals = function () {
-  this.totalItems = this.products.reduce(
+  this.totalItems = this.items.length;
+
+  this.totalQuantity = this.items.reduce(
     (sum, item) => sum + item.quantity,
     0
   );
 
-  this.totalPrice = this.products.reduce(
-    (sum, item) => sum + item.subtotal,
+  this.subtotal = this.items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
     0
   );
 
-  this.grandTotal =
-    this.totalPrice +
-    this.shippingCharge +
-    this.tax -
-    this.couponDiscount;
+  this.tax = Number((this.subtotal * 0.18).toFixed(2));
+
+  this.shippingCharge =
+    this.subtotal >= 500 ? 0 : 50;
+
+  this.totalAmount =
+    this.subtotal +
+    this.tax +
+    this.shippingCharge -
+    this.discount;
 };
 
-// =====================================
-// Before Save
-// =====================================
-cartSchema.pre("save", function (next) {
-  this.calculateTotals();
-  next();
-});
-
-// =====================================
-// Virtual
-// =====================================
-cartSchema.virtual("isEmpty").get(function () {
-  return this.products.length === 0;
-});
-
-cartSchema.set("toJSON", {
-  virtuals: true,
-});
-
-cartSchema.set("toObject", {
-  virtuals: true,
-});
-
-module.exports = mongoose.model("Cart", cartSchema);
+module.exports = mongoose.model(
+  "Cart",
+  cartSchema
+);
