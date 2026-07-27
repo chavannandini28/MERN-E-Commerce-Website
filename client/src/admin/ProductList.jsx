@@ -1,14 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+
 import {
   FaPlus,
-  FaSearch,
   FaEdit,
   FaTrash,
-  FaSyncAlt,
-  FaBoxOpen,
+  FaSearch,
 } from "react-icons/fa";
-import { toast } from "react-toastify";
+
+import Loader from "../components/Loader";
 
 import {
   getProducts,
@@ -22,46 +23,35 @@ const ProductList = () => {
 
   const [search, setSearch] = useState("");
 
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const productsPerPage = 10;
-
   useEffect(() => {
-    fetchProducts();
+    loadProducts();
   }, []);
 
-  // ============================
-  // Fetch Products
-  // ============================
-
-  const fetchProducts = async () => {
+  const loadProducts = async () => {
     try {
       setLoading(true);
 
       const { data } = await getProducts();
 
-      setProducts(
-        data.products ||
-        data.data ||
-        []
-      );
+      setProducts(data.products || []);
+
     } catch (error) {
+
       toast.error(
-        error?.response?.data?.message ||
+        error.response?.data?.message ||
         "Failed to load products"
       );
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
-  // ============================
-  // Delete Product
-  // ============================
-
-  const handleDelete = async (id) => {
+  const deleteHandler = async (id) => {
     const confirmDelete = window.confirm(
-      "Delete this product?"
+      "Are you sure you want to delete this product?"
     );
 
     if (!confirmDelete) return;
@@ -69,82 +59,38 @@ const ProductList = () => {
     try {
       await deleteProduct(id);
 
-      toast.success(
-        "Product deleted successfully"
+      toast.success("Product deleted successfully");
+
+      loadProducts();
+
+    } catch (error) {
+
+      toast.error(
+        error.response?.data?.message ||
+        "Failed to delete product"
       );
 
-      fetchProducts();
-    } catch (error) {
-      toast.error(
-        error?.response?.data?.message ||
-        "Unable to delete product"
-      );
     }
   };
 
-  // ============================
-  // Search
-  // ============================
-
-  const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      const keyword = search.toLowerCase();
-
-      return (
-        product.title
-          ?.toLowerCase()
-          .includes(keyword) ||
-
-        product.brand?.name
-          ?.toLowerCase()
-          .includes(keyword) ||
-
-        product.category?.name
-          ?.toLowerCase()
-          .includes(keyword)
-      );
-    });
-  }, [products, search]);
-
-  // ============================
-  // Pagination
-  // ============================
-
-  const totalPages = Math.ceil(
-    filteredProducts.length /
-    productsPerPage
+  const filteredProducts = products.filter((product) =>
+    product.title
+      ?.toLowerCase()
+      .includes(search.toLowerCase())
   );
 
-  const indexOfLastProduct =
-    currentPage * productsPerPage;
+  if (loading) {
+    return <Loader />;
+  }
 
-  const indexOfFirstProduct =
-    indexOfLastProduct -
-    productsPerPage;
-
-  const currentProducts =
-    filteredProducts.slice(
-      indexOfFirstProduct,
-      indexOfLastProduct
-    );
-
-      return (
+  return (
     <div className="container-fluid py-4">
 
       <div className="d-flex justify-content-between align-items-center mb-4">
 
-        <div>
-
-          <h2 className="fw-bold">
-            <FaBoxOpen className="me-2 text-primary" />
-            Product Management
-          </h2>
-
-          <p className="text-muted mb-0">
-            Manage all products
-          </p>
-
-        </div>
+        <h2 className="fw-bold">
+          Product Management
+        </h2>
 
         <Link
           to="/admin/products/add"
@@ -156,315 +102,261 @@ const ProductList = () => {
 
       </div>
 
-      {/* Search */}
-
-      <div className="card shadow border-0 mb-4">
+      <div className="card border-0 shadow-sm">
 
         <div className="card-body">
 
-          <div className="input-group">
+          <div className="row mb-4">
 
-            <span className="input-group-text bg-white">
-              <FaSearch />
-            </span>
+            <div className="col-md-6">
 
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search product..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setCurrentPage(1);
-              }}
-            />
+              <div className="input-group">
 
-            <button
-              className="btn btn-outline-primary"
-              onClick={fetchProducts}
-            >
-              <FaSyncAlt />
-            </button>
+                <span className="input-group-text">
+                  <FaSearch />
+                </span>
+
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search products..."
+                  value={search}
+                  onChange={(e) =>
+                    setSearch(e.target.value)
+                  }
+                />
+
+              </div>
+
+            </div>
 
           </div>
 
-        </div>
+                    <div className="table-responsive">
 
-      </div>
+            <table className="table table-hover align-middle">
 
-      {/* Product Table */}
+              <thead className="table-light">
 
-      <div className="card shadow border-0">
+                <tr>
 
-        <div className="card-body p-0">
+                  <th>Image</th>
 
-          {loading ? (
+                  <th>Product</th>
 
-            <div className="text-center py-5">
+                  <th>Category</th>
 
-              <div className="spinner-border text-primary"></div>
+                  <th>Brand</th>
 
-            </div>
+                  <th>Price</th>
 
-          ) : currentProducts.length === 0 ? (
+                  <th>Stock</th>
 
-            <div className="text-center py-5">
+                  <th>Status</th>
 
-              <FaBoxOpen
-                size={60}
-                className="text-secondary mb-3"
-              />
+                  <th>Actions</th>
 
-              <h5>No Products Found</h5>
+                </tr>
 
-            </div>
+              </thead>
 
-          ) : (
+              <tbody>
 
-            <div className="table-responsive">
+                {filteredProducts.length > 0 ? (
 
-              <table className="table table-hover align-middle mb-0">
+                  filteredProducts.map((product) => (
 
-                <thead className="table-dark">
+                    <tr key={product._id}>
 
-                  <tr>
+                      <td>
 
-                    <th>#</th>
+                        <img
+                          src={
+                            product.thumbnail?.url ||
+                            "https://via.placeholder.com/60"
+                          }
+                          alt={product.title}
+                          width="60"
+                          height="60"
+                          className="rounded border"
+                          style={{
+                            objectFit: "cover",
+                          }}
+                        />
 
-                    <th>Image</th>
+                      </td>
 
-                    <th>Product</th>
+                      <td>
 
-                    <th>Category</th>
+                        <div>
 
-                    <th>Brand</th>
+                          <h6 className="mb-1 fw-bold">
 
-                    <th>Price</th>
-
-                    <th>Stock</th>
-
-                    <th>Rating</th>
-
-                    <th className="text-center">
-                      Actions
-                    </th>
-
-                  </tr>
-
-                </thead>
-
-                <tbody>
-
-                  {currentProducts.map(
-                    (product, index) => (
-
-                      <tr key={product._id}>
-
-                        <td>
-                          {indexOfFirstProduct + index + 1}
-                        </td>
-
-                        <td>
-
-                          <img
-                            src={
-                              product.images?.[0]?.url ||
-                              "https://via.placeholder.com/70"
-                            }
-                            alt={product.title}
-                            width="70"
-                            height="70"
-                            className="rounded border"
-                            style={{
-                              objectFit: "cover",
-                            }}
-                          />
-
-                        </td>
-
-                        <td>
-
-                          <h6 className="mb-1">
                             {product.title}
+
                           </h6>
 
                           <small className="text-muted">
-                            {product.slug}
+
+                            SKU : {product.sku}
+
                           </small>
 
-                        </td>
+                        </div>
 
-                        <td>
-                          {product.category?.name || "-"}
-                        </td>
+                      </td>
 
-                        <td>
-                          {product.brand?.name || "-"}
-                        </td>
+                      <td>
 
-                        <td>
-                          ₹
-                          {Number(
-                            product.price || 0
-                          ).toLocaleString()}
-                        </td>
+                        {product.category?.name ||
+                          product.category}
 
-                        <td>
+                      </td>
 
-                          <span
-                            className={`badge ${
-                              product.stock <= 5
-                                ? "bg-danger"
-                                : "bg-success"
-                            }`}
-                          >
-                            {product.stock}
+                      <td>
+
+                        {product.brand?.name ||
+                          product.brand}
+
+                      </td>
+
+                      <td className="fw-bold text-success">
+
+                        ₹{product.price}
+
+                      </td>
+
+                      <td>
+
+                        {product.stock}
+
+                      </td>
+
+                      <td>
+
+                        {product.stock > 10 ? (
+
+                          <span className="badge bg-success">
+
+                            In Stock
+
                           </span>
 
-                        </td>
+                        ) : product.stock > 0 ? (
 
-                        <td>
+                          <span className="badge bg-warning text-dark">
 
-                          ⭐{" "}
-                          {product.rating || 0}
+                            Low Stock
 
-                        </td>
+                          </span>
 
-                        <td className="text-center">
+                        ) : (
+
+                          <span className="badge bg-danger">
+
+                            Out of Stock
+
+                          </span>
+
+                        )}
+
+                      </td>
+
+                      <td>
+
+                        <div className="btn-group">
 
                           <Link
                             to={`/admin/products/edit/${product._id}`}
-                            className="btn btn-sm btn-outline-primary me-2"
+                            className="btn btn-sm btn-outline-primary"
                           >
+
                             <FaEdit />
+
                           </Link>
 
                           <button
                             className="btn btn-sm btn-outline-danger"
                             onClick={() =>
-                              handleDelete(product._id)
+                              deleteHandler(product._id)
                             }
                           >
+
                             <FaTrash />
+
                           </button>
 
-                        </td>
+                        </div>
 
-                      </tr>
+                      </td>
 
-                    )
-                  )}
+                    </tr>
 
-                </tbody>
+                  ))
 
-              </table>
+                ) : (
+
+                  <tr>
+
+                    <td
+                      colSpan="8"
+                      className="text-center py-5"
+                    >
+
+                      <h5 className="text-muted">
+
+                        No Products Found
+
+                      </h5>
+
+                    </td>
+
+                  </tr>
+
+                )}
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+                    <hr />
+
+          <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3">
+
+            <div>
+
+              <strong>
+                Total Products :
+              </strong>
+
+              <span className="ms-2 badge bg-primary">
+
+                {filteredProducts.length}
+
+              </span>
 
             </div>
 
-          )}
+            <div className="mt-3 mt-md-0">
 
-        </div>
+              <button
+                className="btn btn-outline-secondary"
+                onClick={loadProducts}
+              >
 
-      </div>
+                Refresh List
 
-            {/* Pagination */}
-
-      {!loading && totalPages > 1 && (
-        <div className="card border-0 mt-4">
-          <div className="card-body">
-
-            <div className="d-flex justify-content-between align-items-center flex-wrap">
-
-              <p className="mb-2 mb-md-0 text-muted">
-                Showing{" "}
-                <strong>
-                  {filteredProducts.length === 0
-                    ? 0
-                    : indexOfFirstProduct + 1}
-                </strong>{" "}
-                to{" "}
-                <strong>
-                  {Math.min(
-                    indexOfLastProduct,
-                    filteredProducts.length
-                  )}
-                </strong>{" "}
-                of{" "}
-                <strong>{filteredProducts.length}</strong>{" "}
-                products
-              </p>
-
-              <nav>
-                <ul className="pagination mb-0">
-
-                  {/* Previous */}
-
-                  <li
-                    className={`page-item ${
-                      currentPage === 1
-                        ? "disabled"
-                        : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() =>
-                        setCurrentPage(currentPage - 1)
-                      }
-                    >
-                      Previous
-                    </button>
-                  </li>
-
-                  {/* Page Numbers */}
-
-                  {[...Array(totalPages)].map((_, index) => (
-                    <li
-                      key={index}
-                      className={`page-item ${
-                        currentPage === index + 1
-                          ? "active"
-                          : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() =>
-                          setCurrentPage(index + 1)
-                        }
-                      >
-                        {index + 1}
-                      </button>
-                    </li>
-                  ))}
-
-                  {/* Next */}
-
-                  <li
-                    className={`page-item ${
-                      currentPage === totalPages
-                        ? "disabled"
-                        : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() =>
-                        setCurrentPage(currentPage + 1)
-                      }
-                    >
-                      Next
-                    </button>
-                  </li>
-
-                </ul>
-              </nav>
+              </button>
 
             </div>
 
           </div>
+
         </div>
-      )}
+
+      </div>
 
     </div>
   );

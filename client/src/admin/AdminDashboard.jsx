@@ -4,10 +4,10 @@ import {
   FaBoxOpen,
   FaShoppingCart,
   FaRupeeSign,
-  FaStar,
-  FaExclamationTriangle,
 } from "react-icons/fa";
-import { toast } from "react-toastify";
+
+import Loader from "../components/Loader";
+import DashboardCharts from "./DashboardCharts";
 
 import { getDashboardStats } from "../api/dashboardApi";
 
@@ -19,433 +19,543 @@ const AdminDashboard = () => {
     totalProducts: 0,
     totalOrders: 0,
     totalRevenue: 0,
-    totalReviews: 0,
     recentOrders: [],
-    latestUsers: [],
     lowStockProducts: [],
   });
 
   useEffect(() => {
-    fetchDashboard();
+    loadDashboard();
   }, []);
 
-  const fetchDashboard = async () => {
+  const loadDashboard = async () => {
     try {
       setLoading(true);
 
       const { data } = await getDashboardStats();
 
       setStats({
-        totalUsers: data?.totalUsers || 0,
-        totalProducts: data?.totalProducts || 0,
-        totalOrders: data?.totalOrders || 0,
-        totalRevenue: data?.totalRevenue || 0,
-        totalReviews: data?.totalReviews || 0,
-        recentOrders: data?.recentOrders || [],
-        latestUsers: data?.latestUsers || [],
-        lowStockProducts: data?.lowStockProducts || [],
+        totalUsers: data.totalUsers || 0,
+        totalProducts: data.totalProducts || 0,
+        totalOrders: data.totalOrders || 0,
+        totalRevenue: data.totalRevenue || 0,
+        recentOrders: data.recentOrders || [],
+        lowStockProducts: data.lowStockProducts || [],
       });
     } catch (error) {
-      toast.error(
-        error?.response?.data?.message ||
-          "Failed to load dashboard"
-      );
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
+  if (loading) {
+    return <Loader />;
+  }
+
   return (
     <div className="container-fluid py-4">
 
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="mb-4">
 
-        <div>
-          <h2 className="fw-bold">Admin Dashboard</h2>
-          <p className="text-muted mb-0">
-            Welcome to your admin panel
-          </p>
+        <h2 className="fw-bold">
+          Admin Dashboard
+        </h2>
+
+        <p className="text-muted">
+          Welcome back! Here is your store overview.
+        </p>
+
+      </div>
+
+      <div className="row g-4">
+
+        {/* Users */}
+
+        <div className="col-lg-3 col-md-6">
+
+          <div className="card border-0 shadow-sm h-100">
+
+            <div className="card-body d-flex align-items-center">
+
+              <div className="bg-primary rounded-circle text-white p-3 me-3">
+
+                <FaUsers size={28} />
+
+              </div>
+
+              <div>
+
+                <small className="text-muted">
+                  Total Users
+                </small>
+
+                <h3 className="fw-bold mb-0">
+                  {stats.totalUsers}
+                </h3>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* Products */}
+
+        <div className="col-lg-3 col-md-6">
+
+          <div className="card border-0 shadow-sm h-100">
+
+            <div className="card-body d-flex align-items-center">
+
+              <div className="bg-success rounded-circle text-white p-3 me-3">
+
+                <FaBoxOpen size={28} />
+
+              </div>
+
+              <div>
+
+                <small className="text-muted">
+                  Products
+                </small>
+
+                <h3 className="fw-bold mb-0">
+                  {stats.totalProducts}
+                </h3>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* Orders */}
+
+        <div className="col-lg-3 col-md-6">
+
+          <div className="card border-0 shadow-sm h-100">
+
+            <div className="card-body d-flex align-items-center">
+
+              <div className="bg-warning rounded-circle text-white p-3 me-3">
+
+                <FaShoppingCart size={28} />
+
+              </div>
+
+              <div>
+
+                <small className="text-muted">
+                  Orders
+                </small>
+
+                <h3 className="fw-bold mb-0">
+                  {stats.totalOrders}
+                </h3>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* Revenue */}
+
+        <div className="col-lg-3 col-md-6">
+
+          <div className="card border-0 shadow-sm h-100">
+
+            <div className="card-body d-flex align-items-center">
+
+              <div className="bg-danger rounded-circle text-white p-3 me-3">
+
+                <FaRupeeSign size={28} />
+
+              </div>
+
+              <div>
+
+                <small className="text-muted">
+                  Revenue
+                </small>
+
+                <h3 className="fw-bold mb-0">
+                  ₹{stats.totalRevenue}
+                </h3>
+
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
 
       </div>
 
-      {loading ? (
-        <div className="text-center py-5">
-          <div className="spinner-border text-primary"></div>
-        </div>
-      ) : (
+      {/* Part 2 Starts Here */}
 
-        <>
-          {/* Statistics */}
+            {/* Dashboard Charts */}
 
-          <div className="row">
+      <div className="row mt-5">
 
-            {/* Users */}
+        <div className="col-lg-8">
 
-            <div className="col-xl-4 col-md-6 mb-4">
-              <div className="card border-0 shadow h-100">
-                <div className="card-body">
+          <div className="card border-0 shadow-sm h-100">
 
-                  <div className="d-flex justify-content-between align-items-center">
+            <div className="card-header bg-white">
 
-                    <div>
-                      <h6 className="text-muted">
-                        Total Users
-                      </h6>
+              <h5 className="fw-bold mb-0">
+                Sales Analytics
+              </h5>
 
-                      <h2 className="fw-bold">
-                        {stats.totalUsers}
-                      </h2>
-                    </div>
-
-                    <div
-                      className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
-                      style={{
-                        width: 65,
-                        height: 65,
-                      }}
-                    >
-                      <FaUsers size={28} />
-                    </div>
-
-                  </div>
-
-                </div>
-              </div>
             </div>
 
-            {/* Products */}
+            <div className="card-body">
 
-            <div className="col-xl-4 col-md-6 mb-4">
-              <div className="card border-0 shadow h-100">
-                <div className="card-body">
+              <DashboardCharts />
 
-                  <div className="d-flex justify-content-between align-items-center">
-
-                    <div>
-                      <h6 className="text-muted">
-                        Total Products
-                      </h6>
-
-                      <h2 className="fw-bold">
-                        {stats.totalProducts}
-                      </h2>
-                    </div>
-
-                    <div
-                      className="bg-success text-white rounded-circle d-flex align-items-center justify-content-center"
-                      style={{
-                        width: 65,
-                        height: 65,
-                      }}
-                    >
-                      <FaBoxOpen size={28} />
-                    </div>
-
-                  </div>
-
-                </div>
-              </div>
-            </div>
-
-            {/* Orders */}
-
-            <div className="col-xl-4 col-md-6 mb-4">
-              <div className="card border-0 shadow h-100">
-                <div className="card-body">
-
-                  <div className="d-flex justify-content-between align-items-center">
-
-                    <div>
-                      <h6 className="text-muted">
-                        Total Orders
-                      </h6>
-
-                      <h2 className="fw-bold">
-                        {stats.totalOrders}
-                      </h2>
-                    </div>
-
-                    <div
-                      className="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center"
-                      style={{
-                        width: 65,
-                        height: 65,
-                      }}
-                    >
-                      <FaShoppingCart size={28} />
-                    </div>
-
-                  </div>
-
-                </div>
-              </div>
-            </div>
-
-            {/* Revenue */}
-
-            <div className="col-xl-4 col-md-6 mb-4">
-              <div className="card border-0 shadow h-100">
-                <div className="card-body">
-
-                  <div className="d-flex justify-content-between align-items-center">
-
-                    <div>
-                      <h6 className="text-muted">
-                        Total Revenue
-                      </h6>
-
-                      <h2 className="fw-bold text-success">
-                        ₹
-                        {Number(
-                          stats.totalRevenue
-                        ).toLocaleString()}
-                      </h2>
-                    </div>
-
-                    <div
-                      className="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center"
-                      style={{
-                        width: 65,
-                        height: 65,
-                      }}
-                    >
-                      <FaRupeeSign size={28} />
-                    </div>
-
-                  </div>
-
-                </div>
-              </div>
-            </div>
-
-            {/* Reviews */}
-
-            <div className="col-xl-4 col-md-6 mb-4">
-              <div className="card border-0 shadow h-100">
-                <div className="card-body">
-
-                  <div className="d-flex justify-content-between align-items-center">
-
-                    <div>
-                      <h6 className="text-muted">
-                        Total Reviews
-                      </h6>
-
-                      <h2 className="fw-bold">
-                        {stats.totalReviews}
-                      </h2>
-                    </div>
-
-                    <div
-                      className="bg-info text-white rounded-circle d-flex align-items-center justify-content-center"
-                      style={{
-                        width: 65,
-                        height: 65,
-                      }}
-                    >
-                      <FaStar size={28} />
-                    </div>
-
-                  </div>
-
-                </div>
-              </div>
-            </div>
-
-            {/* Low Stock */}
-
-            <div className="col-xl-4 col-md-6 mb-4">
-              <div className="card border-0 shadow h-100">
-                <div className="card-body">
-
-                  <div className="d-flex justify-content-between align-items-center">
-
-                    <div>
-                      <h6 className="text-muted">
-                        Low Stock Products
-                      </h6>
-
-                      <h2 className="fw-bold text-danger">
-                        {stats.lowStockProducts.length}
-                      </h2>
-                    </div>
-
-                    <div
-                      className="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center"
-                      style={{
-                        width: 65,
-                        height: 65,
-                      }}
-                    >
-                      <FaExclamationTriangle size={28} />
-                    </div>
-
-                  </div>
-
-                </div>
-              </div>
             </div>
 
           </div>
 
-          {/* Part B starts here */}
+        </div>
 
-                    {/* Recent Orders & Latest Users */}
+        <div className="col-lg-4">
 
-          <div className="row">
+          <div className="card border-0 shadow-sm h-100">
+
+            <div className="card-header bg-white">
+
+              <h5 className="fw-bold mb-0">
+                Store Summary
+              </h5>
+
+            </div>
+
+            <div className="card-body">
+
+              <div className="d-flex justify-content-between align-items-center mb-4">
+
+                <span className="text-muted">
+                  Total Users
+                </span>
+
+                <span className="fw-bold">
+                  {stats.totalUsers}
+                </span>
+
+              </div>
+
+              <div className="d-flex justify-content-between align-items-center mb-4">
+
+                <span className="text-muted">
+                  Products
+                </span>
+
+                <span className="fw-bold">
+                  {stats.totalProducts}
+                </span>
+
+              </div>
+
+              <div className="d-flex justify-content-between align-items-center mb-4">
+
+                <span className="text-muted">
+                  Orders
+                </span>
+
+                <span className="fw-bold">
+                  {stats.totalOrders}
+                </span>
+
+              </div>
+
+              <div className="d-flex justify-content-between align-items-center">
+
+                <span className="text-muted">
+                  Revenue
+                </span>
+
+                <span className="fw-bold text-success">
+                  ₹{stats.totalRevenue}
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Part 3 Starts Here */}
 
             {/* Recent Orders */}
 
-            <div className="col-lg-8 mb-4">
+      <div className="row mt-5">
 
-              <div className="card border-0 shadow h-100">
+        <div className="col-lg-8">
 
-                <div className="card-header bg-white">
-                  <h5 className="mb-0 fw-bold">
-                    Recent Orders
-                  </h5>
-                </div>
+          <div className="card border-0 shadow-sm">
 
-                <div className="card-body p-0">
+            <div className="card-header bg-white d-flex justify-content-between align-items-center">
 
-                  {stats.recentOrders.length === 0 ? (
+              <h5 className="fw-bold mb-0">
+                Recent Orders
+              </h5>
 
-                    <div className="text-center p-4">
-                      No recent orders found.
-                    </div>
+              <span className="badge bg-primary">
+                {stats.recentOrders.length} Orders
+              </span>
 
-                  ) : (
+            </div>
 
-                    <div className="table-responsive">
+            <div className="card-body p-0">
 
-                      <table className="table table-hover mb-0">
+              <div className="table-responsive">
 
-                        <thead className="table-light">
+                <table className="table table-hover align-middle mb-0">
 
-                          <tr>
-                            <th>Order ID</th>
-                            <th>Customer</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                          </tr>
+                  <thead className="table-light">
 
-                        </thead>
+                    <tr>
 
-                        <tbody>
+                      <th>#</th>
 
-                          {stats.recentOrders.map((order) => (
+                      <th>Customer</th>
 
-                            <tr key={order._id}>
+                      <th>Items</th>
 
-                              <td>
-                                {order._id?.slice(-8)}
-                              </td>
+                      <th>Total</th>
 
-                              <td>
-                                {order.user?.name || "Customer"}
-                              </td>
+                      <th>Status</th>
 
-                              <td>
-                                ₹
-                                {order.totalPrice ||
-                                  order.totalAmount ||
-                                  0}
-                              </td>
+                    </tr>
 
-                              <td>
+                  </thead>
 
-                                <span
-                                  className={`badge ${
-                                    order.orderStatus === "Delivered"
-                                      ? "bg-success"
-                                      : order.orderStatus === "Cancelled"
-                                      ? "bg-danger"
-                                      : "bg-warning"
-                                  }`}
-                                >
-                                  {order.orderStatus}
-                                </span>
+                  <tbody>
 
-                              </td>
+                    {stats.recentOrders.length > 0 ? (
 
-                            </tr>
+                      stats.recentOrders.map((order, index) => (
 
-                          ))}
+                        <tr key={order._id}>
 
-                        </tbody>
+                          <td>{index + 1}</td>
 
-                      </table>
+                          <td>
+                            {order.user?.name || "Guest"}
+                          </td>
 
-                    </div>
+                          <td>
+                            {order.orderItems?.length || 0}
+                          </td>
 
-                  )}
+                          <td className="fw-bold text-success">
+                            ₹{order.totalPrice}
+                          </td>
 
-                </div>
+                          <td>
+
+                            <span
+                              className={`badge ${
+                                order.orderStatus === "Delivered"
+                                  ? "bg-success"
+                                  : order.orderStatus === "Processing"
+                                  ? "bg-warning text-dark"
+                                  : order.orderStatus === "Cancelled"
+                                  ? "bg-danger"
+                                  : "bg-secondary"
+                              }`}
+                            >
+
+                              {order.orderStatus}
+
+                            </span>
+
+                          </td>
+
+                        </tr>
+
+                      ))
+
+                    ) : (
+
+                      <tr>
+
+                        <td
+                          colSpan="5"
+                          className="text-center py-5 text-muted"
+                        >
+
+                          No Recent Orders
+
+                        </td>
+
+                      </tr>
+
+                    )}
+
+                  </tbody>
+
+                </table>
 
               </div>
 
             </div>
 
-            {/* Latest Users */}
+          </div>
 
-            <div className="col-lg-4 mb-4">
+        </div>
 
-              <div className="card border-0 shadow h-100">
+                {/* Low Stock Products */}
 
-                <div className="card-header bg-white">
+        <div className="col-lg-4">
 
-                  <h5 className="mb-0 fw-bold">
-                    Latest Users
-                  </h5>
+          <div className="card border-0 shadow-sm">
+
+            <div className="card-header bg-white d-flex justify-content-between align-items-center">
+
+              <h5 className="fw-bold mb-0">
+                Low Stock Products
+              </h5>
+
+              <span className="badge bg-danger">
+                {stats.lowStockProducts.length}
+              </span>
+
+            </div>
+
+            <div className="card-body">
+
+              {stats.lowStockProducts.length > 0 ? (
+
+                stats.lowStockProducts.map((product) => (
+
+                  <div
+                    key={product._id}
+                    className="d-flex justify-content-between align-items-center border-bottom py-3"
+                  >
+
+                    <div>
+
+                      <h6 className="mb-1">
+                        {product.title}
+                      </h6>
+
+                      <small className="text-muted">
+                        SKU : {product.sku}
+                      </small>
+
+                    </div>
+
+                    <div className="text-end">
+
+                      <span className="badge bg-warning text-dark">
+
+                        {product.stock} Left
+
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                ))
+
+              ) : (
+
+                <div className="text-center py-5">
+
+                  <h6 className="text-success">
+                    Inventory looks good 🎉
+                  </h6>
+
+                  <small className="text-muted">
+                    No products are running low on stock.
+                  </small>
 
                 </div>
 
-                <div className="card-body">
+              )}
 
-                  {stats.latestUsers.length === 0 ? (
+            </div>
 
-                    <div className="text-center">
-                      No users found.
-                    </div>
+          </div>
 
-                  ) : (
+        </div>
 
-                    stats.latestUsers.map((user) => (
+      </div>
 
-                      <div
-                        key={user._id}
-                        className="d-flex align-items-center mb-3"
-                      >
+      {/* Quick Actions */}
 
-                        <img
-                          src={
-                            user.avatar?.url ||
-                            "https://via.placeholder.com/50"
-                          }
-                          alt={user.name}
-                          width="50"
-                          height="50"
-                          className="rounded-circle me-3"
-                        />
+      <div className="row mt-5">
 
-                        <div>
+        <div className="col-12">
 
-                          <h6 className="mb-0">
-                            {user.name}
-                          </h6>
+          <div className="card border-0 shadow-sm">
 
-                          <small className="text-muted">
-                            {user.email}
-                          </small>
+            <div className="card-header bg-white">
 
-                        </div>
+              <h5 className="fw-bold mb-0">
 
-                      </div>
+                Quick Actions
 
-                    ))
+              </h5>
 
-                  )}
+            </div>
+
+            <div className="card-body">
+
+              <div className="row g-3">
+
+                <div className="col-lg-3 col-md-6">
+
+                  <button className="btn btn-primary w-100 py-3">
+
+                    Add Product
+
+                  </button>
+
+                </div>
+
+                <div className="col-lg-3 col-md-6">
+
+                  <button className="btn btn-success w-100 py-3">
+
+                    Manage Orders
+
+                  </button>
+
+                </div>
+
+                <div className="col-lg-3 col-md-6">
+
+                  <button className="btn btn-warning w-100 py-3">
+
+                    Manage Users
+
+                  </button>
+
+                </div>
+
+                <div className="col-lg-3 col-md-6">
+
+                  <button className="btn btn-dark w-100 py-3">
+
+                    Reports
+
+                  </button>
 
                 </div>
 
@@ -455,107 +565,54 @@ const AdminDashboard = () => {
 
           </div>
 
-          {/* Part C starts here */}
+        </div>
 
-                    {/* Low Stock Products */}
+      </div>
 
-          <div className="row">
+            {/* Footer */}
 
-            <div className="col-12">
+      <div className="row mt-5">
 
-              <div className="card border-0 shadow">
+        <div className="col-12">
 
-                <div className="card-header bg-white">
+          <div className="card border-0 shadow-sm">
 
-                  <h5 className="fw-bold mb-0">
-                    Low Stock Products
-                  </h5>
+            <div className="card-body d-flex flex-column flex-lg-row justify-content-between align-items-center">
 
-                </div>
+              <div>
 
-                <div className="card-body p-0">
+                <h5 className="fw-bold mb-1">
 
-                  {stats.lowStockProducts.length === 0 ? (
+                  Store Performance
 
-                    <div className="text-center p-4">
-                      No low stock products found.
-                    </div>
+                </h5>
 
-                  ) : (
+                <p className="text-muted mb-0">
 
-                    <div className="table-responsive">
+                  Monitor your products, orders, users and revenue from one place.
 
-                      <table className="table table-striped table-hover mb-0">
-
-                        <thead className="table-light">
-
-                          <tr>
-
-                            <th>Product</th>
-                            <th>Brand</th>
-                            <th>Price</th>
-                            <th>Stock</th>
-
-                          </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                          {stats.lowStockProducts.map((product) => (
-
-                            <tr key={product._id}>
-
-                              <td>{product.title}</td>
-
-                              <td>
-                                {product.brand?.name || "-"}
-                              </td>
-
-                              <td>
-                                ₹{product.price}
-                              </td>
-
-                              <td>
-
-                                <span
-                                  className={`badge ${
-                                    product.stock <= 5
-                                      ? "bg-danger"
-                                      : "bg-warning"
-                                  }`}
-                                >
-                                  {product.stock}
-                                </span>
-
-                              </td>
-
-                            </tr>
-
-                          ))}
-
-                        </tbody>
-
-                      </table>
-
-                    </div>
-
-                  )}
-
-                </div>
+                </p>
 
               </div>
+
+              <button
+                className="btn btn-primary mt-3 mt-lg-0"
+                onClick={loadDashboard}
+              >
+
+                Refresh Dashboard
+
+              </button>
 
             </div>
 
           </div>
 
-        </>
+        </div>
 
-      )}
+      </div>
 
     </div>
-
   );
 };
 

@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+
 import {
   FaPlus,
   FaEdit,
   FaTrash,
   FaSearch,
-  FaTags,
+  FaGlobe,
 } from "react-icons/fa";
-import { toast } from "react-toastify";
+
+import Loader from "../components/Loader";
 
 import {
   getBrands,
@@ -22,27 +25,22 @@ const BrandList = () => {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetchBrands();
+    loadBrands();
   }, []);
 
-  const fetchBrands = async () => {
+  const loadBrands = async () => {
     try {
-
       setLoading(true);
 
       const { data } = await getBrands();
 
-      setBrands(
-        data.brands ||
-        data.data ||
-        []
-      );
+      setBrands(data.brands || []);
 
     } catch (error) {
 
       toast.error(
-        error?.response?.data?.message ||
-        "Failed to load brands."
+        error.response?.data?.message ||
+        "Failed to load brands"
       );
 
     } finally {
@@ -54,190 +52,256 @@ const BrandList = () => {
 
   const deleteHandler = async (id) => {
 
-    if (
-      !window.confirm(
-        "Delete this brand?"
-      )
-    )
-      return;
+    const confirmDelete = window.confirm(
+      "Delete this brand?"
+    );
+
+    if (!confirmDelete) return;
 
     try {
 
       await deleteBrand(id);
 
       toast.success(
-        "Brand deleted successfully."
+        "Brand deleted successfully"
       );
 
-      fetchBrands();
+      loadBrands();
 
     } catch (error) {
 
       toast.error(
-        error?.response?.data?.message ||
-        "Unable to delete brand."
+        error.response?.data?.message ||
+        "Delete failed"
       );
 
     }
   };
 
-  const filteredBrands =
-    brands.filter((brand) =>
-      brand.name
-        ?.toLowerCase()
-        .includes(search.toLowerCase())
-    );
+  const filteredBrands = brands.filter((brand) =>
+    brand.name
+      ?.toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <div className="container-fluid py-4">
 
       <div className="d-flex justify-content-between align-items-center mb-4">
 
-        <div>
+        <h2 className="fw-bold">
 
-          <h2 className="fw-bold">
-            <FaTags className="me-2 text-primary" />
-            Brand Management
-          </h2>
+          Brand Management
 
-          <p className="text-muted mb-0">
-            Manage all brands
-          </p>
-
-        </div>
+        </h2>
 
         <Link
           to="/admin/brands/add"
           className="btn btn-primary"
         >
+
           <FaPlus className="me-2" />
+
           Add Brand
+
         </Link>
 
       </div>
 
-      <div className="card border-0 shadow">
+      <div className="card border-0 shadow-sm">
 
         <div className="card-body">
 
-          <div className="input-group mb-4">
+          <div className="row mb-4">
 
-            <span className="input-group-text">
+            <div className="col-md-6">
 
-              <FaSearch />
+              <div className="input-group">
 
-            </span>
+                <span className="input-group-text">
 
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search brands..."
-              value={search}
-              onChange={(e) =>
-                setSearch(e.target.value)
-              }
-            />
+                  <FaSearch />
 
-          </div>
+                </span>
 
-          {loading ? (
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search Brand..."
+                  value={search}
+                  onChange={(e) =>
+                    setSearch(e.target.value)
+                  }
+                />
 
-            <div className="text-center py-5">
-
-              <div className="spinner-border text-primary" />
+              </div>
 
             </div>
 
-          ) : (
+          </div>
 
-            <div className="table-responsive">
+                    <div className="table-responsive">
 
-              <table className="table table-hover align-middle">
+            <table className="table table-hover align-middle">
 
-                <thead className="table-dark">
+              <thead className="table-light">
 
-                  <tr>
+                <tr>
 
-                    <th>#</th>
+                  <th>Logo</th>
 
-                    <th>Brand</th>
+                  <th>Brand Name</th>
 
-                    <th>Description</th>
+                  <th>Slug</th>
 
-                    <th>Featured</th>
+                  <th>Website</th>
 
-                    <th className="text-center">
-                      Actions
-                    </th>
+                  <th>Status</th>
 
-                  </tr>
+                  <th>Products</th>
 
-                </thead>
+                  <th>Actions</th>
 
-                <tbody>
+                </tr>
 
-                                  {filteredBrands.length === 0 ? (
+              </thead>
 
-                  <tr>
+              <tbody>
 
-                    <td
-                      colSpan="5"
-                      className="text-center py-5 text-muted"
-                    >
-                      No brands found.
-                    </td>
+                {filteredBrands.length > 0 ? (
 
-                  </tr>
-
-                ) : (
-
-                  filteredBrands.map((brand, index) => (
+                  filteredBrands.map((brand) => (
 
                     <tr key={brand._id}>
 
-                      <td>{index + 1}</td>
+                      <td>
 
-                      <td className="fw-semibold">
-                        {brand.name}
+                        <img
+                          src={
+                            brand.logo?.url ||
+                            "https://via.placeholder.com/60"
+                          }
+                          alt={brand.name}
+                          width="60"
+                          height="60"
+                          className="rounded border"
+                          style={{
+                            objectFit: "cover",
+                          }}
+                        />
+
                       </td>
 
                       <td>
-                        {brand.description || "-"}
+
+                        <h6 className="fw-bold mb-0">
+
+                          {brand.name}
+
+                        </h6>
+
                       </td>
 
                       <td>
 
-                        <span
-                          className={`badge ${
-                            brand.featured
-                              ? "bg-success"
-                              : "bg-secondary"
-                          }`}
-                        >
-                          {brand.featured
-                            ? "Yes"
-                            : "No"}
+                        <code>
+
+                          {brand.slug}
+
+                        </code>
+
+                      </td>
+
+                      <td>
+
+                        {brand.website ? (
+
+                          <a
+                            href={brand.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-decoration-none"
+                          >
+
+                            <FaGlobe className="me-1" />
+
+                            Visit
+
+                          </a>
+
+                        ) : (
+
+                          <span className="text-muted">
+
+                            N/A
+
+                          </span>
+
+                        )}
+
+                      </td>
+
+                      <td>
+
+                        {brand.isActive ? (
+
+                          <span className="badge bg-success">
+
+                            Active
+
+                          </span>
+
+                        ) : (
+
+                          <span className="badge bg-secondary">
+
+                            Inactive
+
+                          </span>
+
+                        )}
+
+                      </td>
+
+                      <td>
+
+                        <span className="badge bg-info">
+
+                          {brand.productCount || 0}
+
                         </span>
 
                       </td>
 
-                      <td className="text-center">
+                      <td>
 
-                        <Link
-                          to={`/admin/brands/edit/${brand._id}`}
-                          className="btn btn-sm btn-warning me-2"
-                        >
-                          <FaEdit />
-                        </Link>
+                        <div className="btn-group">
 
-                        <button
-                          className="btn btn-sm btn-danger"
-                          onClick={() =>
-                            deleteHandler(brand._id)
-                          }
-                        >
-                          <FaTrash />
-                        </button>
+                          <Link
+                            to={`/admin/brands/edit/${brand._id}`}
+                            className="btn btn-sm btn-outline-primary"
+                          >
+
+                            <FaEdit />
+
+                          </Link>
+
+                          <button
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() =>
+                              deleteHandler(brand._id)
+                            }
+                          >
+
+                            <FaTrash />
+
+                          </button>
+
+                        </div>
 
                       </td>
 
@@ -245,15 +309,65 @@ const BrandList = () => {
 
                   ))
 
+                ) : (
+
+                  <tr>
+
+                    <td
+                      colSpan="7"
+                      className="text-center py-5"
+                    >
+
+                      <h5 className="text-muted">
+
+                        No Brands Found
+
+                      </h5>
+
+                    </td>
+
+                  </tr>
+
                 )}
 
-                </tbody>
+              </tbody>
 
-              </table>
+            </table>
+
+          </div>
+
+                    <hr />
+
+          <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3">
+
+            <div>
+
+              <strong>
+                Total Brands :
+              </strong>
+
+              <span className="badge bg-primary ms-2">
+
+                {filteredBrands.length}
+
+              </span>
 
             </div>
 
-          )}
+            <div className="mt-3 mt-md-0">
+
+              <button
+                className="btn btn-outline-secondary"
+                onClick={loadBrands}
+              >
+
+                Refresh List
+
+              </button>
+
+            </div>
+
+          </div>
 
         </div>
 
@@ -264,4 +378,3 @@ const BrandList = () => {
 };
 
 export default BrandList;
-                

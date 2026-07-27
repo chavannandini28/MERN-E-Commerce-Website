@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaSave, FaArrowLeft, FaImage } from "react-icons/fa";
 import { toast } from "react-toastify";
 
 import {
@@ -8,20 +7,31 @@ import {
   updateProduct,
 } from "../api/productApi";
 
-import { getBrands } from "../api/brandApi";
-import { getCategories } from "../api/categoryApi";
+import {
+  getCategories,
+} from "../api/categoryApi";
+
+import {
+  getBrands,
+} from "../api/brandApi";
 
 const EditProduct = () => {
   const { id } = useParams();
+
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
 
-  const [brands, setBrands] = useState([]);
   const [categories, setCategories] = useState([]);
 
+  const [brands, setBrands] = useState([]);
+
+  const [thumbnailPreview, setThumbnailPreview] =
+    useState("");
+
+  const [thumbnail, setThumbnail] = useState(null);
+
   const [images, setImages] = useState([]);
-  const [preview, setPreview] = useState([]);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -31,29 +41,52 @@ const EditProduct = () => {
     brand: "",
     price: "",
     discountPrice: "",
+    costPrice: "",
     stock: "",
     sku: "",
+    colors: "",
+    sizes: "",
+    tags: "",
+    shippingCharge: "",
+    weight: "",
+    warranty: "",
+    returnPolicy: "",
     featured: false,
+    isActive: true,
   });
 
   useEffect(() => {
-    fetchProduct();
-    fetchBrands();
-    fetchCategories();
-  }, [id]);
+    loadData();
+  }, []);
 
-  // ==========================
-  // Product
-  // ==========================
-
-  const fetchProduct = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
 
-      const { data } = await getProductById(id);
+      const [
+        productRes,
+        categoryRes,
+        brandRes,
+      ] = await Promise.all([
+        getProductById(id),
+        getCategories(),
+        getBrands(),
+      ]);
 
       const product =
-        data.product || data.data;
+        productRes.data.product;
+
+      setCategories(
+        categoryRes.data.categories || []
+      );
+
+      setBrands(
+        brandRes.data.brands || []
+      );
+
+      setThumbnailPreview(
+        product.thumbnail?.url || ""
+      );
 
       setFormData({
         title: product.title || "",
@@ -63,150 +96,103 @@ const EditProduct = () => {
           product.shortDescription || "",
         category:
           product.category?._id ||
-          product.category ||
-          "",
+          product.category,
         brand:
           product.brand?._id ||
-          product.brand ||
-          "",
+          product.brand,
         price: product.price || "",
         discountPrice:
           product.discountPrice || "",
+        costPrice:
+          product.costPrice || "",
         stock: product.stock || "",
         sku: product.sku || "",
+        colors:
+          product.colors?.join(", ") || "",
+        sizes:
+          product.sizes?.join(", ") || "",
+        tags:
+          product.tags?.join(", ") || "",
+        shippingCharge:
+          product.shippingCharge || "",
+        weight:
+          product.weight || "",
+        warranty:
+          product.warranty || "",
+        returnPolicy:
+          product.returnPolicy || "",
         featured:
           product.featured || false,
+        isActive:
+          product.isActive ?? true,
       });
-
-      if (product.images) {
-        setPreview(
-          product.images.map((img) => img.url)
-        );
-      }
-
     } catch (error) {
+      console.log(error);
+
       toast.error(
-        error?.response?.data?.message ||
-        "Failed to load product"
+        "Unable to load product."
       );
     } finally {
       setLoading(false);
     }
   };
 
-  // ==========================
-  // Brands
-  // ==========================
-
-  const fetchBrands = async () => {
-    try {
-      const { data } =
-        await getBrands();
-
-      setBrands(
-        data.brands ||
-        data.data ||
-        []
-      );
-    } catch {}
-  };
-
-  // ==========================
-  // Categories
-  // ==========================
-
-  const fetchCategories = async () => {
-    try {
-      const { data } =
-        await getCategories();
-
-      setCategories(
-        data.categories ||
-        data.data ||
-        []
-      );
-    } catch {}
-  };
-
-  // ==========================
-  // Input Change
-  // ==========================
-
   const changeHandler = (e) => {
     const {
       name,
       value,
-      checked,
       type,
+      checked,
     } = e.target;
 
-    setFormData((prev) => ({
-      ...prev,
+    setFormData({
+      ...formData,
       [name]:
         type === "checkbox"
           ? checked
           : value,
-    }));
+    });
   };
 
-  // ==========================
-  // Images
-  // ==========================
+  const thumbnailHandler = (e) => {
+    const file = e.target.files[0];
 
-  const imageHandler = (e) => {
-    const files = Array.from(
-      e.target.files
-    );
+    if (!file) return;
 
-    setImages(files);
+    setThumbnail(file);
 
-    setPreview(
-      files.map((file) =>
-        URL.createObjectURL(file)
-      )
+    setThumbnailPreview(
+      URL.createObjectURL(file)
     );
   };
 
-    return (
+  const imagesHandler = (e) => {
+    setImages([...e.target.files]);
+  };
+
+  return (
     <div className="container-fluid py-4">
-
-      <div className="d-flex justify-content-between align-items-center mb-4">
-
-        <div>
-
-          <h2 className="fw-bold">
-            Edit Product
-          </h2>
-
-          <p className="text-muted mb-0">
-            Update product information
-          </p>
-
-        </div>
-
-        <button
-          className="btn btn-outline-secondary"
-          onClick={() => navigate(-1)}
-        >
-          <FaArrowLeft className="me-2" />
-          Back
-        </button>
-
-      </div>
 
       <div className="card shadow border-0">
 
-        <div className="card-body p-4">
+        <div className="card-header bg-white">
+
+          <h3 className="fw-bold mb-0">
+            Edit Product
+          </h3>
+
+        </div>
+
+        <div className="card-body">
 
           <form>
-
-            <div className="row">
+                        <div className="row">
 
               {/* Product Title */}
 
               <div className="col-md-6 mb-3">
 
-                <label className="form-label fw-semibold">
+                <label className="form-label">
                   Product Title
                 </label>
 
@@ -216,6 +202,7 @@ const EditProduct = () => {
                   name="title"
                   value={formData.title}
                   onChange={changeHandler}
+                  required
                 />
 
               </div>
@@ -224,7 +211,7 @@ const EditProduct = () => {
 
               <div className="col-md-6 mb-3">
 
-                <label className="form-label fw-semibold">
+                <label className="form-label">
                   SKU
                 </label>
 
@@ -238,38 +225,39 @@ const EditProduct = () => {
 
               </div>
 
-              {/* Description */}
+              {/* Short Description */}
 
               <div className="col-12 mb-3">
 
-                <label className="form-label fw-semibold">
-                  Description
+                <label className="form-label">
+                  Short Description
                 </label>
 
                 <textarea
-                  rows="5"
                   className="form-control"
-                  name="description"
-                  value={formData.description}
+                  rows="2"
+                  name="shortDescription"
+                  value={formData.shortDescription}
                   onChange={changeHandler}
                 />
 
               </div>
 
-              {/* Short Description */}
+              {/* Description */}
 
               <div className="col-12 mb-3">
 
-                <label className="form-label fw-semibold">
-                  Short Description
+                <label className="form-label">
+                  Description
                 </label>
 
                 <textarea
-                  rows="2"
                   className="form-control"
-                  name="shortDescription"
-                  value={formData.shortDescription}
+                  rows="5"
+                  name="description"
+                  value={formData.description}
                   onChange={changeHandler}
+                  required
                 />
 
               </div>
@@ -278,7 +266,7 @@ const EditProduct = () => {
 
               <div className="col-md-6 mb-3">
 
-                <label className="form-label fw-semibold">
+                <label className="form-label">
                   Category
                 </label>
 
@@ -287,6 +275,7 @@ const EditProduct = () => {
                   name="category"
                   value={formData.category}
                   onChange={changeHandler}
+                  required
                 >
 
                   <option value="">
@@ -312,7 +301,7 @@ const EditProduct = () => {
 
               <div className="col-md-6 mb-3">
 
-                <label className="form-label fw-semibold">
+                <label className="form-label">
                   Brand
                 </label>
 
@@ -321,6 +310,7 @@ const EditProduct = () => {
                   name="brand"
                   value={formData.brand}
                   onChange={changeHandler}
+                  required
                 >
 
                   <option value="">
@@ -344,9 +334,9 @@ const EditProduct = () => {
 
               {/* Price */}
 
-              <div className="col-md-4 mb-3">
+              <div className="col-md-3 mb-3">
 
-                <label className="form-label fw-semibold">
+                <label className="form-label">
                   Price
                 </label>
 
@@ -356,15 +346,16 @@ const EditProduct = () => {
                   name="price"
                   value={formData.price}
                   onChange={changeHandler}
+                  required
                 />
 
               </div>
 
               {/* Discount Price */}
 
-              <div className="col-md-4 mb-3">
+              <div className="col-md-3 mb-3">
 
-                <label className="form-label fw-semibold">
+                <label className="form-label">
                   Discount Price
                 </label>
 
@@ -378,11 +369,29 @@ const EditProduct = () => {
 
               </div>
 
+              {/* Cost Price */}
+
+              <div className="col-md-3 mb-3">
+
+                <label className="form-label">
+                  Cost Price
+                </label>
+
+                <input
+                  type="number"
+                  className="form-control"
+                  name="costPrice"
+                  value={formData.costPrice}
+                  onChange={changeHandler}
+                />
+
+              </div>
+
               {/* Stock */}
 
-              <div className="col-md-4 mb-3">
+              <div className="col-md-3 mb-3">
 
-                <label className="form-label fw-semibold">
+                <label className="form-label">
                   Stock
                 </label>
 
@@ -392,38 +401,68 @@ const EditProduct = () => {
                   name="stock"
                   value={formData.stock}
                   onChange={changeHandler}
+                  required
                 />
 
               </div>
 
-              {/* Featured */}
+                            {/* Thumbnail Preview */}
 
-              <div className="col-12 mb-4">
+              <div className="col-md-6 mb-4">
 
-                <div className="form-check form-switch">
+                <label className="form-label">
+                  Current Thumbnail
+                </label>
 
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    name="featured"
-                    checked={formData.featured}
-                    onChange={changeHandler}
-                  />
+                <div className="border rounded p-3 text-center">
 
-                  <label className="form-check-label">
-                    Featured Product
-                  </label>
+                  {thumbnailPreview ? (
+
+                    <img
+                      src={thumbnailPreview}
+                      alt="Thumbnail"
+                      className="img-fluid rounded"
+                      style={{
+                        maxHeight: "220px",
+                        objectFit: "contain",
+                      }}
+                    />
+
+                  ) : (
+
+                    <p className="text-muted mb-0">
+                      No Thumbnail Available
+                    </p>
+
+                  )}
 
                 </div>
 
               </div>
-                            {/* Product Images */}
+
+              {/* Upload Thumbnail */}
+
+              <div className="col-md-6 mb-4">
+
+                <label className="form-label">
+                  Change Thumbnail
+                </label>
+
+                <input
+                  type="file"
+                  className="form-control"
+                  accept="image/*"
+                  onChange={thumbnailHandler}
+                />
+
+              </div>
+
+              {/* Product Images */}
 
               <div className="col-12 mb-4">
 
-                <label className="form-label fw-semibold">
-                  <FaImage className="me-2" />
-                  Product Images
+                <label className="form-label">
+                  Upload Product Images
                 </label>
 
                 <input
@@ -431,32 +470,26 @@ const EditProduct = () => {
                   className="form-control"
                   multiple
                   accept="image/*"
-                  onChange={imageHandler}
+                  onChange={imagesHandler}
                 />
 
-              </div>
+                {images.length > 0 && (
 
-              {/* Image Preview */}
+                  <div className="row mt-3">
 
-              {preview.length > 0 && (
-
-                <div className="col-12 mb-4">
-
-                  <div className="row">
-
-                    {preview.map((img, index) => (
+                    {images.map((image, index) => (
 
                       <div
+                        className="col-md-2 col-4 mb-3"
                         key={index}
-                        className="col-lg-2 col-md-3 col-6 mb-3"
                       >
 
                         <img
-                          src={img}
+                          src={URL.createObjectURL(image)}
                           alt="Preview"
-                          className="img-fluid rounded shadow border"
+                          className="img-fluid rounded border"
                           style={{
-                            height: "140px",
+                            height: "90px",
                             width: "100%",
                             objectFit: "cover",
                           }}
@@ -468,117 +501,239 @@ const EditProduct = () => {
 
                   </div>
 
+                )}
+
+              </div>
+
+              {/* Colors */}
+
+              <div className="col-md-4 mb-3">
+
+                <label className="form-label">
+                  Colors
+                </label>
+
+                <input
+                  type="text"
+                  className="form-control"
+                  name="colors"
+                  value={formData.colors}
+                  onChange={changeHandler}
+                  placeholder="Black, White, Blue"
+                />
+
+              </div>
+
+              {/* Sizes */}
+
+              <div className="col-md-4 mb-3">
+
+                <label className="form-label">
+                  Sizes
+                </label>
+
+                <input
+                  type="text"
+                  className="form-control"
+                  name="sizes"
+                  value={formData.sizes}
+                  onChange={changeHandler}
+                  placeholder="S,M,L,XL"
+                />
+
+              </div>
+
+              {/* Tags */}
+
+              <div className="col-md-4 mb-3">
+
+                <label className="form-label">
+                  Tags
+                </label>
+
+                <input
+                  type="text"
+                  className="form-control"
+                  name="tags"
+                  value={formData.tags}
+                  onChange={changeHandler}
+                  placeholder="New, Trending"
+                />
+
+              </div>
+
+              {/* Shipping Charge */}
+
+              <div className="col-md-4 mb-3">
+
+                <label className="form-label">
+                  Shipping Charge
+                </label>
+
+                <input
+                  type="number"
+                  className="form-control"
+                  name="shippingCharge"
+                  value={formData.shippingCharge}
+                  onChange={changeHandler}
+                />
+
+              </div>
+
+              {/* Weight */}
+
+              <div className="col-md-4 mb-3">
+
+                <label className="form-label">
+                  Weight
+                </label>
+
+                <input
+                  type="number"
+                  className="form-control"
+                  name="weight"
+                  value={formData.weight}
+                  onChange={changeHandler}
+                />
+
+              </div>
+
+              {/* Warranty */}
+
+              <div className="col-md-4 mb-3">
+
+                <label className="form-label">
+                  Warranty
+                </label>
+
+                <input
+                  type="text"
+                  className="form-control"
+                  name="warranty"
+                  value={formData.warranty}
+                  onChange={changeHandler}
+                />
+
+              </div>
+
+              {/* Return Policy */}
+
+              <div className="col-12 mb-3">
+
+                <label className="form-label">
+                  Return Policy
+                </label>
+
+                <textarea
+                  className="form-control"
+                  rows="3"
+                  name="returnPolicy"
+                  value={formData.returnPolicy}
+                  onChange={changeHandler}
+                />
+
+              </div>
+
+              {/* Featured */}
+
+              <div className="col-md-6 mb-3">
+
+                <div className="form-check">
+
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="featured"
+                    name="featured"
+                    checked={formData.featured}
+                    onChange={changeHandler}
+                  />
+
+                  <label
+                    className="form-check-label"
+                    htmlFor="featured"
+                  >
+
+                    Featured Product
+
+                  </label>
+
                 </div>
 
-              )}
+              </div>
 
-              {/* Buttons */}
+              {/* Active */}
 
-              <div className="col-12">
+              <div className="col-md-6 mb-3">
+
+                <div className="form-check">
+
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="isActive"
+                    name="isActive"
+                    checked={formData.isActive}
+                    onChange={changeHandler}
+                  />
+
+                  <label
+                    className="form-check-label"
+                    htmlFor="isActive"
+                  >
+
+                    Active Product
+
+                  </label>
+
+                </div>
+
+              </div>
+
+                            <div className="col-12">
+
+                <hr className="my-4" />
+
+              </div>
+
+              <div className="col-12 d-flex gap-3">
 
                 <button
-                  type="button"
-                  className="btn btn-primary px-5 me-3"
+                  type="submit"
+                  className="btn btn-primary px-5"
                   disabled={loading}
-                  onClick={async () => {
-
-                    if (
-                      !formData.title ||
-                      !formData.category ||
-                      !formData.brand ||
-                      !formData.price
-                    ) {
-                      return toast.error(
-                        "Please fill all required fields."
-                      );
-                    }
-
-                    try {
-
-                      setLoading(true);
-
-                      const data = new FormData();
-
-                      data.append("title", formData.title);
-                      data.append(
-                        "description",
-                        formData.description
-                      );
-                      data.append(
-                        "shortDescription",
-                        formData.shortDescription
-                      );
-                      data.append(
-                        "category",
-                        formData.category
-                      );
-                      data.append(
-                        "brand",
-                        formData.brand
-                      );
-                      data.append(
-                        "price",
-                        formData.price
-                      );
-                      data.append(
-                        "discountPrice",
-                        formData.discountPrice
-                      );
-                      data.append(
-                        "stock",
-                        formData.stock
-                      );
-                      data.append(
-                        "sku",
-                        formData.sku
-                      );
-                      data.append(
-                        "featured",
-                        formData.featured
-                      );
-
-                      images.forEach((image) => {
-                        data.append("images", image);
-                      });
-
-                      await updateProduct(id, data);
-
-                      toast.success(
-                        "Product Updated Successfully"
-                      );
-
-                      navigate("/admin/products");
-
-                    } catch (error) {
-
-                      toast.error(
-                        error?.response?.data?.message ||
-                        "Unable to update product"
-                      );
-
-                    } finally {
-
-                      setLoading(false);
-
-                    }
-
-                  }}
                 >
 
-                  <FaSave className="me-2" />
+                  {loading ? (
 
-                  {loading
-                    ? "Updating..."
-                    : "Update Product"}
+                    <>
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                      />
+
+                      Updating...
+
+                    </>
+
+                  ) : (
+
+                    "Update Product"
+
+                  )}
 
                 </button>
 
                 <button
                   type="button"
-                  className="btn btn-secondary"
-                  onClick={() => navigate(-1)}
+                  className="btn btn-outline-secondary px-5"
+                  onClick={() =>
+                    navigate("/admin/products")
+                  }
                 >
+
                   Cancel
+
                 </button>
 
               </div>
@@ -596,3 +751,4 @@ const EditProduct = () => {
 };
 
 export default EditProduct;
+          

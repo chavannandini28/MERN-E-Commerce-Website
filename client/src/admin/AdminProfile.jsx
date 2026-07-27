@@ -1,104 +1,126 @@
 import { useEffect, useState } from "react";
 import {
-  FaUserCircle,
+  FaUser,
   FaEnvelope,
   FaPhone,
-  FaUserShield,
-  FaEdit,
+  FaCamera,
+  FaSave,
 } from "react-icons/fa";
-import { toast } from "react-toastify";
 
-import { getProfile } from "../api/userApi";
+import Loader from "../components/Loader";
+
+import {
+  getProfile,
+  updateProfile,
+} from "../api/userApi";
 
 const AdminProfile = () => {
   const [loading, setLoading] = useState(true);
 
-  const [admin, setAdmin] = useState({});
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    avatar: "",
+  });
 
   useEffect(() => {
-    fetchProfile();
+    loadProfile();
   }, []);
 
-  const fetchProfile = async () => {
+  const loadProfile = async () => {
     try {
       setLoading(true);
 
       const { data } = await getProfile();
 
-      setAdmin(
-        data.user ||
-        data.admin ||
-        {}
-      );
+      setFormData({
+        name: data.user?.name || "",
+        email: data.user?.email || "",
+        phone: data.user?.phone || "",
+        avatar: data.user?.avatar?.url || "",
+      });
     } catch (error) {
-      toast.error(
-        error?.response?.data?.message ||
-        "Failed to load profile."
-      );
+      console.log(error);
     } finally {
       setLoading(false);
     }
   };
 
+  const changeHandler = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const submitHandler = async (e) => {
+    e.preventDefault();
+
+    try {
+      await updateProfile(formData);
+
+      alert("Profile Updated Successfully");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  if (loading) {
+    return <Loader />;
+  }
+
   return (
     <div className="container-fluid py-4">
 
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="mb-4">
 
-        <div>
+        <h2 className="fw-bold">
+          Admin Profile
+        </h2>
 
-          <h2 className="fw-bold">
-
-            <FaUserCircle className="me-2 text-primary" />
-
-            Admin Profile
-
-          </h2>
-
-          <p className="text-muted mb-0">
-            View your administrator profile
-          </p>
-
-        </div>
+        <p className="text-muted">
+          Manage your account information.
+        </p>
 
       </div>
 
-      {loading ? (
+      <div className="row">
 
-        <div className="text-center py-5">
+        <div className="col-lg-4">
 
-          <div className="spinner-border text-primary" />
+          <div className="card border-0 shadow-sm">
 
-        </div>
+            <div className="card-body text-center">
 
-      ) : (
+              <img
+                src={
+                  formData.avatar ||
+                  "https://via.placeholder.com/150"
+                }
+                alt="Profile"
+                className="rounded-circle mb-3"
+                style={{
+                  width: "140px",
+                  height: "140px",
+                  objectFit: "cover",
+                }}
+              />
 
-        <div className="row">
+              <div>
 
-          <div className="col-lg-4">
+                <label className="btn btn-outline-primary">
 
-            <div className="card border-0 shadow">
+                  <FaCamera className="me-2" />
 
-              <div className="card-body text-center">
+                  Change Photo
 
-                <img
-                  src={
-                    admin.avatar?.url ||
-                    "https://via.placeholder.com/150"
-                  }
-                  alt="Admin"
-                  className="rounded-circle mb-3"
-                  width="150"
-                  height="150"
-                />
+                  <input
+                    type="file"
+                    hidden
+                  />
 
-                <h4 className="fw-bold">
-                  {admin.name}
-                </h4>
-
-                <span className="badge bg-primary">
-                  Administrator
-                </span>
+                </label>
 
               </div>
 
@@ -106,33 +128,34 @@ const AdminProfile = () => {
 
           </div>
 
-          <div className="col-lg-8">
-                        <div className="card border-0 shadow">
+        </div>
 
-              <div className="card-header bg-white">
+        <div className="col-lg-8">
 
-                <h5 className="fw-bold mb-0">
-                  Profile Information
-                </h5>
+          <div className="card border-0 shadow-sm">
 
-              </div>
+            <div className="card-body">
 
-              <div className="card-body">
-
-                <div className="row">
+              <form onSubmit={submitHandler}>
+                                <div className="row">
 
                   <div className="col-md-6 mb-4">
 
                     <label className="form-label fw-semibold">
-                      <FaUserCircle className="me-2 text-primary" />
+
+                      <FaUser className="me-2" />
+
                       Full Name
+
                     </label>
 
                     <input
                       type="text"
                       className="form-control"
-                      value={admin.name || ""}
-                      readOnly
+                      name="name"
+                      value={formData.name}
+                      onChange={changeHandler}
+                      placeholder="Enter your name"
                     />
 
                   </div>
@@ -140,15 +163,20 @@ const AdminProfile = () => {
                   <div className="col-md-6 mb-4">
 
                     <label className="form-label fw-semibold">
-                      <FaEnvelope className="me-2 text-success" />
-                      Email
+
+                      <FaEnvelope className="me-2" />
+
+                      Email Address
+
                     </label>
 
                     <input
                       type="email"
                       className="form-control"
-                      value={admin.email || ""}
-                      readOnly
+                      name="email"
+                      value={formData.email}
+                      onChange={changeHandler}
+                      placeholder="Enter your email"
                     />
 
                   </div>
@@ -156,71 +184,20 @@ const AdminProfile = () => {
                   <div className="col-md-6 mb-4">
 
                     <label className="form-label fw-semibold">
-                      <FaPhone className="me-2 text-warning" />
-                      Phone
+
+                      <FaPhone className="me-2" />
+
+                      Phone Number
+
                     </label>
 
                     <input
                       type="text"
                       className="form-control"
-                      value={admin.phone || "Not Available"}
-                      readOnly
-                    />
-
-                  </div>
-
-                  <div className="col-md-6 mb-4">
-
-                    <label className="form-label fw-semibold">
-                      <FaUserShield className="me-2 text-danger" />
-                      Role
-                    </label>
-
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={admin.role || "Admin"}
-                      readOnly
-                    />
-
-                  </div>
-
-                  <div className="col-md-6 mb-4">
-
-                    <label className="form-label fw-semibold">
-                      Joined On
-                    </label>
-
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={
-                        admin.createdAt
-                          ? new Date(
-                              admin.createdAt
-                            ).toLocaleDateString()
-                          : "-"
-                      }
-                      readOnly
-                    />
-
-                  </div>
-
-                  <div className="col-md-6 mb-4">
-
-                    <label className="form-label fw-semibold">
-                      Status
-                    </label>
-
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={
-                        admin.isActive
-                          ? "Active"
-                          : "Inactive"
-                      }
-                      readOnly
+                      name="phone"
+                      value={formData.phone}
+                      onChange={changeHandler}
+                      placeholder="Enter phone number"
                     />
 
                   </div>
@@ -230,20 +207,73 @@ const AdminProfile = () => {
                 <div className="mt-4">
 
                   <button
+                    type="submit"
                     className="btn btn-primary"
-                    onClick={() =>
-                      window.location.href =
-                        "/admin/settings"
-                    }
                   >
 
-                    <FaEdit className="me-2" />
+                    <FaSave className="me-2" />
 
-                    Edit Profile
+                    Save Changes
 
                   </button>
 
                 </div>
+
+              </form>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+            {/* Account Information */}
+
+      <div className="row mt-5">
+
+        <div className="col-lg-6">
+
+          <div className="card border-0 shadow-sm h-100">
+
+            <div className="card-header bg-white">
+
+              <h5 className="fw-bold mb-0">
+                Account Information
+              </h5>
+
+            </div>
+
+            <div className="card-body">
+
+              <div className="mb-3">
+
+                <strong>Name</strong>
+
+                <p className="text-muted mb-0">
+                  {formData.name}
+                </p>
+
+              </div>
+
+              <div className="mb-3">
+
+                <strong>Email</strong>
+
+                <p className="text-muted mb-0">
+                  {formData.email}
+                </p>
+
+              </div>
+
+              <div>
+
+                <strong>Phone</strong>
+
+                <p className="text-muted mb-0">
+                  {formData.phone || "Not Available"}
+                </p>
 
               </div>
 
@@ -253,11 +283,45 @@ const AdminProfile = () => {
 
         </div>
 
-      )}
+        <div className="col-lg-6">
+
+          <div className="card border-0 shadow-sm h-100">
+
+            <div className="card-header bg-white">
+
+              <h5 className="fw-bold mb-0">
+                Security
+              </h5>
+
+            </div>
+
+            <div className="card-body">
+
+              <p className="text-muted">
+
+                You can change your password anytime from your account settings.
+
+              </p>
+
+              <button
+                className="btn btn-outline-danger"
+              >
+
+                Change Password
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
 
     </div>
   );
 };
 
 export default AdminProfile;
-        
+              

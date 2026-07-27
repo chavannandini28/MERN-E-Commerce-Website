@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+
 import {
   FaPlus,
   FaEdit,
   FaTrash,
   FaSearch,
 } from "react-icons/fa";
-import { toast } from "react-toastify";
+
+import Loader from "../components/Loader";
 
 import {
   getCategories,
@@ -14,10 +17,11 @@ import {
 } from "../api/categoryApi";
 
 const CategoryList = () => {
-  const [categories, setCategories] = useState([]);
-  const [filteredCategories, setFilteredCategories] = useState([]);
-  const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const [categories, setCategories] = useState([]);
+
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     loadCategories();
@@ -25,182 +29,313 @@ const CategoryList = () => {
 
   const loadCategories = async () => {
     try {
+      setLoading(true);
+
       const { data } = await getCategories();
 
-      const list = data.categories || data || [];
+      setCategories(data.categories || []);
 
-      setCategories(list);
-      setFilteredCategories(list);
     } catch (error) {
-      toast.error("Failed to load categories");
+
+      toast.error(
+        error.response?.data?.message ||
+        "Failed to load categories"
+      );
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
-  const searchHandler = (e) => {
-    const value = e.target.value;
-
-    setKeyword(value);
-
-    const result = categories.filter((item) =>
-      item.name
-        ?.toLowerCase()
-        .includes(value.toLowerCase())
+  const deleteHandler = async (id) => {
+    const confirmDelete = window.confirm(
+      "Delete this category?"
     );
 
-    setFilteredCategories(result);
-  };
-
-  const deleteHandler = async (id) => {
-    if (!window.confirm("Delete this category?")) return;
+    if (!confirmDelete) return;
 
     try {
       await deleteCategory(id);
 
-      toast.success("Category deleted");
+      toast.success(
+        "Category Deleted Successfully"
+      );
 
       loadCategories();
+
     } catch (error) {
-      toast.error("Delete failed");
+
+      toast.error(
+        error.response?.data?.message ||
+        "Delete Failed"
+      );
+
     }
   };
 
-  if (loading) {
-    return (
-      <div className="text-center py-5">
-        <h3>Loading Categories...</h3>
-      </div>
+  const filteredCategories =
+    categories.filter((category) =>
+      category.name
+        ?.toLowerCase()
+        .includes(search.toLowerCase())
     );
+
+  if (loading) {
+    return <Loader />;
   }
 
   return (
-    <div className="container-fluid">
+    <div className="container-fluid py-4">
 
       <div className="d-flex justify-content-between align-items-center mb-4">
 
-        <h2>Categories</h2>
+        <h2 className="fw-bold">
+
+          Category Management
+
+        </h2>
 
         <Link
           to="/admin/categories/add"
           className="btn btn-primary"
         >
+
           <FaPlus className="me-2" />
+
           Add Category
+
         </Link>
 
       </div>
 
-      <div className="input-group mb-4">
+      <div className="card shadow border-0">
 
-        <span className="input-group-text">
-          <FaSearch />
-        </span>
+        <div className="card-body">
 
-        <input
-          type="text"
-          className="form-control"
-          placeholder="Search Category..."
-          value={keyword}
-          onChange={searchHandler}
-        />
+          <div className="row mb-4">
 
-      </div>
+            <div className="col-md-6">
 
-      <div className="card shadow">
+              <div className="input-group">
 
-        <div className="table-responsive">
+                <span className="input-group-text">
 
-          <table className="table table-hover align-middle">
+                  <FaSearch />
 
-            <thead className="table-dark">
+                </span>
 
-              <tr>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search Category..."
+                  value={search}
+                  onChange={(e) =>
+                    setSearch(e.target.value)
+                  }
+                />
 
-                <th>Image</th>
+              </div>
 
-                <th>Name</th>
+            </div>
 
-                <th>Slug</th>
+          </div>
 
-                <th>Actions</th>
 
-              </tr>
+                    <div className="table-responsive">
 
-            </thead>
+            <table className="table table-hover align-middle">
 
-            <tbody>
+              <thead className="table-light">
 
-              {filteredCategories.length > 0 ? (
+                <tr>
 
-                filteredCategories.map((category) => (
+                  <th>Image</th>
 
-                  <tr key={category._id}>
+                  <th>Name</th>
 
-                    <td>
+                  <th>Slug</th>
 
-                      <img
-                        src={
-                          category.image?.url ||
-                          "https://via.placeholder.com/60"
-                        }
-                        alt={category.name}
-                        width="60"
-                        height="60"
-                        style={{
-                          borderRadius: "8px",
-                          objectFit: "cover",
-                        }}
-                      />
+                  <th>Status</th>
 
-                    </td>
+                  <th>Products</th>
 
-                    <td>{category.name}</td>
+                  <th>Actions</th>
 
-                    <td>{category.slug}</td>
+                </tr>
 
-                    <td>
+              </thead>
 
-                      <Link
-                        to={`/admin/categories/edit/${category._id}`}
-                        className="btn btn-warning btn-sm me-2"
-                      >
-                        <FaEdit />
-                      </Link>
+              <tbody>
 
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() =>
-                          deleteHandler(category._id)
-                        }
-                      >
-                        <FaTrash />
-                      </button>
+                {filteredCategories.length > 0 ? (
+
+                  filteredCategories.map((category) => (
+
+                    <tr key={category._id}>
+
+                      <td>
+
+                        <img
+                          src={
+                            category.image?.url ||
+                            "https://via.placeholder.com/60"
+                          }
+                          alt={category.name}
+                          width="60"
+                          height="60"
+                          className="rounded border"
+                          style={{
+                            objectFit: "cover",
+                          }}
+                        />
+
+                      </td>
+
+                      <td>
+
+                        <h6 className="mb-0 fw-bold">
+
+                          {category.name}
+
+                        </h6>
+
+                      </td>
+
+                      <td>
+
+                        <code>
+
+                          {category.slug}
+
+                        </code>
+
+                      </td>
+
+                      <td>
+
+                        {category.isActive ? (
+
+                          <span className="badge bg-success">
+
+                            Active
+
+                          </span>
+
+                        ) : (
+
+                          <span className="badge bg-secondary">
+
+                            Inactive
+
+                          </span>
+
+                        )}
+
+                      </td>
+
+                      <td>
+
+                        <span className="badge bg-info">
+
+                          {category.productCount || 0}
+
+                        </span>
+
+                      </td>
+
+                      <td>
+
+                        <div className="btn-group">
+
+                          <Link
+                            to={`/admin/categories/edit/${category._id}`}
+                            className="btn btn-sm btn-outline-primary"
+                          >
+
+                            <FaEdit />
+
+                          </Link>
+
+                          <button
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() =>
+                              deleteHandler(category._id)
+                            }
+                          >
+
+                            <FaTrash />
+
+                          </button>
+
+                        </div>
+
+                      </td>
+
+                    </tr>
+
+                  ))
+
+                ) : (
+
+                  <tr>
+
+                    <td
+                      colSpan="6"
+                      className="text-center py-5"
+                    >
+
+                      <h5 className="text-muted">
+
+                        No Categories Found
+
+                      </h5>
 
                     </td>
 
                   </tr>
 
-                ))
+                )}
 
-              ) : (
+              </tbody>
 
-                <tr>
+            </table>
 
-                  <td
-                    colSpan="4"
-                    className="text-center"
-                  >
-                    No Categories Found
-                  </td>
+          </div>
 
-                </tr>
+                    <hr />
 
-              )}
+          <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3">
 
-            </tbody>
+            <div>
 
-          </table>
+              <strong>
+                Total Categories :
+              </strong>
+
+              <span className="badge bg-primary ms-2">
+
+                {filteredCategories.length}
+
+              </span>
+
+            </div>
+
+            <div className="mt-3 mt-md-0">
+
+              <button
+                className="btn btn-outline-secondary"
+                onClick={loadCategories}
+              >
+
+                Refresh List
+
+              </button>
+
+            </div>
+
+          </div>
 
         </div>
 
