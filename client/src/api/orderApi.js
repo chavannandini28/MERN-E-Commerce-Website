@@ -1,70 +1,92 @@
 import axiosInstance from "./axiosInstance";
 
-// ===================================
+// ======================================
 // Create Order
-// POST /orders/create
-// ===================================
-export const createOrder = (data) =>
-  axiosInstance.post("/orders/create", data);
+// POST /api/orders
+// ======================================
 
-// ===================================
-// My Orders
-// GET /orders/my-orders
-// ===================================
+export const createOrder = (orderData) =>
+  axiosInstance.post("/orders", orderData);
+
+// ======================================
+// Get My Orders
+// GET /api/orders/my-orders
+// ======================================
+
 export const getMyOrders = () =>
   axiosInstance.get("/orders/my-orders");
 
-// ===================================
-// Get Order By Id
-// GET /orders/:id
-// ===================================
+// ======================================
+// Get Order By ID
+// GET /api/orders/:id
+// ======================================
+
 export const getOrderById = (id) =>
   axiosInstance.get(`/orders/${id}`);
 
-// ===================================
-// Admin Orders
-// GET /orders
-// ===================================
-export const getOrders = () =>
-  axiosInstance.get("/orders");
-
-// ===================================
-// Update Status
-// PATCH /orders/status/:id
-// ===================================
-export const updateOrderStatus = (id, data) =>
-  axiosInstance.patch(`/orders/status/${id}`, data);
-
-// ===================================
+// ======================================
 // Cancel Order
-// PATCH /orders/cancel/:id
-// ===================================
-export const cancelOrder = (id) =>
-  axiosInstance.patch(`/orders/cancel/${id}`);
+// PATCH /api/orders/:id/cancel
+// ======================================
 
-// ===================================
-// Delete Order
-// DELETE /orders/:id
-// ===================================
-export const deleteOrder = (id) =>
-  axiosInstance.delete(`/orders/${id}`);
+export const cancelOrder = (id, reason) =>
+  axiosInstance.patch(`/orders/${id}/cancel`, {
+    reason,
+  });
 
-// ===================================
-// Razorpay Create
-// POST /orders/payment/create-order
-// ===================================
-export const createRazorpayOrder = (data) =>
-  axiosInstance.post(
-    "/orders/payment/create-order",
-    data
+// ======================================
+// ================= ADMIN =================
+// ======================================
+
+// Get All Orders
+// GET /api/orders/admin/all
+// ======================================
+
+export const getAllOrders = () =>
+  axiosInstance.get("/orders/admin/all");
+
+// ======================================
+// Update Order Status
+// PATCH /api/orders/admin/:id/status
+// ======================================
+
+export const updateOrderStatus = (
+  id,
+  status
+) =>
+  axiosInstance.patch(
+    `/orders/admin/${id}/status`,
+    {
+      status,
+    }
   );
 
-// ===================================
-// Razorpay Verify
-// POST /orders/payment/verify
-// ===================================
-export const verifyPayment = (data) =>
-  axiosInstance.post(
-    "/orders/payment/verify",
-    data
+// ======================================
+// Delete Order
+// DELETE /api/orders/admin/:id
+// ======================================
+
+export const deleteOrder = (id) =>
+  axiosInstance.delete(
+    `/orders/admin/${id}`
+  );
+
+// ======================================
+// Order Statistics
+// GET /api/orders/admin/statistics
+// ======================================
+
+export const getOrderStatistics = () =>
+  axiosInstance.get(
+    "/orders/admin/statistics"
+  );
+
+// ======================================
+// Revenue Analytics
+// GET /api/orders/admin/revenue
+// ======================================
+
+export const getRevenueAnalytics = () =>
+  axiosInstance.get(
+    "/orders/admin/revenue"
   );

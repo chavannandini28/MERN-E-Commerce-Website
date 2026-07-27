@@ -9,38 +9,32 @@ const {
   updateOrderStatus,
   cancelOrder,
   deleteOrder,
+  getOrderStatistics,
+  getRevenueAnalytics,
 } = require("../controllers/orderController");
-
-const {
-  createRazorpayOrder,
-  verifyPayment,
-} = require("../controllers/paymentController");
 
 const { protect } = require("../middleware/authMiddleware");
 const authorize = require("../middleware/roleMiddleware");
 
+// ======================================
+// Customer Routes
+// ======================================
 
-// ===========================================
-// CUSTOMER ROUTES
-// ===========================================
-
-// Create Order (COD)
+// Create Order
 router.post(
-  "/create",
+  "/",
   protect,
-  authorize("Customer", "Admin"),
   createOrder
 );
 
-// Get Logged-in User Orders
+// My Orders
 router.get(
   "/my-orders",
   protect,
-  authorize("Customer", "Admin"),
   getMyOrders
 );
 
-// Get Single Order
+// Order Details
 router.get(
   "/:id",
   protect,
@@ -49,49 +43,42 @@ router.get(
 
 // Cancel Order
 router.patch(
-  "/cancel/:id",
+  "/:id/cancel",
   protect,
-  authorize("Customer"),
   cancelOrder
 );
 
+// ======================================
+// Admin Routes
+// ======================================
 
-// ===========================================
-// RAZORPAY PAYMENT ROUTES
-// ===========================================
-
-// Create Razorpay Order
-router.post(
-  "/payment/create-order",
-  protect,
-  authorize("Customer"),
-  createRazorpayOrder
-);
-
-// Verify Razorpay Payment
-router.post(
-  "/payment/verify",
-  protect,
-  authorize("Customer"),
-  verifyPayment
-);
-
-
-// ===========================================
-// ADMIN ROUTES
-// ===========================================
-
-// Get All Orders
+// All Orders
 router.get(
-  "/",
+  "/admin/all",
   protect,
   authorize("Admin"),
   getAllOrders
 );
 
-// Update Order Status
+// Statistics
+router.get(
+  "/admin/statistics",
+  protect,
+  authorize("Admin"),
+  getOrderStatistics
+);
+
+// Revenue Analytics
+router.get(
+  "/admin/revenue",
+  protect,
+  authorize("Admin"),
+  getRevenueAnalytics
+);
+
+// Update Status
 router.patch(
-  "/status/:id",
+  "/admin/:id/status",
   protect,
   authorize("Admin"),
   updateOrderStatus
@@ -99,7 +86,7 @@ router.patch(
 
 // Delete Order
 router.delete(
-  "/:id",
+  "/admin/:id",
   protect,
   authorize("Admin"),
   deleteOrder
