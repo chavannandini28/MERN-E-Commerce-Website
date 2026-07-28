@@ -1,27 +1,36 @@
 import { useEffect, useState } from "react";
-import {
-  FaUser,
-  FaEnvelope,
-  FaPhone,
-  FaCamera,
-  FaSave,
-} from "react-icons/fa";
+import { toast } from "react-toastify";
 
 import Loader from "../components/Loader";
 
 import {
   getProfile,
   updateProfile,
+  changePassword,
 } from "../api/userApi";
 
 const AdminProfile = () => {
+
   const [loading, setLoading] = useState(true);
 
+  const [saving, setSaving] = useState(false);
+
   const [formData, setFormData] = useState({
+
     name: "",
+
     email: "",
+
     phone: "",
+
     avatar: "",
+
+    oldPassword: "",
+
+    newPassword: "",
+
+    confirmPassword: "",
+
   });
 
   useEffect(() => {
@@ -29,41 +38,77 @@ const AdminProfile = () => {
   }, []);
 
   const loadProfile = async () => {
+
     try {
+
       setLoading(true);
 
       const { data } = await getProfile();
 
-      setFormData({
+      setFormData((prev) => ({
+        ...prev,
         name: data.user?.name || "",
         email: data.user?.email || "",
         phone: data.user?.phone || "",
         avatar: data.user?.avatar?.url || "",
-      });
+      }));
+
     } catch (error) {
-      console.log(error);
+
+      toast.error(
+        error.response?.data?.message ||
+        "Failed to load profile"
+      );
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
-  const changeHandler = (e) => {
+  const handleChange = (e) => {
+
     setFormData({
+
       ...formData,
+
       [e.target.name]: e.target.value,
+
     });
+
   };
 
-  const submitHandler = async (e) => {
+  const profileSubmitHandler = async (e) => {
+
     e.preventDefault();
 
     try {
-      await updateProfile(formData);
 
-      alert("Profile Updated Successfully");
+      setSaving(true);
+
+      await updateProfile({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+      });
+
+      toast.success("Profile Updated");
+
     } catch (error) {
-      console.log(error);
+
+      toast.error(
+        error.response?.data?.message ||
+        "Update Failed"
+      );
+
+    } finally {
+
+      setSaving(false);
+
     }
+
   };
 
   if (loading) {
@@ -71,257 +116,261 @@ const AdminProfile = () => {
   }
 
   return (
-    <div className="container-fluid py-4">
 
-      <div className="mb-4">
+    <div className="container py-4">
 
-        <h2 className="fw-bold">
-          Admin Profile
-        </h2>
+      <div className="card border-0 shadow">
 
-        <p className="text-muted">
-          Manage your account information.
-        </p>
+        <div className="card-header bg-white">
 
-      </div>
+          <h3 className="fw-bold mb-0">
 
-      <div className="row">
+            Admin Profile
 
-        <div className="col-lg-4">
+          </h3>
 
-          <div className="card border-0 shadow-sm">
+        </div>
 
-            <div className="card-body text-center">
+        <div className="card-body">
+
+          <form onSubmit={profileSubmitHandler}>
+
+            <div className="text-center mb-4">
 
               <img
                 src={
                   formData.avatar ||
-                  "https://via.placeholder.com/150"
+                  "https://via.placeholder.com/120"
                 }
                 alt="Profile"
-                className="rounded-circle mb-3"
+                className="rounded-circle border"
+                width="120"
+                height="120"
                 style={{
-                  width: "140px",
-                  height: "140px",
                   objectFit: "cover",
                 }}
               />
 
-              <div>
+            </div>
 
-                <label className="btn btn-outline-primary">
+            <div className="row">
 
-                  <FaCamera className="me-2" />
+              <div className="col-md-6 mb-3">
 
-                  Change Photo
+                <label className="form-label">
 
-                  <input
-                    type="file"
-                    hidden
-                  />
+                  Full Name
 
                 </label>
 
+                <input
+                  type="text"
+                  name="name"
+                  className="form-control"
+                  value={formData.name}
+                  onChange={handleChange}
+                />
+
               </div>
 
-            </div>
+              <div className="col-md-6 mb-3">
 
-          </div>
+                <label className="form-label">
 
-        </div>
+                  Email
 
-        <div className="col-lg-8">
+                </label>
 
-          <div className="card border-0 shadow-sm">
+                <input
+                  type="email"
+                  name="email"
+                  className="form-control"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
 
-            <div className="card-body">
+              </div>
 
-              <form onSubmit={submitHandler}>
-                                <div className="row">
+                            <div className="col-md-6 mb-3">
 
-                  <div className="col-md-6 mb-4">
+                <label className="form-label">
 
-                    <label className="form-label fw-semibold">
+                  Phone Number
 
-                      <FaUser className="me-2" />
+                </label>
 
-                      Full Name
+                <input
+                  type="text"
+                  name="phone"
+                  className="form-control"
+                  value={formData.phone}
+                  onChange={handleChange}
+                />
 
-                    </label>
+              </div>
 
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="name"
-                      value={formData.name}
-                      onChange={changeHandler}
-                      placeholder="Enter your name"
-                    />
+              <div className="col-md-6 mb-3">
 
-                  </div>
+                <label className="form-label">
 
-                  <div className="col-md-6 mb-4">
+                  Profile Picture URL
 
-                    <label className="form-label fw-semibold">
+                </label>
 
-                      <FaEnvelope className="me-2" />
+                <input
+                  type="text"
+                  name="avatar"
+                  className="form-control"
+                  value={formData.avatar}
+                  onChange={handleChange}
+                  placeholder="https://example.com/avatar.jpg"
+                />
 
-                      Email Address
+              </div>
 
-                    </label>
+              <div className="col-12">
 
-                    <input
-                      type="email"
-                      className="form-control"
-                      name="email"
-                      value={formData.email}
-                      onChange={changeHandler}
-                      placeholder="Enter your email"
-                    />
+                <hr className="my-4" />
 
-                  </div>
+              </div>
 
-                  <div className="col-md-6 mb-4">
+              <div className="col-12">
 
-                    <label className="form-label fw-semibold">
+                <h5 className="fw-bold mb-3">
 
-                      <FaPhone className="me-2" />
+                  Change Password
 
-                      Phone Number
+                </h5>
 
-                    </label>
+              </div>
 
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={changeHandler}
-                      placeholder="Enter phone number"
-                    />
+              <div className="col-md-4 mb-3">
 
-                  </div>
+                <label className="form-label">
+
+                  Current Password
+
+                </label>
+
+                <input
+                  type="password"
+                  name="oldPassword"
+                  className="form-control"
+                  value={formData.oldPassword}
+                  onChange={handleChange}
+                />
+
+              </div>
+
+              <div className="col-md-4 mb-3">
+
+                <label className="form-label">
+
+                  New Password
+
+                </label>
+
+                <input
+                  type="password"
+                  name="newPassword"
+                  className="form-control"
+                  value={formData.newPassword}
+                  onChange={handleChange}
+                />
+
+              </div>
+
+              <div className="col-md-4 mb-3">
+
+                <label className="form-label">
+
+                  Confirm Password
+
+                </label>
+
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  className="form-control"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                />
+
+              </div>
+
+                            <div className="col-12">
+
+                <hr className="my-4" />
+
+              </div>
+
+              <div className="col-12 d-flex flex-column flex-md-row justify-content-between align-items-center">
+
+                <div>
+
+                  <small className="text-muted">
+
+                    Last Updated :
+                    {" "}
+                    {new Date().toLocaleString()}
+
+                  </small>
 
                 </div>
 
-                <div className="mt-4">
+                <div className="mt-3 mt-md-0 d-flex gap-2">
+
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={loadProfile}
+                  >
+
+                    Reload
+
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-outline-warning"
+                    disabled={saving}
+                    onClick={passwordSubmitHandler}
+                  >
+
+                    {saving
+                      ? "Updating..."
+                      : "Change Password"}
+
+                  </button>
 
                   <button
                     type="submit"
                     className="btn btn-primary"
+                    disabled={saving}
                   >
 
-                    <FaSave className="me-2" />
-
-                    Save Changes
+                    {saving
+                      ? "Saving..."
+                      : "Update Profile"}
 
                   </button>
 
                 </div>
 
-              </form>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-            {/* Account Information */}
-
-      <div className="row mt-5">
-
-        <div className="col-lg-6">
-
-          <div className="card border-0 shadow-sm h-100">
-
-            <div className="card-header bg-white">
-
-              <h5 className="fw-bold mb-0">
-                Account Information
-              </h5>
-
-            </div>
-
-            <div className="card-body">
-
-              <div className="mb-3">
-
-                <strong>Name</strong>
-
-                <p className="text-muted mb-0">
-                  {formData.name}
-                </p>
-
-              </div>
-
-              <div className="mb-3">
-
-                <strong>Email</strong>
-
-                <p className="text-muted mb-0">
-                  {formData.email}
-                </p>
-
-              </div>
-
-              <div>
-
-                <strong>Phone</strong>
-
-                <p className="text-muted mb-0">
-                  {formData.phone || "Not Available"}
-                </p>
-
               </div>
 
             </div>
 
-          </div>
-
-        </div>
-
-        <div className="col-lg-6">
-
-          <div className="card border-0 shadow-sm h-100">
-
-            <div className="card-header bg-white">
-
-              <h5 className="fw-bold mb-0">
-                Security
-              </h5>
-
-            </div>
-
-            <div className="card-body">
-
-              <p className="text-muted">
-
-                You can change your password anytime from your account settings.
-
-              </p>
-
-              <button
-                className="btn btn-outline-danger"
-              >
-
-                Change Password
-
-              </button>
-
-            </div>
-
-          </div>
+          </form>
 
         </div>
 
       </div>
 
     </div>
+
   );
+
 };
 
 export default AdminProfile;
-              

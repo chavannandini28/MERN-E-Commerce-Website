@@ -1,151 +1,89 @@
-import axios from "axios";
+import axiosInstance from "./axiosInstance";
 
-
-// Backend URL
-const API_URL = "http://localhost:5000/api/wishlist";
-
-
-
-// ======================================
-// Get My Wishlist
-// GET /api/wishlist
-// ======================================
-
-export const getMyWishlist = async () => {
-
-  const token = localStorage.getItem("token");
-
-
-  return await axios.get(
-    API_URL,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-
-};
-
-
-// Compatibility name
-export const getWishlist = getMyWishlist;
-
-
-
-
-
-// ======================================
-// Add Product To Wishlist
-// POST /api/wishlist/add
-// ======================================
+// ===============================
+// Add Product to Wishlist
+// ===============================
 
 export const addToWishlist = async (productId) => {
-
-  const token = localStorage.getItem("token");
-
-
-  return await axios.post(
-
-    `${API_URL}/add`,
-
-    {
-      productId: productId,
-    },
-
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-
+  return axiosInstance.post(
+    "/wishlist/addToWishlist",
+    { productId }
   );
-
 };
 
+// ===============================
+// Get My Wishlist
+// ===============================
 
+export const getWishlist = async () => {
+  return axiosInstance.get(
+    "/wishlist/getMyWishlist"
+  );
+};
 
-
-
-
-// ======================================
+// ===============================
 // Remove Product From Wishlist
-// DELETE /api/wishlist/remove/:id
-// ======================================
+// ===============================
 
-export const removeFromWishlist = async (productId) => {
-
-  const token = localStorage.getItem("token");
-
-
-  return await axios.delete(
-
-    `${API_URL}/remove/${productId}`,
-
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-
+export const removeFromWishlist = async (
+  id
+) => {
+  return axiosInstance.delete(
+    `/wishlist/removeFromWishlist/${id}`
   );
-
 };
 
-
-
-
-
-
-// ======================================
+// ===============================
 // Clear Wishlist
-// DELETE /api/wishlist/clear
-// ======================================
+// ===============================
 
 export const clearWishlist = async () => {
-
-  const token = localStorage.getItem("token");
-
-
-  return await axios.delete(
-
-    `${API_URL}/clear`,
-
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-
+  return axiosInstance.delete(
+    "/wishlist/clearWishlist"
   );
-
 };
 
+// ===============================
+// Move Wishlist Item To Cart
+// ===============================
 
-
-
-
-
-// ======================================
-// Get Wishlist Count
-// GET /api/wishlist/count
-// ======================================
-
-export const getWishlistCount = async () => {
-
-  const token = localStorage.getItem("token");
-
-
-  return await axios.get(
-
-    `${API_URL}/count`,
-
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-
+export const moveToCart = async (id) => {
+  return axiosInstance.post(
+    `/wishlist/moveToCart/${id}`
   );
+};
 
+// ===============================
+// Wishlist Count
+// ===============================
+
+export const getWishlistCount =
+  async () => {
+    return axiosInstance.get(
+      "/wishlist/getWishlistCount"
+    );
+  };
+
+// ===============================
+// Check Wishlist Status
+// ===============================
+
+export const checkWishlistItem =
+  async (productId) => {
+    return axiosInstance.get(
+      `/wishlist/check/${productId}`
+    );
+  };
+
+// ===============================
+// Toggle Wishlist
+// ===============================
+
+export const toggleWishlist = async (
+  productId
+) => {
+  return axiosInstance.post(
+    "/wishlist/toggle",
+    { productId }
+  );
 };

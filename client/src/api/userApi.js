@@ -1,187 +1,120 @@
-import axios from "axios";
+import axiosInstance from "./axiosInstance";
 
+// ===============================
+// Get Logged-in User Profile
+// ===============================
 
-const API_URL = "http://localhost:5000/api/users";
+export const getProfile = async () => {
+  return axiosInstance.get("/users/profile");
+};
 
+// ===============================
+// Update Logged-in User Profile
+// ===============================
 
+export const updateProfile = async (userData) => {
+  return axiosInstance.put(
+    "/users/profile",
+    userData
+  );
+};
 
+// ===============================
+// Change Password
+// ===============================
+
+export const changePassword = async (
+  passwordData
+) => {
+  return axiosInstance.put(
+    "/users/change-password",
+    passwordData
+  );
+};
+
+// ===============================
+// Upload Avatar
+// ===============================
+
+export const uploadAvatar = async (
+  formData
+) => {
+  return axiosInstance.post(
+    "/users/avatar",
+    formData,
+    {
+      headers: {
+        "Content-Type":
+          "multipart/form-data",
+      },
+    }
+  );
+};
+
+// ===============================
 // Get All Users (Admin)
-export const getAllUsers = async () => {
+// ===============================
 
-  const token = localStorage.getItem("token");
-
-
-  return await axios.get(
-    API_URL,
-    {
-      headers:{
-        Authorization:`Bearer ${token}`
-      }
-    }
-  );
-
-};
-
-
-
-
-// Get Single User
-export const getUserById = async(id)=>{
-
-  const token = localStorage.getItem("token");
-
-
-  return await axios.get(
-    `${API_URL}/${id}`,
-    {
-      headers:{
-        Authorization:`Bearer ${token}`
-      }
-    }
-  );
-
-};
-
-
-
-
-// Update User
-export const updateUser = async(id,data)=>{
-
-
-  const token = localStorage.getItem("token");
-
-
-  return await axios.put(
-
-    `${API_URL}/${id}`,
-
-    data,
-
-    {
-      headers:{
-        Authorization:`Bearer ${token}`
-      }
-    }
-
-  );
-
-};
-
-
-
-
-// Delete User
-export const deleteUser = async(id)=>{
-
-
-  const token = localStorage.getItem("token");
-
-
-  return await axios.delete(
-
-    `${API_URL}/${id}`,
-
-    {
-      headers:{
-        Authorization:`Bearer ${token}`
-      }
-    }
-
-  );
-
-};
-
-
-
-
-// Update User Role
-export const updateUserRole = async(id,data)=>{
-
-
-  const token = localStorage.getItem("token");
-
-
-  return await axios.patch(
-
-    `${API_URL}/role/${id}`,
-
-    data,
-
-    {
-      headers:{
-        Authorization:`Bearer ${token}`
-      }
-    }
-
-  );
-
-};
-
-
-
-
-// Block User
-export const blockUser = async(id)=>{
-
-
-  const token = localStorage.getItem("token");
-
-
-  return await axios.patch(
-
-    `${API_URL}/block/${id}`,
-
-    {},
-
-    {
-      headers:{
-        Authorization:`Bearer ${token}`
-      }
-    }
-
-  );
-
-};
-
-
-
-
-// Unblock User
-export const unblockUser = async(id)=>{
-
-
-  const token = localStorage.getItem("token");
-
-
-  return await axios.patch(
-
-    `${API_URL}/unblock/${id}`,
-
-    {},
-
-    {
-      headers:{
-        Authorization:`Bearer ${token}`
-      }
-    }
-
-  );
-
-};
-
-// Alias for AdminDashboard
 export const getUsers = async () => {
+  return axiosInstance.get("/users");
+};
 
-  const token = localStorage.getItem("token");
+// ===============================
+// Get User By ID
+// ===============================
 
-  return await axios.get(
-    API_URL,
-    {
-      headers:{
-        Authorization:`Bearer ${token}`
-      }
-    }
+export const getUserById = async (id) => {
+  return axiosInstance.get(
+    `/users/${id}`
   );
+};
 
+// ===============================
+// Update User (Admin)
+// ===============================
+
+export const updateUser = async (
+  id,
+  userData
+) => {
+  return axiosInstance.put(
+    `/users/${id}`,
+    userData
+  );
+};
+
+// ===============================
+// Delete User
+// ===============================
+
+export const deleteUser = async (id) => {
+  return axiosInstance.delete(
+    `/users/${id}`
+  );
+};
+
+// ===============================
+// Change User Role
+// ===============================
+
+export const updateUserRole = async (
+  id,
+  role
+) => {
+  return axiosInstance.patch(
+    `/users/${id}/role`,
+    { role }
+  );
+};
+
+// ===============================
+// Block / Unblock User
+// ===============================
+
+export const toggleUserStatus = async (
+  id
+) => {
+  return axiosInstance.patch(
+    `/users/${id}/status`
+  );
 };

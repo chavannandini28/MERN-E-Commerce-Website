@@ -1,16 +1,12 @@
 import axiosInstance from "./axiosInstance";
 
-// ===================================
+// ===============================
 // Upload Single Image
-// POST /upload/single
-// ===================================
-export const uploadSingleImage = (file) => {
-  const formData = new FormData();
+// ===============================
 
-  formData.append("image", file);
-
+export const uploadImage = async (formData) => {
   return axiosInstance.post(
-    "/upload/single",
+    "/upload/image",
     formData,
     {
       headers: {
@@ -20,19 +16,13 @@ export const uploadSingleImage = (file) => {
   );
 };
 
-// ===================================
+// ===============================
 // Upload Multiple Images
-// POST /upload/multiple
-// ===================================
-export const uploadMultipleImages = (files) => {
-  const formData = new FormData();
+// ===============================
 
-  Array.from(files).forEach((file) => {
-    formData.append("images", file);
-  });
-
+export const uploadImages = async (formData) => {
   return axiosInstance.post(
-    "/upload/multiple",
+    "/upload/images",
     formData,
     {
       headers: {
@@ -42,9 +32,111 @@ export const uploadMultipleImages = (files) => {
   );
 };
 
-// ===================================
+// ===============================
+// Upload Avatar
+// ===============================
+
+export const uploadAvatar = async (formData) => {
+  return axiosInstance.post(
+    "/upload/avatar",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+};
+
+// ===============================
+// Upload Product Images
+// ===============================
+
+export const uploadProductImages = async (
+  formData
+) => {
+  return axiosInstance.post(
+    "/upload/product",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+};
+
+// ===============================
+// Upload Category Image
+// ===============================
+
+export const uploadCategoryImage = async (
+  formData
+) => {
+  return axiosInstance.post(
+    "/upload/category",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+};
+
+// ===============================
+// Upload Brand Logo
+// ===============================
+
+export const uploadBrandLogo = async (
+  formData
+) => {
+  return axiosInstance.post(
+    "/upload/brand",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+};
+
+// ===============================
 // Delete Uploaded Image
-// DELETE /upload/:publicId
-// ===================================
-export const deleteImage = (publicId) =>
-  axiosInstance.delete(`/upload/${publicId}`);
+// ===============================
+
+export const deleteImage = async (
+  publicId
+) => {
+  return axiosInstance.delete(
+    `/upload/${publicId}`
+  );
+};
+
+// ===============================
+// Get Upload Details
+// ===============================
+
+export const getUpload = async (
+  uploadId
+) => {
+  return axiosInstance.get(
+    `/upload/${uploadId}`
+  );
+};
+
+// ===============================
+// Delete Multiple Images
+// ===============================
+
+export const deleteImages = async (
+  publicIds
+) => {
+  return axiosInstance.post(
+    "/upload/delete-multiple",
+    {
+      publicIds,
+    }
+  );
+};

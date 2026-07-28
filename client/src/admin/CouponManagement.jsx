@@ -3,46 +3,46 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 
 import {
-  FaSearch,
-  FaEye,
+  FaPlus,
   FaEdit,
   FaTrash,
+  FaSearch,
 } from "react-icons/fa";
 
 import Loader from "../components/Loader";
 
 import {
-  getAllOrders,
-  deleteOrder,
-} from "../api/orderApi";
+  getCoupons,
+  deleteCoupon,
+} from "../api/couponApi";
 
-const OrderList = () => {
+const CouponManagement = () => {
 
   const [loading, setLoading] = useState(true);
 
-  const [orders, setOrders] = useState([]);
+  const [coupons, setCoupons] = useState([]);
 
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    loadOrders();
+    loadCoupons();
   }, []);
 
-  const loadOrders = async () => {
+  const loadCoupons = async () => {
 
     try {
 
       setLoading(true);
 
-      const { data } = await getAllOrders();
+      const { data } = await getCoupons();
 
-      setOrders(data.orders || []);
+      setCoupons(data.coupons || []);
 
     } catch (error) {
 
       toast.error(
         error.response?.data?.message ||
-        "Failed to load orders"
+        "Failed to load coupons"
       );
 
     } finally {
@@ -56,18 +56,20 @@ const OrderList = () => {
   const deleteHandler = async (id) => {
 
     const confirmDelete = window.confirm(
-      "Delete this order?"
+      "Delete this coupon?"
     );
 
     if (!confirmDelete) return;
 
     try {
 
-      await deleteOrder(id);
+      await deleteCoupon(id);
 
-      toast.success("Order deleted successfully");
+      toast.success(
+        "Coupon deleted successfully"
+      );
 
-      loadOrders();
+      loadCoupons();
 
     } catch (error) {
 
@@ -80,18 +82,11 @@ const OrderList = () => {
 
   };
 
-  const filteredOrders = orders.filter((order) => {
-
-    return (
-      order._id
-        ?.toLowerCase()
-        .includes(search.toLowerCase()) ||
-      order.user?.name
-        ?.toLowerCase()
-        .includes(search.toLowerCase())
-    );
-
-  });
+  const filteredCoupons = coupons.filter((coupon) =>
+    coupon.code
+      ?.toLowerCase()
+      .includes(search.toLowerCase())
+  );
 
   if (loading) {
     return <Loader />;
@@ -105,9 +100,20 @@ const OrderList = () => {
 
         <h2 className="fw-bold">
 
-          Order Management
+          Coupon Management
 
         </h2>
+
+        <Link
+          to="/admin/coupons/add"
+          className="btn btn-primary"
+        >
+
+          <FaPlus className="me-2" />
+
+          Add Coupon
+
+        </Link>
 
       </div>
 
@@ -130,7 +136,7 @@ const OrderList = () => {
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="Search Order ID or Customer..."
+                  placeholder="Search Coupon Code..."
                   value={search}
                   onChange={(e) =>
                     setSearch(e.target.value)
@@ -151,17 +157,15 @@ const OrderList = () => {
 
                 <tr>
 
-                  <th>Order ID</th>
+                  <th>Coupon Code</th>
 
-                  <th>Customer</th>
+                  <th>Discount</th>
 
-                  <th>Date</th>
+                  <th>Minimum Order</th>
 
-                  <th>Items</th>
+                  <th>Expiry Date</th>
 
-                  <th>Total</th>
-
-                  <th>Payment</th>
+                  <th>Usage Limit</th>
 
                   <th>Status</th>
 
@@ -173,81 +177,65 @@ const OrderList = () => {
 
               <tbody>
 
-                {filteredOrders.length > 0 ? (
+                {filteredCoupons.length > 0 ? (
 
-                  filteredOrders.map((order) => (
+                  filteredCoupons.map((coupon) => (
 
-                    <tr key={order._id}>
+                    <tr key={coupon._id}>
 
                       <td>
 
-                        <code>
+                        <span className="fw-bold">
 
-                          {order._id.slice(-8)}
+                          {coupon.code}
 
-                        </code>
+                        </span>
 
                       </td>
 
                       <td>
 
-                        <div>
+                        {coupon.discountType === "percentage"
+                          ? `${coupon.discount}%`
+                          : `₹${coupon.discount}`}
 
-                          <h6 className="mb-0">
+                      </td>
 
-                            {order.user?.name || "Guest"}
+                      <td>
 
-                          </h6>
-
-                          <small className="text-muted">
-
-                            {order.user?.email}
-
-                          </small>
-
-                        </div>
+                        ₹{coupon.minimumOrderAmount || 0}
 
                       </td>
 
                       <td>
 
                         {new Date(
-                          order.createdAt
+                          coupon.expiryDate
                         ).toLocaleDateString()}
 
                       </td>
 
                       <td>
 
-                        <span className="badge bg-info">
-
-                          {order.orderItems?.length || 0}
-
-                        </span>
-
-                      </td>
-
-                      <td className="fw-bold text-success">
-
-                        ₹{order.totalPrice}
+                        {coupon.usageLimit || "Unlimited"}
 
                       </td>
 
                       <td>
 
-                        {order.isPaid ? (
+                        {coupon.isActive ? (
 
                           <span className="badge bg-success">
 
-                            Paid
+                            Active
 
                           </span>
 
                         ) : (
 
-                          <span className="badge bg-danger">
+                          <span className="badge bg-secondary">
 
-                            Unpaid
+                            Inactive
 
                           </span>
 
@@ -257,40 +245,11 @@ const OrderList = () => {
 
                       <td>
 
-                        <span
-                          className={`badge ${
-                            order.orderStatus === "Delivered"
-                              ? "bg-success"
-                              : order.orderStatus === "Processing"
-                              ? "bg-warning text-dark"
-                              : order.orderStatus === "Cancelled"
-                              ? "bg-danger"
-                              : "bg-secondary"
-                          }`}
-                        >
-
-                          {order.orderStatus}
-
-                        </span>
-
-                      </td>
-
-                      <td>
-
                         <div className="btn-group">
 
                           <Link
-                            to={`/admin/orders/${order._id}`}
+                            to={`/admin/coupons/edit/${coupon._id}`}
                             className="btn btn-sm btn-outline-primary"
-                          >
-
-                            <FaEye />
-
-                          </Link>
-
-                          <Link
-                            to={`/admin/orders/edit/${order._id}`}
-                            className="btn btn-sm btn-outline-warning"
                           >
 
                             <FaEdit />
@@ -300,7 +259,7 @@ const OrderList = () => {
                           <button
                             className="btn btn-sm btn-outline-danger"
                             onClick={() =>
-                              deleteHandler(order._id)
+                              deleteHandler(coupon._id)
                             }
                           >
 
@@ -321,13 +280,13 @@ const OrderList = () => {
                   <tr>
 
                     <td
-                      colSpan="8"
+                      colSpan="7"
                       className="text-center py-5"
                     >
 
                       <h5 className="text-muted">
 
-                        No Orders Found
+                        No Coupons Found
 
                       </h5>
 
@@ -350,12 +309,12 @@ const OrderList = () => {
             <div>
 
               <strong>
-                Total Orders :
+                Total Coupons :
               </strong>
 
               <span className="badge bg-primary ms-2">
 
-                {filteredOrders.length}
+                {filteredCoupons.length}
 
               </span>
 
@@ -365,7 +324,7 @@ const OrderList = () => {
 
               <button
                 className="btn btn-outline-secondary"
-                onClick={loadOrders}
+                onClick={loadCoupons}
               >
 
                 Refresh List
@@ -385,4 +344,4 @@ const OrderList = () => {
   );
 };
 
-export default OrderList;
+export default CouponManagement;

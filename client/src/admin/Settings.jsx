@@ -1,227 +1,433 @@
 import { useEffect, useState } from "react";
-import {
-  FaCog,
-  FaSave,
-  FaUserShield,
-} from "react-icons/fa";
 import { toast } from "react-toastify";
 
+import Loader from "../components/Loader";
+
 import {
-  getProfile,
-  updateProfile,
-} from "../api/userApi";
+  getStoreSettings,
+  updateStoreSettings,
+} from "../api/settingsApi";
 
 const Settings = () => {
+
   const [loading, setLoading] = useState(true);
+
   const [saving, setSaving] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: "",
+
+    storeName: "",
+
     email: "",
+
     phone: "",
+
+    address: "",
+
+    facebook: "",
+
+    instagram: "",
+
+    twitter: "",
+
+    linkedin: "",
+
+    shippingCharge: "",
+
+    freeShippingLimit: "",
+
+    tax: "",
+
+    currency: "INR",
+
   });
 
   useEffect(() => {
-    fetchProfile();
+    loadSettings();
   }, []);
 
-  const fetchProfile = async () => {
+  const loadSettings = async () => {
+
     try {
+
       setLoading(true);
 
-      const { data } = await getProfile();
-
-      const user =
-        data.user ||
-        data.data ||
-        {};
+      const { data } =
+        await getStoreSettings();
 
       setFormData({
-        name: user.name || "",
-        email: user.email || "",
-        phone: user.phone || "",
+        ...formData,
+        ...data.settings,
       });
+
     } catch (error) {
+
       toast.error(
-        error?.response?.data?.message ||
-          "Failed to load profile."
+        error.response?.data?.message ||
+        "Failed to load settings"
       );
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
-  const changeHandler = (e) => {
-    setFormData((prev) => ({
-      ...prev,
+  const handleChange = (e) => {
+
+    setFormData({
+
+      ...formData,
+
       [e.target.name]: e.target.value,
-    }));
+
+    });
+
   };
 
   const submitHandler = async (e) => {
+
     e.preventDefault();
 
     try {
+
       setSaving(true);
 
-      await updateProfile(formData);
+      await updateStoreSettings(formData);
 
       toast.success(
-        "Profile updated successfully."
+        "Settings Updated Successfully"
       );
+
     } catch (error) {
+
       toast.error(
-        error?.response?.data?.message ||
-          "Failed to update profile."
+        error.response?.data?.message ||
+        "Update Failed"
       );
+
     } finally {
+
       setSaving(false);
+
     }
+
   };
 
+  if (loading) {
+    return <Loader />;
+  }
+
   return (
-    <div className="container-fluid py-4">
 
-      <div className="d-flex align-items-center mb-4">
-
-        <FaCog
-          className="text-primary me-3"
-          size={32}
-        />
-
-        <div>
-
-          <h2 className="fw-bold mb-0">
-            Admin Settings
-          </h2>
-
-          <small className="text-muted">
-            Manage your profile information
-          </small>
-
-        </div>
-
-      </div>
+    <div className="container py-4">
 
       <div className="card shadow border-0">
 
-        <div className="card-body p-4">
+        <div className="card-header bg-white">
 
-          {loading ? (
+          <h3 className="fw-bold mb-0">
 
-            <div className="text-center py-5">
+            Store Settings
 
-              <div className="spinner-border text-primary" />
+          </h3>
 
-            </div>
+        </div>
 
-          ) : (
+        <div className="card-body">
 
-            <form onSubmit={submitHandler}>
+          <form onSubmit={submitHandler}>
 
-              <div className="row">
+            <div className="row">
 
-                                {/* Full Name */}
+              <div className="col-md-6 mb-3">
 
-                <div className="col-md-6 mb-3">
+                <label className="form-label">
 
-                  <label className="form-label fw-semibold">
-                    Full Name
-                  </label>
+                  Store Name
 
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="name"
-                    value={formData.name}
-                    onChange={changeHandler}
-                    placeholder="Enter your name"
-                    required
-                  />
+                </label>
+
+                <input
+                  type="text"
+                  name="storeName"
+                  className="form-control"
+                  value={formData.storeName}
+                  onChange={handleChange}
+                />
+
+              </div>
+
+              <div className="col-md-6 mb-3">
+
+                <label className="form-label">
+
+                  Store Email
+
+                </label>
+
+                <input
+                  type="email"
+                  name="email"
+                  className="form-control"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+
+              </div>
+
+                            <div className="col-md-6 mb-3">
+
+                <label className="form-label">
+
+                  Store Phone
+
+                </label>
+
+                <input
+                  type="text"
+                  name="phone"
+                  className="form-control"
+                  value={formData.phone}
+                  onChange={handleChange}
+                />
+
+              </div>
+
+              <div className="col-md-6 mb-3">
+
+                <label className="form-label">
+
+                  Store Address
+
+                </label>
+
+                <input
+                  type="text"
+                  name="address"
+                  className="form-control"
+                  value={formData.address}
+                  onChange={handleChange}
+                />
+
+              </div>
+
+              <div className="col-md-6 mb-3">
+
+                <label className="form-label">
+
+                  Facebook URL
+
+                </label>
+
+                <input
+                  type="text"
+                  name="facebook"
+                  className="form-control"
+                  value={formData.facebook}
+                  onChange={handleChange}
+                />
+
+              </div>
+
+              <div className="col-md-6 mb-3">
+
+                <label className="form-label">
+
+                  Instagram URL
+
+                </label>
+
+                <input
+                  type="text"
+                  name="instagram"
+                  className="form-control"
+                  value={formData.instagram}
+                  onChange={handleChange}
+                />
+
+              </div>
+
+              <div className="col-md-6 mb-3">
+
+                <label className="form-label">
+
+                  Twitter / X URL
+
+                </label>
+
+                <input
+                  type="text"
+                  name="twitter"
+                  className="form-control"
+                  value={formData.twitter}
+                  onChange={handleChange}
+                />
+
+              </div>
+
+              <div className="col-md-6 mb-3">
+
+                <label className="form-label">
+
+                  LinkedIn URL
+
+                </label>
+
+                <input
+                  type="text"
+                  name="linkedin"
+                  className="form-control"
+                  value={formData.linkedin}
+                  onChange={handleChange}
+                />
+
+              </div>
+
+              <hr className="my-4" />
+
+              <h5 className="fw-bold mb-3">
+
+                Shipping Settings
+
+              </h5>
+
+              <div className="col-md-4 mb-3">
+
+                <label className="form-label">
+
+                  Shipping Charge
+
+                </label>
+
+                <input
+                  type="number"
+                  name="shippingCharge"
+                  className="form-control"
+                  value={formData.shippingCharge}
+                  onChange={handleChange}
+                />
+
+              </div>
+
+              <div className="col-md-4 mb-3">
+
+                <label className="form-label">
+
+                  Free Shipping Limit
+
+                </label>
+
+                <input
+                  type="number"
+                  name="freeShippingLimit"
+                  className="form-control"
+                  value={formData.freeShippingLimit}
+                  onChange={handleChange}
+                />
+
+              </div>
+
+              <div className="col-md-2 mb-3">
+
+                <label className="form-label">
+
+                  Tax (%)
+
+                </label>
+
+                <input
+                  type="number"
+                  name="tax"
+                  className="form-control"
+                  value={formData.tax}
+                  onChange={handleChange}
+                />
+
+              </div>
+
+              <div className="col-md-2 mb-3">
+
+                <label className="form-label">
+
+                  Currency
+
+                </label>
+
+                <select
+                  name="currency"
+                  className="form-select"
+                  value={formData.currency}
+                  onChange={handleChange}
+                >
+
+                  <option value="INR">
+
+                    INR
+
+                  </option>
+
+                  <option value="USD">
+
+                    USD
+
+                  </option>
+
+                  <option value="EUR">
+
+                    EUR
+
+                  </option>
+
+                  <option value="GBP">
+
+                    GBP
+
+                  </option>
+
+                </select>
+
+              </div>
+
+                            <hr className="my-4" />
+
+              <div className="d-flex flex-column flex-md-row justify-content-between align-items-center">
+
+                <div>
+
+                  <small className="text-muted">
+
+                    Last Updated :
+                    {" "}
+                    {new Date().toLocaleString()}
+
+                  </small>
 
                 </div>
 
-                {/* Email */}
+                <div className="mt-3 mt-md-0 d-flex gap-2">
 
-                <div className="col-md-6 mb-3">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={loadSettings}
+                  >
 
-                  <label className="form-label fw-semibold">
-                    Email Address
-                  </label>
+                    Reload
 
-                  <input
-                    type="email"
-                    className="form-control"
-                    name="email"
-                    value={formData.email}
-                    onChange={changeHandler}
-                    placeholder="Enter your email"
-                    required
-                  />
-
-                </div>
-
-                {/* Phone */}
-
-                <div className="col-md-6 mb-3">
-
-                  <label className="form-label fw-semibold">
-                    Phone Number
-                  </label>
-
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={changeHandler}
-                    placeholder="Enter phone number"
-                  />
-
-                </div>
-
-                {/* Role (Read Only) */}
-
-                <div className="col-md-6 mb-3">
-
-                  <label className="form-label fw-semibold">
-                    Role
-                  </label>
-
-                  <div className="input-group">
-
-                    <span className="input-group-text">
-
-                      <FaUserShield />
-
-                    </span>
-
-                    <input
-                      type="text"
-                      className="form-control"
-                      value="Administrator"
-                      readOnly
-                    />
-
-                  </div>
-
-                </div>
-
-                {/* Save Button */}
-
-                <div className="col-12 mt-4">
+                  </button>
 
                   <button
                     type="submit"
-                    className="btn btn-primary px-4"
+                    className="btn btn-primary"
                     disabled={saving}
                   >
 
-                    <FaSave className="me-2" />
-
                     {saving
                       ? "Saving..."
-                      : "Save Changes"}
+                      : "Save Settings"}
 
                   </button>
 
@@ -229,17 +435,18 @@ const Settings = () => {
 
               </div>
 
-            </form>
+            </div>
 
-          )}
+          </form>
 
         </div>
 
       </div>
 
     </div>
+
   );
+
 };
 
 export default Settings;
-              

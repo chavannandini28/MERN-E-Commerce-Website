@@ -1,92 +1,124 @@
 import axiosInstance from "./axiosInstance";
 
-// ======================================
+// ===============================
 // Create Order
-// POST /api/orders
-// ======================================
+// ===============================
 
-export const createOrder = (orderData) =>
-  axiosInstance.post("/orders", orderData);
+export const createOrder = async (orderData) => {
+  return axiosInstance.post(
+    "/orders/createOrder",
+    orderData
+  );
+};
 
-// ======================================
+// ===============================
 // Get My Orders
-// GET /api/orders/my-orders
-// ======================================
+// ===============================
 
-export const getMyOrders = () =>
-  axiosInstance.get("/orders/my-orders");
+export const getMyOrders = async () => {
+  return axiosInstance.get(
+    "/orders/getMyOrders"
+  );
+};
 
-// ======================================
-// Get Order By ID
-// GET /api/orders/:id
-// ======================================
+// ===============================
+// Get Order Details
+// ===============================
 
-export const getOrderById = (id) =>
-  axiosInstance.get(`/orders/${id}`);
+export const getOrderDetails = async (id) => {
+  return axiosInstance.get(
+    `/orders/getOrder/${id}`
+  );
+};
 
-// ======================================
+// ===============================
 // Cancel Order
-// PATCH /api/orders/:id/cancel
-// ======================================
+// ===============================
 
-export const cancelOrder = (id, reason) =>
-  axiosInstance.patch(`/orders/${id}/cancel`, {
-    reason,
-  });
+export const cancelOrder = async (id) => {
+  return axiosInstance.patch(
+    `/orders/cancelOrder/${id}`
+  );
+};
 
-// ======================================
-// ================= ADMIN =================
-// ======================================
+// ===============================
+// Get All Orders (Admin)
+// ===============================
 
-// Get All Orders
-// GET /api/orders/admin/all
-// ======================================
+export const getOrders = async () => {
+  return axiosInstance.get(
+    "/orders/getAllOrders"
+  );
+};
 
-export const getAllOrders = () =>
-  axiosInstance.get("/orders/admin/all");
+// ===============================
+// Update Order Status (Admin)
+// ===============================
 
-// ======================================
-// Update Order Status
-// PATCH /api/orders/admin/:id/status
-// ======================================
-
-export const updateOrderStatus = (
+export const updateOrderStatus = async (
   id,
   status
-) =>
-  axiosInstance.patch(
-    `/orders/admin/${id}/status`,
+) => {
+  return axiosInstance.patch(
+    `/orders/updateStatus/${id}`,
+    { status }
+  );
+};
+
+// ===============================
+// Delete Order
+// ===============================
+
+export const deleteOrder = async (id) => {
+  return axiosInstance.delete(
+    `/orders/deleteOrder/${id}`
+  );
+};
+
+// ===============================
+// Download Invoice
+// ===============================
+
+export const downloadInvoice = async (
+  id
+) => {
+  return axiosInstance.get(
+    `/orders/invoice/${id}`,
     {
-      status,
+      responseType: "blob",
     }
   );
+};
 
-// ======================================
-// Delete Order
-// DELETE /api/orders/admin/:id
-// ======================================
-
-export const deleteOrder = (id) =>
-  axiosInstance.delete(
-    `/orders/admin/${id}`
-  );
-
-// ======================================
+// ===============================
 // Order Statistics
-// GET /api/orders/admin/statistics
-// ======================================
+// ===============================
 
-export const getOrderStatistics = () =>
-  axiosInstance.get(
-    "/orders/admin/statistics"
+export const getOrderStats = async () => {
+  return axiosInstance.get(
+    "/orders/stats"
   );
+};
 
-// ======================================
-// Revenue Analytics
-// GET /api/orders/admin/revenue
-// ======================================
+// ===============================
+// Track Order
+// ===============================
 
-export const getRevenueAnalytics = () =>
-  axiosInstance.get(
-    "/orders/admin/revenue"
+export const trackOrder = async (id) => {
+  return axiosInstance.get(
+    `/orders/track/${id}`
   );
+};
+
+// ===============================
+// Verify Payment
+// ===============================
+
+export const verifyPayment = async (
+  paymentData
+) => {
+  return axiosInstance.post(
+    "/orders/verifyPayment",
+    paymentData
+  );
+};

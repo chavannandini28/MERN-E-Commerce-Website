@@ -1,136 +1,95 @@
 import axiosInstance from "./axiosInstance";
 
-// ======================================
-// Register
-// ======================================
+// ===============================
+// Register User
+// ===============================
+
 export const registerUser = async (userData) => {
-  const { data } = await axiosInstance.post(
-    "/auth/register",
-    userData
-  );
-
-  return data;
+  return axiosInstance.post("/auth/register", userData);
 };
 
-// ======================================
-// Login
-// ======================================
-export const loginUser = async (loginData) => {
-  const { data } = await axiosInstance.post(
-    "/auth/login",
-    loginData
-  );
+// ===============================
+// Login User
+// ===============================
 
-  if (data.token) {
-    localStorage.setItem("token", data.token);
-  }
-
-  if (data.user) {
-    localStorage.setItem(
-      "user",
-      JSON.stringify(data.user)
-    );
-  }
-
-  return data;
+export const loginUser = async (credentials) => {
+  return axiosInstance.post("/auth/login", credentials);
 };
 
-// ======================================
-// Logout
-// ======================================
+// ===============================
+// Logout User
+// ===============================
+
 export const logoutUser = async () => {
-  const { data } = await axiosInstance.post(
-    "/auth/logout"
-  );
-
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-
-  return data;
+  return axiosInstance.post("/auth/logout");
 };
 
-// ======================================
-// Get Profile
-// ======================================
-export const getMyProfile = async () => {
-  const { data } = await axiosInstance.get(
-    "/auth/profile"
-  );
+// ===============================
+// Get Logged-in User
+// ===============================
 
-  return data;
+export const getCurrentUser = async () => {
+  return axiosInstance.get("/auth/me");
 };
 
-// ======================================
+// ===============================
 // Update Profile
-// ======================================
-export const updateProfile = async (userData) => {
-  const { data } = await axiosInstance.put(
-    "/auth/profile",
-    userData
-  );
+// ===============================
 
-  return data;
+export const updateProfile = async (userData) => {
+  return axiosInstance.put("/auth/profile", userData);
 };
 
-// ======================================
+// ===============================
 // Change Password
-// ======================================
+// ===============================
+
 export const changePassword = async (passwordData) => {
-  const { data } = await axiosInstance.put(
+  return axiosInstance.put(
     "/auth/change-password",
     passwordData
   );
-
-  return data;
 };
 
-// ======================================
+// ===============================
 // Forgot Password
-// ======================================
+// ===============================
+
 export const forgotPassword = async (email) => {
-  const { data } = await axiosInstance.post(
+  return axiosInstance.post(
     "/auth/forgot-password",
     { email }
   );
-
-  return data;
 };
 
-// ======================================
+// ===============================
 // Reset Password
-// ======================================
+// ===============================
+
 export const resetPassword = async (
   token,
   passwordData
 ) => {
-  const { data } = await axiosInstance.put(
+  return axiosInstance.put(
     `/auth/reset-password/${token}`,
     passwordData
   );
-
-  return data;
 };
 
-// ======================================
-// Verify OTP
-// ======================================
-export const verifyOTP = async (otpData) => {
-  const { data } = await axiosInstance.post(
-    "/auth/verify-otp",
-    otpData
-  );
+// ===============================
+// Verify Email
+// ===============================
 
-  return data;
+export const verifyEmail = async (token) => {
+  return axiosInstance.get(
+    `/auth/verify-email/${token}`
+  );
 };
 
-// ======================================
-// Resend OTP
-// ======================================
-export const resendOTP = async (emailData) => {
-  const { data } = await axiosInstance.post(
-    "/auth/resend-otp",
-    emailData
-  );
+// ===============================
+// Refresh Token
+// ===============================
 
-  return data;
+export const refreshToken = async () => {
+  return axiosInstance.post("/auth/refresh-token");
 };

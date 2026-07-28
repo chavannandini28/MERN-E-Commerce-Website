@@ -1,120 +1,141 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+
 import {
   FaSearch,
   FaTrash,
   FaStar,
-  FaComments,
 } from "react-icons/fa";
 
+import Loader from "../components/Loader";
+
 import {
-  getReviews,
+  getAllReviews,
   deleteReview,
 } from "../api/reviewApi";
 
 const ReviewManagement = () => {
-  const [reviews, setReviews] = useState([]);
-  const [filteredReviews, setFilteredReviews] = useState([]);
-  const [keyword, setKeyword] = useState("");
+
   const [loading, setLoading] = useState(true);
+
+  const [reviews, setReviews] = useState([]);
+
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     loadReviews();
   }, []);
 
   const loadReviews = async () => {
+
     try {
+
       setLoading(true);
 
-      const { data } = await getReviews();
+      const { data } = await getAllReviews();
 
-      const list = data.reviews || data || [];
+      setReviews(data.reviews || []);
 
-      setReviews(list);
-      setFilteredReviews(list);
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+
+      toast.error(
+        error.response?.data?.message ||
+        "Failed to load reviews"
+      );
+
     } finally {
+
       setLoading(false);
+
     }
-  };
 
-  const searchHandler = (e) => {
-    const value = e.target.value;
-
-    setKeyword(value);
-
-    const result = reviews.filter((review) =>
-      review.product?.name
-        ?.toLowerCase()
-        .includes(value.toLowerCase()) ||
-      review.user?.name
-        ?.toLowerCase()
-        .includes(value.toLowerCase())
-    );
-
-    setFilteredReviews(result);
   };
 
   const deleteHandler = async (id) => {
-    if (!window.confirm("Delete this review?")) return;
+
+    const confirmDelete = window.confirm(
+      "Delete this review?"
+    );
+
+    if (!confirmDelete) return;
 
     try {
+
       await deleteReview(id);
 
+      toast.success(
+        "Review deleted successfully"
+      );
+
       loadReviews();
-    } catch (err) {
-      console.log(err);
+
+    } catch (error) {
+
+      toast.error(
+        error.response?.data?.message ||
+        "Delete failed"
+      );
+
     }
+
   };
 
-  if (loading) {
+  const filteredReviews = reviews.filter((review) => {
+
     return (
-      <div className="text-center py-5">
-        <h4>Loading Reviews...</h4>
-      </div>
+      review.product?.title
+        ?.toLowerCase()
+        .includes(search.toLowerCase()) ||
+
+      review.user?.name
+        ?.toLowerCase()
+        .includes(search.toLowerCase())
     );
+
+  });
+
+  if (loading) {
+    return <Loader />;
   }
 
   return (
-    <div className="container-fluid">
+
+    <div className="container-fluid py-4">
 
       <div className="d-flex justify-content-between align-items-center mb-4">
 
-        <div>
+        <h2 className="fw-bold">
 
-          <h2 className="fw-bold">
-            <FaComments className="me-2 text-primary" />
-            Review Management
-          </h2>
+          Review Management
 
-          <p className="text-muted">
-            Manage customer product reviews
-          </p>
-
-        </div>
+        </h2>
 
       </div>
 
-      <div className="card shadow border-0">
+      <div className="card border-0 shadow-sm">
 
         <div className="card-body">
 
           <div className="row mb-4">
 
-            <div className="col-md-5">
+            <div className="col-md-6">
 
               <div className="input-group">
 
                 <span className="input-group-text">
+
                   <FaSearch />
+
                 </span>
 
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="Search Review..."
-                  value={keyword}
-                  onChange={searchHandler}
+                  placeholder="Search by product or user..."
+                  value={search}
+                  onChange={(e) =>
+                    setSearch(e.target.value)
+                  }
                 />
 
               </div>
@@ -123,22 +144,25 @@ const ReviewManagement = () => {
 
           </div>
 
-          <div className="table-responsive">
+                    <div className="table-responsive">
 
             <table className="table table-hover align-middle">
 
-              <thead className="table-dark">
+              <thead className="table-light">
 
                 <tr>
 
-                  <th>User</th>
                   <th>Product</th>
+
+                  <th>User</th>
+
                   <th>Rating</th>
+
                   <th>Review</th>
+
                   <th>Date</th>
-                  <th width="90">
-                    Action
-                  </th>
+
+                  <th>Action</th>
 
                 </tr>
 
@@ -153,44 +177,93 @@ const ReviewManagement = () => {
                     <tr key={review._id}>
 
                       <td>
-                        {review.user?.name || "User"}
+
+                        <div className="fw-bold">
+
+                          {review.product?.title || "Product"}
+
+                        </div>
+
                       </td>
 
                       <td>
-                        {review.product?.name || "Product"}
+
+                        <div>
+
+                          <strong>
+
+                            {review.user?.name || "User"}
+
+                          </strong>
+
+                          <br />
+
+                          <small className="text-muted">
+
+                            {review.user?.email}
+
+                          </small>
+
+                        </div>
+
                       </td>
 
                       <td>
 
-                        <span className="text-warning">
+                        <div className="text-warning">
 
-                          <FaStar className="me-1" />
+                          {[1,2,3,4,5].map((star) => (
 
-                          {review.rating}
+                            <FaStar
+                              key={star}
+                              className={
+                                star <= review.rating
+                                  ? "text-warning"
+                                  : "text-secondary"
+                              }
+                            />
 
-                        </span>
+                          ))}
+
+                        </div>
+
+                        <small>
+
+                          ({review.rating}/5)
+
+                        </small>
 
                       </td>
 
                       <td style={{ maxWidth: "300px" }}>
-                        {review.comment}
+
+                        <p className="mb-0">
+
+                          {review.comment}
+
+                        </p>
+
                       </td>
 
                       <td>
+
                         {new Date(
                           review.createdAt
                         ).toLocaleDateString()}
+
                       </td>
 
                       <td>
 
                         <button
-                          className="btn btn-danger btn-sm"
+                          className="btn btn-sm btn-outline-danger"
                           onClick={() =>
                             deleteHandler(review._id)
                           }
                         >
+
                           <FaTrash />
+
                         </button>
 
                       </td>
@@ -207,7 +280,13 @@ const ReviewManagement = () => {
                       colSpan="6"
                       className="text-center py-5"
                     >
-                      No Reviews Found
+
+                      <h5 className="text-muted">
+
+                        No Reviews Found
+
+                      </h5>
+
                     </td>
 
                   </tr>
@@ -220,11 +299,45 @@ const ReviewManagement = () => {
 
           </div>
 
+                    <hr />
+
+          <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3">
+
+            <div>
+
+              <strong>
+                Total Reviews :
+              </strong>
+
+              <span className="badge bg-primary ms-2">
+
+                {filteredReviews.length}
+
+              </span>
+
+            </div>
+
+            <div className="mt-3 mt-md-0 d-flex gap-2">
+
+              <button
+                className="btn btn-outline-secondary"
+                onClick={loadReviews}
+              >
+
+                Refresh List
+
+              </button>
+
+            </div>
+
+          </div>
+
         </div>
 
       </div>
 
     </div>
+
   );
 };
 

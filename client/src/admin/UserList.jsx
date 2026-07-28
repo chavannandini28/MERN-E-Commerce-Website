@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+
 import {
-  FaUsers,
   FaSearch,
   FaEdit,
   FaTrash,
   FaUserPlus,
 } from "react-icons/fa";
-import { toast } from "react-toastify";
+
+import Loader from "../components/Loader";
 
 import {
-  getUsers,
+  getAllUsers,
   deleteUser,
 } from "../api/userApi";
 
@@ -22,27 +24,22 @@ const UserList = () => {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetchUsers();
+    loadUsers();
   }, []);
 
-  const fetchUsers = async () => {
+  const loadUsers = async () => {
     try {
-
       setLoading(true);
 
-      const { data } = await getUsers();
+      const { data } = await getAllUsers();
 
-      setUsers(
-        data.users ||
-        data.data ||
-        []
-      );
+      setUsers(data.users || []);
 
     } catch (error) {
 
       toast.error(
-        error?.response?.data?.message ||
-        "Failed to load users."
+        error.response?.data?.message ||
+        "Failed to load users"
       );
 
     } finally {
@@ -54,59 +51,61 @@ const UserList = () => {
 
   const deleteHandler = async (id) => {
 
-    if (
-      !window.confirm(
-        "Delete this user?"
-      )
-    )
-      return;
+    const confirmDelete = window.confirm(
+      "Delete this user?"
+    );
+
+    if (!confirmDelete) return;
 
     try {
 
       await deleteUser(id);
 
       toast.success(
-        "User deleted successfully."
+        "User deleted successfully"
       );
 
-      fetchUsers();
+      loadUsers();
 
     } catch (error) {
 
       toast.error(
-        error?.response?.data?.message ||
-        "Unable to delete user."
+        error.response?.data?.message ||
+        "Delete failed"
       );
 
     }
   };
 
-  const filteredUsers = users.filter((user) =>
-    `${user.name} ${user.email}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  const filteredUsers = users.filter((user) => {
+
+    return (
+      user.name
+        ?.toLowerCase()
+        .includes(search.toLowerCase()) ||
+
+      user.email
+        ?.toLowerCase()
+        .includes(search.toLowerCase())
+    );
+
+  });
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
+
     <div className="container-fluid py-4">
 
       <div className="d-flex justify-content-between align-items-center mb-4">
 
-        <div>
+        <h2 className="fw-bold">
 
-          <h2 className="fw-bold">
+          User Management
 
-            <FaUsers className="me-2 text-primary" />
-
-            User Management
-
-          </h2>
-
-          <p className="text-muted mb-0">
-            Manage all registered users
-          </p>
-
-        </div>
+        </h2>
 
         <Link
           to="/admin/users/add"
@@ -121,196 +120,261 @@ const UserList = () => {
 
       </div>
 
-      <div className="card shadow border-0">
+      <div className="card border-0 shadow-sm">
 
         <div className="card-body">
 
-          <div className="input-group mb-4">
+          <div className="row mb-4">
 
-            <span className="input-group-text">
+            <div className="col-md-6">
 
-              <FaSearch />
+              <div className="input-group">
 
-            </span>
+                <span className="input-group-text">
 
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search by name or email..."
-              value={search}
-              onChange={(e) =>
-                setSearch(e.target.value)
-              }
-            />
+                  <FaSearch />
 
-          </div>
+                </span>
 
-          {loading ? (
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search name or email..."
+                  value={search}
+                  onChange={(e) =>
+                    setSearch(e.target.value)
+                  }
+                />
 
-            <div className="text-center py-5">
-
-              <div className="spinner-border text-primary" />
+              </div>
 
             </div>
 
-          ) : (
+          </div>
 
-            <div className="table-responsive">
+                    <div className="table-responsive">
 
-              <table className="table table-hover align-middle">
+            <table className="table table-hover align-middle">
 
-                <thead className="table-dark">
+              <thead className="table-light">
 
-                  <tr>
+                <tr>
 
-                    <th>#</th>
+                  <th>Avatar</th>
 
-                    <th>User</th>
+                  <th>Name</th>
 
-                    <th>Email</th>
+                  <th>Email</th>
 
-                    <th>Role</th>
+                  <th>Phone</th>
 
-                    <th>Status</th>
+                  <th>Role</th>
 
-                    <th className="text-center">
-                      Actions
-                    </th>
+                  <th>Status</th>
 
-                  </tr>
+                  <th>Joined</th>
 
-                </thead>
+                  <th>Actions</th>
 
-                <tbody>
-                                    {filteredUsers.length === 0 ? (
+                </tr>
 
-                    <tr>
+              </thead>
 
-                      <td
-                        colSpan="6"
-                        className="text-center py-5 text-muted"
-                      >
-                        No users found.
+              <tbody>
+
+                {filteredUsers.length > 0 ? (
+
+                  filteredUsers.map((user) => (
+
+                    <tr key={user._id}>
+
+                      <td>
+
+                        <img
+                          src={
+                            user.avatar?.url ||
+                            "https://via.placeholder.com/50"
+                          }
+                          alt={user.name}
+                          width="50"
+                          height="50"
+                          className="rounded-circle border"
+                          style={{
+                            objectFit: "cover",
+                          }}
+                        />
+
                       </td>
 
-                    </tr>
+                      <td>
 
-                  ) : (
+                        <h6 className="mb-0 fw-bold">
 
-                    filteredUsers.map((user, index) => (
+                          {user.name}
 
-                      <tr key={user._id}>
+                        </h6>
 
-                        <td>{index + 1}</td>
+                      </td>
 
-                        <td>
+                      <td>
 
-                          <div className="d-flex align-items-center">
+                        {user.email}
 
-                            <img
-                              src={
-                                user.avatar?.url ||
-                                "https://via.placeholder.com/45"
-                              }
-                              alt={user.name}
-                              className="rounded-circle me-3"
-                              width="45"
-                              height="45"
-                            />
+                      </td>
 
-                            <div>
+                      <td>
 
-                              <h6 className="mb-0">
-                                {user.name}
-                              </h6>
+                        {user.phone || "-"}
 
-                              <small className="text-muted">
-                                ID:
-                                {" "}
-                                {user._id.slice(-6)}
-                              </small>
+                      </td>
 
-                            </div>
+                      <td>
 
-                          </div>
+                        <span
+                          className={`badge ${
+                            user.role === "Admin"
+                              ? "bg-danger"
+                              : user.role === "Vendor"
+                              ? "bg-warning text-dark"
+                              : "bg-primary"
+                          }`}
+                        >
 
-                        </td>
+                          {user.role}
 
-                        <td>{user.email}</td>
+                        </span>
 
-                        <td>
+                      </td>
 
-                          <span
-                            className={`badge ${
-                              user.role === "Admin"
-                                ? "bg-danger"
-                                : user.role === "Vendor"
-                                ? "bg-warning text-dark"
-                                : "bg-primary"
-                            }`}
-                          >
-                            {user.role}
+                      <td>
+
+                        {user.isActive ? (
+
+                          <span className="badge bg-success">
+
+                            Active
+
                           </span>
 
-                        </td>
+                        ) : (
 
-                        <td>
+                          <span className="badge bg-secondary">
 
-                          <span
-                            className={`badge ${
-                              user.isBlocked
-                                ? "bg-danger"
-                                : "bg-success"
-                            }`}
-                          >
-                            {user.isBlocked
-                              ? "Blocked"
-                              : "Active"}
+                            Inactive
+
                           </span>
 
-                        </td>
+                        )}
 
-                        <td className="text-center">
+                      </td>
+
+                      <td>
+
+                        {new Date(
+                          user.createdAt
+                        ).toLocaleDateString()}
+
+                      </td>
+
+                      <td>
+
+                        <div className="btn-group">
 
                           <Link
                             to={`/admin/users/edit/${user._id}`}
-                            className="btn btn-sm btn-warning me-2"
+                            className="btn btn-sm btn-outline-primary"
                           >
+
                             <FaEdit />
+
                           </Link>
 
                           <button
-                            className="btn btn-sm btn-danger"
+                            className="btn btn-sm btn-outline-danger"
                             onClick={() =>
                               deleteHandler(user._id)
                             }
                           >
+
                             <FaTrash />
+
                           </button>
 
-                        </td>
+                        </div>
 
-                      </tr>
+                      </td>
 
-                    ))
+                    </tr>
 
-                  )}
+                  ))
 
-                </tbody>
+                ) : (
 
-              </table>
+                  <tr>
+
+                    <td
+                      colSpan="8"
+                      className="text-center py-5"
+                    >
+
+                      <h5 className="text-muted">
+
+                        No Users Found
+
+                      </h5>
+
+                    </td>
+
+                  </tr>
+
+                )}
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+                    <hr />
+
+          <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3">
+
+            <div>
+
+              <strong>
+                Total Users :
+              </strong>
+
+              <span className="badge bg-primary ms-2">
+
+                {filteredUsers.length}
+
+              </span>
 
             </div>
 
-          )}
+            <div className="mt-3 mt-md-0 d-flex gap-2">
+
+              <button
+                className="btn btn-outline-secondary"
+                onClick={loadUsers}
+              >
+
+                Refresh List
+
+              </button>
+
+            </div>
+
+          </div>
 
         </div>
 
       </div>
 
     </div>
+
   );
 };
 
 export default UserList;
-                

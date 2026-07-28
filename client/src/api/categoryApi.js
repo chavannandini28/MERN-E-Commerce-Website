@@ -1,44 +1,103 @@
 import axiosInstance from "./axiosInstance";
 
-// ===================================
+// ===============================
 // Get All Categories
-// GET /categories
-// ===================================
-export const getCategories = () =>
-  axiosInstance.get("/categories");
+// ===============================
 
-// ===================================
-// Get Single Category
-// GET /categories/:id
-// ===================================
-export const getCategoryById = (id) =>
-  axiosInstance.get(`/categories/${id}`);
+export const getCategories = async () => {
+  return axiosInstance.get("/categories");
+};
 
-// ===================================
+// ===============================
+// Get Category By ID
+// ===============================
+
+export const getCategory = async (id) => {
+  return axiosInstance.get(`/categories/${id}`);
+};
+
+// ===============================
 // Create Category
-// POST /categories
-// ===================================
-export const createCategory = (formData) =>
-  axiosInstance.post("/categories", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+// ===============================
 
-// ===================================
+export const createCategory = async (categoryData) => {
+  return axiosInstance.post(
+    "/categories",
+    categoryData
+  );
+};
+
+// ===============================
 // Update Category
-// PUT /categories/:id
-// ===================================
-export const updateCategory = (id, formData) =>
-  axiosInstance.put(`/categories/${id}`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+// ===============================
 
-// ===================================
+export const updateCategory = async (
+  id,
+  categoryData
+) => {
+  return axiosInstance.put(
+    `/categories/${id}`,
+    categoryData
+  );
+};
+
+// ===============================
 // Delete Category
-// DELETE /categories/:id
-// ===================================
-export const deleteCategory = (id) =>
-  axiosInstance.delete(`/categories/${id}`);
+// ===============================
+
+export const deleteCategory = async (id) => {
+  return axiosInstance.delete(
+    `/categories/${id}`
+  );
+};
+
+// ===============================
+// Get Category Products
+// ===============================
+
+export const getCategoryProducts = async (
+  slug
+) => {
+  return axiosInstance.get(
+    `/categories/${slug}/products`
+  );
+};
+
+// ===============================
+// Category Statistics
+// ===============================
+
+export const getCategoryStats = async () => {
+  return axiosInstance.get(
+    "/categories/stats"
+  );
+};
+
+// ===============================
+// Upload Category Image
+// ===============================
+
+export const uploadCategoryImage =
+  async (formData) => {
+    return axiosInstance.post(
+      "/categories/upload",
+      formData,
+      {
+        headers: {
+          "Content-Type":
+            "multipart/form-data",
+        },
+      }
+    );
+  };
+
+// ===============================
+// Toggle Category Status
+// ===============================
+
+export const toggleCategoryStatus =
+  async (id) => {
+    return axiosInstance.patch(
+      `/categories/${id}/status`
+    );
+  };

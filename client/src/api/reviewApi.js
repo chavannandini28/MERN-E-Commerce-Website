@@ -1,57 +1,130 @@
 import axiosInstance from "./axiosInstance";
 
-// ===================================
-// Get All Reviews (Admin)
-// GET /reviews
-// ===================================
-export const getReviews = () =>
-  axiosInstance.get("/reviews");
+// ===============================
+// Add Review
+// ===============================
 
-// ===================================
-// Get Reviews By Product
-// GET /reviews/product/:id
-// ===================================
-export const getProductReviews = (productId) =>
-  axiosInstance.get(`/reviews/product/${productId}`);
+export const addReview = async (productId, reviewData) => {
+  return axiosInstance.post(
+    `/reviews/${productId}`,
+    reviewData
+  );
+};
 
-// ===================================
-// Get Single Review
-// GET /reviews/:id
-// ===================================
-export const getReviewById = (id) =>
-  axiosInstance.get(`/reviews/${id}`);
+// ===============================
+// Get Product Reviews
+// ===============================
 
-// ===================================
-// Create Review
-// POST /reviews
-// ===================================
-export const createReview = (reviewData) =>
-  axiosInstance.post("/reviews", reviewData);
+export const getProductReviews = async (
+  productId
+) => {
+  return axiosInstance.get(
+    `/reviews/${productId}`
+  );
+};
 
-// ===================================
+// ===============================
 // Update Review
-// PUT /reviews/:id
-// ===================================
-export const updateReview = (id, reviewData) =>
-  axiosInstance.put(`/reviews/${id}`, reviewData);
+// ===============================
 
-// ===================================
+export const updateReview = async (
+  reviewId,
+  reviewData
+) => {
+  return axiosInstance.put(
+    `/reviews/${reviewId}`,
+    reviewData
+  );
+};
+
+// ===============================
 // Delete Review
-// DELETE /reviews/:id
-// ===================================
-export const deleteReview = (id) =>
-  axiosInstance.delete(`/reviews/${id}`);
+// ===============================
 
-// ===================================
-// Like Review (Optional)
-// PATCH /reviews/like/:id
-// ===================================
-export const likeReview = (id) =>
-  axiosInstance.patch(`/reviews/like/${id}`);
+export const deleteReview = async (
+  reviewId
+) => {
+  return axiosInstance.delete(
+    `/reviews/${reviewId}`
+  );
+};
 
-// ===================================
-// Unlike Review (Optional)
-// PATCH /reviews/unlike/:id
-// ===================================
-export const unlikeReview = (id) =>
-  axiosInstance.patch(`/reviews/unlike/${id}`);
+// ===============================
+// Get All Reviews (Admin)
+// ===============================
+
+export const getReviews = async () => {
+  return axiosInstance.get("/reviews");
+};
+
+// ===============================
+// Get Single Review
+// ===============================
+
+export const getReview = async (
+  reviewId
+) => {
+  return axiosInstance.get(
+    `/reviews/details/${reviewId}`
+  );
+};
+
+// ===============================
+// Approve Review
+// ===============================
+
+export const approveReview = async (
+  reviewId
+) => {
+  return axiosInstance.patch(
+    `/reviews/approve/${reviewId}`
+  );
+};
+
+// ===============================
+// Reject Review
+// ===============================
+
+export const rejectReview = async (
+  reviewId
+) => {
+  return axiosInstance.patch(
+    `/reviews/reject/${reviewId}`
+  );
+};
+
+// ===============================
+// Review Statistics
+// ===============================
+
+export const getReviewStats = async () => {
+  return axiosInstance.get(
+    "/reviews/stats"
+  );
+};
+
+// ===============================
+// Report Review
+// ===============================
+
+export const reportReview = async (
+  reviewId,
+  reason
+) => {
+  return axiosInstance.post(
+    `/reviews/report/${reviewId}`,
+    { reason }
+  );
+};
+
+// ===============================
+// Like Review
+// ===============================
+
+export const likeReview = async (
+  reviewId
+) => {
+  return axiosInstance.patch(
+    `/reviews/like/${reviewId}`
+  );
+};
