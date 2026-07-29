@@ -19,7 +19,7 @@ const razorpay = new Razorpay({
 // POST /api/payment/create-order
 // ======================================
 
-exports.createOrder = asyncHandler(async (req, res) => {
+exports.createRazorpayOrder = asyncHandler(async (req, res) => {
   const cart = await Cart.findOne({
     user: req.user._id,
   });
@@ -37,8 +37,7 @@ exports.createOrder = asyncHandler(async (req, res) => {
     receipt: `receipt_${Date.now()}`,
   };
 
-  const razorpayOrder =
-    await razorpay.orders.create(options);
+  const razorpayOrder = await razorpay.orders.create(options);
 
   res.status(200).json({
     success: true,
@@ -47,8 +46,8 @@ exports.createOrder = asyncHandler(async (req, res) => {
 });
 
 // ======================================
-// Verify Razorpay Payment
-// POST /api/payment/verify-payment
+// Verify Payment
+// POST /api/payment/verify
 // ======================================
 
 exports.verifyPayment = asyncHandler(async (req, res) => {
@@ -118,7 +117,6 @@ exports.verifyPayment = asyncHandler(async (req, res) => {
   });
 
   cart.items = [];
-  cart.calculateTotals();
   await cart.save();
 
   res.status(200).json({
@@ -171,12 +169,64 @@ exports.cashOnDelivery = asyncHandler(async (req, res) => {
   });
 
   cart.items = [];
-  cart.calculateTotals();
   await cart.save();
 
   res.status(201).json({
     success: true,
     message: "Order placed successfully",
+    order,
+  });
+});
+
+// ======================================
+// Get Payment Details
+// GET /api/payment/:id
+// ======================================
+
+exports.getPaymentDetails = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    return res.status(404).json({
+      success: false,
+      message: "Order not found",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    payment: order.paymentInfo,
+    order,
+  });
+});
+
+// ======================================
+// Refund Payment
+// POST /api/payment/refund/:id
+// ======================================
+
+exports.refundPayment = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    return res.status(404).json({
+      success: false,
+      message: "Order not found",
+    });
+  }
+
+  order.paymentInfo = {
+    ...order.paymentInfo,
+    status: "Refunded",
+  };
+
+  order.isPaid = false;
+
+  await order.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Payment refunded successfully",
     order,
   });
 });

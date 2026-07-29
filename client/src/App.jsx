@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -27,11 +27,8 @@ import PaymentFailed from "./pages/PaymentFailed";
 import NotFound from "./pages/NotFound";
 
 function App() {
-
   return (
-
-    <BrowserRouter>
-
+    <>
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -43,91 +40,33 @@ function App() {
       />
 
       <Routes>
-
         {/* Customer Layout */}
-
         <Route path="/" element={<MainLayout />}>
-
           <Route index element={<Home />} />
-
           <Route path="shop" element={<Shop />} />
-
-          <Route
-            path="product/:id"
-            element={<ProductDetails />}
-          />
-
+          <Route path="product/:id" element={<ProductDetails />} />
           <Route path="cart" element={<Cart />} />
-
-          <Route
-            path="wishlist"
-            element={<Wishlist />}
-          />
-
-          <Route
-            path="checkout"
-            element={<Checkout />}
-          />
-
-          <Route
-            path="profile"
-            element={<Profile />}
-          />
-
-          <Route
-            path="orders"
-            element={<MyOrders />}
-          />
-
-          <Route
-            path="orders/:id"
-            element={<OrderDetails />}
-          />
-
-          <Route
-            path="payment-success"
-            element={<PaymentSuccess />}
-          />
-
-          <Route
-            path="payment-failed"
-            element={<PaymentFailed />}
-          />
-
+          <Route path="wishlist" element={<Wishlist />} />
+          <Route path="checkout" element={<Checkout />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="orders" element={<MyOrders />} />
+          <Route path="orders/:id" element={<OrderDetails />} />
+          <Route path="payment-success" element={<PaymentSuccess />} />
+          <Route path="payment-failed" element={<PaymentFailed />} />
         </Route>
 
         {/* Authentication */}
-
-        <Route
-          path="/login"
-          element={<Login />}
-        />
-
-        <Route
-          path="/register"
-          element={<Register />}
-        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
         {/* Admin */}
-
-        <Route
-          path="/admin/*"
-          element={<AdminRoutes />}
-        />
+        <Route path="/admin/*" element={<AdminRoutes />} />
 
         {/* 404 */}
-
-        <Route
-          path="*"
-          element={<NotFound />}
-        />
-
+        <Route path="*" element={<NotFound />} />
       </Routes>
-
-    </BrowserRouter>
-
+    </>
   );
-
 }
 
 export default App;

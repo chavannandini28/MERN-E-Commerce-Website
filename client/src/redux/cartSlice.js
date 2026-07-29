@@ -3,7 +3,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import {
   getMyCart,
   addToCart,
-  updateQuantity,
+  updateQuantity as updateCartApiQuantity,
   removeFromCart,
   clearCart,
 } from "../api/cartApi";
@@ -20,7 +20,7 @@ export const fetchCart = createAsyncThunk(
       return data.cart;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message
+        error.response?.data?.message || "Failed to fetch cart"
       );
     }
   }
@@ -31,7 +31,7 @@ export const fetchCart = createAsyncThunk(
 // ======================================
 
 export const addItemToCart = createAsyncThunk(
-  "cart/addItem",
+  "cart/addItemToCart",
   async (cartData, thunkAPI) => {
     try {
       await addToCart(cartData);
@@ -41,7 +41,7 @@ export const addItemToCart = createAsyncThunk(
       return data.cart;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message
+        error.response?.data?.message || "Failed to add item"
       );
     }
   }
@@ -51,104 +51,94 @@ export const addItemToCart = createAsyncThunk(
 // Update Quantity
 // ======================================
 
-export const updateCartQuantity =
-  createAsyncThunk(
-    "cart/updateQuantity",
-    async ({ id, quantity }, thunkAPI) => {
-      try {
-        await updateQuantity(id, quantity);
+export const updateCartQuantity = createAsyncThunk(
+  "cart/updateQuantity",
+  async ({ id, quantity }, thunkAPI) => {
+    try {
+      await updateCartApiQuantity(id, quantity);
 
-        const { data } = await getMyCart();
+      const { data } = await getMyCart();
 
-        return data.cart;
-      } catch (error) {
-        return thunkAPI.rejectWithValue(
-          error.response?.data?.message
-        );
-      }
+      return data.cart;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to update quantity"
+      );
     }
-  );
+  }
+);
 
 // ======================================
 // Remove Item
 // ======================================
 
-export const removeCartItem =
-  createAsyncThunk(
-    "cart/removeItem",
-    async (id, thunkAPI) => {
-      try {
-        await removeFromCart(id);
+export const removeCartItem = createAsyncThunk(
+  "cart/removeCartItem",
+  async (id, thunkAPI) => {
+    try {
+      await removeFromCart(id);
 
-        const { data } = await getMyCart();
+      const { data } = await getMyCart();
 
-        return data.cart;
-      } catch (error) {
-        return thunkAPI.rejectWithValue(
-          error.response?.data?.message
-        );
-      }
+      return data.cart;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to remove item"
+      );
     }
-  );
+  }
+);
 
 // ======================================
 // Clear Cart
 // ======================================
 
-export const clearUserCart =
-  createAsyncThunk(
-    "cart/clearCart",
-    async (_, thunkAPI) => {
-      try {
-        await clearCart();
+export const clearUserCart = createAsyncThunk(
+  "cart/clearUserCart",
+  async (_, thunkAPI) => {
+    try {
+      await clearCart();
 
-        return {
-          items: [],
-          subtotal: 0,
-          tax: 0,
-          shippingCharge: 0,
-          discount: 0,
-          totalAmount: 0,
-          totalItems: 0,
-          totalQuantity: 0,
-        };
-      } catch (error) {
-        return thunkAPI.rejectWithValue(
-          error.response?.data?.message
-        );
-      }
+      return {
+        items: [],
+        subtotal: 0,
+        tax: 0,
+        shippingCharge: 0,
+        discount: 0,
+        totalAmount: 0,
+        totalItems: 0,
+        totalQuantity: 0,
+      };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to clear cart"
+      );
     }
-  );
+  }
+);
 
-// ======================================
-// Slice
-// ======================================
+const initialState = {
+  cart: {
+    items: [],
+    subtotal: 0,
+    tax: 0,
+    shippingCharge: 0,
+    discount: 0,
+    totalAmount: 0,
+    totalItems: 0,
+    totalQuantity: 0,
+  },
+  loading: false,
+  error: null,
+};
 
 const cartSlice = createSlice({
   name: "cart",
-
-  initialState: {
-    cart: {
-      items: [],
-      subtotal: 0,
-      tax: 0,
-      shippingCharge: 0,
-      discount: 0,
-      totalAmount: 0,
-      totalItems: 0,
-      totalQuantity: 0,
-    },
-
-    loading: false,
-
-    error: null,
-  },
-
+  initialState,
   reducers: {},
 
   extraReducers: (builder) => {
     builder
-
       .addCase(fetchCart.pending, (state) => {
         state.loading = true;
       })
@@ -156,6 +146,11 @@ const cartSlice = createSlice({
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false;
         state.cart = action.payload;
+      })
+
+      .addCase(fetchCart.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       })
 
       .addCase(addItemToCart.fulfilled, (state, action) => {
@@ -170,18 +165,23 @@ const cartSlice = createSlice({
         state.cart = action.payload;
       })
 
-      .addCase(clearUserCart.fulfilled, (state, action) => {
-        state.cart = action.payload;
-      })
-
-      .addMatcher(
-        (action) => action.type.startsWith("cart/") && action.type.endsWith("/rejected"),
-        (state, action) => {
-          state.loading = false;
-          state.error = action.payload;
-        }
-      );
+      .addCase(clearUserCart.fulfilled, (state) => {
+        state.cart = {
+          items: [],
+          subtotal: 0,
+          tax: 0,
+          shippingCharge: 0,
+          discount: 0,
+          totalAmount: 0,
+          totalItems: 0,
+          totalQuantity: 0,
+        };
+      });
   },
 });
+
+// Aliases for old components
+export { updateCartQuantity as updateQuantity };
+export { removeCartItem as removeItem };
 
 export default cartSlice.reducer;

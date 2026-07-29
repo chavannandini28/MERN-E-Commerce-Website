@@ -1,48 +1,60 @@
 import axiosInstance from "./axiosInstance";
 
-// ===============================
-// Register User
-// ===============================
+// ======================================
+// Register
+// ======================================
 
-export const registerUser = async (userData) => {
+export const register = async (userData) => {
   return axiosInstance.post("/auth/register", userData);
 };
 
-// ===============================
-// Login User
-// ===============================
+// Alias
+export const registerUser = register;
 
-export const loginUser = async (credentials) => {
-  return axiosInstance.post("/auth/login", credentials);
+// ======================================
+// Login
+// ======================================
+
+export const login = async (userData) => {
+  return axiosInstance.post("/auth/login", userData);
 };
 
-// ===============================
-// Logout User
-// ===============================
+// Alias
+export const loginUser = login;
 
-export const logoutUser = async () => {
+// ======================================
+// Logout
+// ======================================
+
+export const logout = async () => {
   return axiosInstance.post("/auth/logout");
 };
 
-// ===============================
-// Get Logged-in User
-// ===============================
+// Alias
+export const logoutUser = logout;
 
-export const getCurrentUser = async () => {
-  return axiosInstance.get("/auth/me");
+// ======================================
+// Get Profile
+// ======================================
+
+export const getProfile = async () => {
+  return axiosInstance.get("/auth/profile");
 };
 
-// ===============================
+// Alias
+export const getMyProfile = getProfile;
+
+// ======================================
 // Update Profile
-// ===============================
+// ======================================
 
 export const updateProfile = async (userData) => {
   return axiosInstance.put("/auth/profile", userData);
 };
 
-// ===============================
+// ======================================
 // Change Password
-// ===============================
+// ======================================
 
 export const changePassword = async (passwordData) => {
   return axiosInstance.put(
@@ -51,20 +63,19 @@ export const changePassword = async (passwordData) => {
   );
 };
 
-// ===============================
+// ======================================
 // Forgot Password
-// ===============================
+// ======================================
 
 export const forgotPassword = async (email) => {
-  return axiosInstance.post(
-    "/auth/forgot-password",
-    { email }
-  );
+  return axiosInstance.post("/auth/forgot-password", {
+    email,
+  });
 };
 
-// ===============================
+// ======================================
 // Reset Password
-// ===============================
+// ======================================
 
 export const resetPassword = async (
   token,
@@ -76,20 +87,20 @@ export const resetPassword = async (
   );
 };
 
-// ===============================
-// Verify Email
-// ===============================
+// ======================================
+// Verify OTP
+// ======================================
 
-export const verifyEmail = async (token) => {
-  return axiosInstance.get(
-    `/auth/verify-email/${token}`
-  );
+export const verifyOTP = async (otpData) => {
+  return axiosInstance.post("/auth/verify-otp", otpData);
 };
 
-// ===============================
-// Refresh Token
-// ===============================
+// ======================================
+// Resend OTP
+// ======================================
 
-export const refreshToken = async () => {
-  return axiosInstance.post("/auth/refresh-token");
+export const resendOTP = async (email) => {
+  return axiosInstance.post("/auth/resend-otp", {
+    email,
+  });
 };

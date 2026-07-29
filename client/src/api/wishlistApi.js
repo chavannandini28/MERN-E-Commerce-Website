@@ -1,89 +1,60 @@
 import axiosInstance from "./axiosInstance";
 
-// ===============================
-// Add Product to Wishlist
-// ===============================
-
-export const addToWishlist = async (productId) => {
-  return axiosInstance.post(
-    "/wishlist/addToWishlist",
-    { productId }
-  );
-};
-
-// ===============================
-// Get My Wishlist
-// ===============================
+// ======================================
+// Get Wishlist
+// ======================================
 
 export const getWishlist = async () => {
-  return axiosInstance.get(
-    "/wishlist/getMyWishlist"
-  );
+  return axiosInstance.get("/wishlist");
 };
 
-// ===============================
-// Remove Product From Wishlist
-// ===============================
+// Alias
+export const getMyWishlist = getWishlist;
 
-export const removeFromWishlist = async (
-  id
-) => {
+// ======================================
+// Add To Wishlist
+// ======================================
+
+export const addToWishlist = async (productId) => {
+  return axiosInstance.post("/wishlist/add", {
+    productId,
+  });
+};
+
+// ======================================
+// Remove From Wishlist
+// ======================================
+
+export const removeFromWishlist = async (id) => {
   return axiosInstance.delete(
-    `/wishlist/removeFromWishlist/${id}`
+    `/wishlist/remove/${id}`
   );
 };
 
-// ===============================
+// ======================================
 // Clear Wishlist
-// ===============================
+// ======================================
 
 export const clearWishlist = async () => {
-  return axiosInstance.delete(
-    "/wishlist/clearWishlist"
-  );
+  return axiosInstance.delete("/wishlist/clear");
 };
 
-// ===============================
-// Move Wishlist Item To Cart
-// ===============================
+// ======================================
+// Move To Cart
+// ======================================
 
 export const moveToCart = async (id) => {
   return axiosInstance.post(
-    `/wishlist/moveToCart/${id}`
+    `/wishlist/move-to-cart/${id}`
   );
 };
 
-// ===============================
+// ======================================
 // Wishlist Count
-// ===============================
+// ======================================
 
-export const getWishlistCount =
-  async () => {
-    return axiosInstance.get(
-      "/wishlist/getWishlistCount"
-    );
-  };
-
-// ===============================
-// Check Wishlist Status
-// ===============================
-
-export const checkWishlistItem =
-  async (productId) => {
-    return axiosInstance.get(
-      `/wishlist/check/${productId}`
-    );
-  };
-
-// ===============================
-// Toggle Wishlist
-// ===============================
-
-export const toggleWishlist = async (
-  productId
-) => {
-  return axiosInstance.post(
-    "/wishlist/toggle",
-    { productId }
+export const getWishlistCount = async () => {
+  return axiosInstance.get(
+    "/wishlist/count"
   );
 };

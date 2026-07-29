@@ -39,6 +39,9 @@ export const updateCartQuantity = async (
   );
 };
 
+// Alias for Redux
+export const updateQuantity = updateCartQuantity;
+
 // ===============================
 // Remove From Cart
 // ===============================

@@ -1,57 +1,74 @@
 import axiosInstance from "./axiosInstance";
 
-// ===============================
-// Create Razorpay Order
-// ===============================
+// ======================================
+// Cash On Delivery
+// ======================================
 
-export const createRazorpayOrder = async (
-  orderData
-) => {
+export const cashOnDelivery = async (orderData) => {
+  return axiosInstance.post(
+    "/payment/cash-on-delivery",
+    orderData
+  );
+};
+
+// ======================================
+// Create Razorpay Order
+// ======================================
+
+export const createRazorpayOrder = async (orderData) => {
   return axiosInstance.post(
     "/payment/create-order",
     orderData
   );
 };
 
-// ===============================
-// Verify Razorpay Payment
-// ===============================
+// Alias for existing components
+export const createOrder = createRazorpayOrder;
 
-export const verifyPayment = async (
-  paymentData
-) => {
+// ======================================
+// Verify Payment
+// ======================================
+
+export const verifyPayment = async (paymentData) => {
   return axiosInstance.post(
     "/payment/verify",
     paymentData
   );
 };
 
-// ===============================
+// ======================================
 // Get Payment Details
-// ===============================
+// ======================================
 
-export const getPaymentDetails = async (
-  paymentId
-) => {
+export const getPaymentDetails = async (paymentId) => {
   return axiosInstance.get(
     `/payment/${paymentId}`
   );
 };
 
-// ===============================
-// Get Payment History
-// ===============================
+// ======================================
+// Payment History
+// ======================================
 
-export const getPaymentHistory =
-  async () => {
-    return axiosInstance.get(
-      "/payment/history"
-    );
-  };
+export const getPaymentHistory = async () => {
+  return axiosInstance.get(
+    "/payment/history"
+  );
+};
 
-// ===============================
+// ======================================
+// Payment Status
+// ======================================
+
+export const getPaymentStatus = async (paymentId) => {
+  return axiosInstance.get(
+    `/payment/status/${paymentId}`
+  );
+};
+
+// ======================================
 // Refund Payment
-// ===============================
+// ======================================
 
 export const refundPayment = async (
   paymentId,
@@ -63,60 +80,47 @@ export const refundPayment = async (
   );
 };
 
-// ===============================
-// Download Payment Receipt
-// ===============================
+// ======================================
+// Retry Payment
+// ======================================
 
-export const downloadReceipt =
-  async (paymentId) => {
-    return axiosInstance.get(
-      `/payment/receipt/${paymentId}`,
-      {
-        responseType: "blob",
-      }
-    );
-  };
+export const retryPayment = async (orderId) => {
+  return axiosInstance.post(
+    `/payment/retry/${orderId}`
+  );
+};
 
-// ===============================
-// Payment Status
-// ===============================
-
-export const getPaymentStatus =
-  async (paymentId) => {
-    return axiosInstance.get(
-      `/payment/status/${paymentId}`
-    );
-  };
-
-// ===============================
-// Retry Failed Payment
-// ===============================
-
-export const retryPayment =
-  async (orderId) => {
-    return axiosInstance.post(
-      `/payment/retry/${orderId}`
-    );
-  };
-
-// ===============================
+// ======================================
 // Cancel Payment
-// ===============================
+// ======================================
 
-export const cancelPayment =
-  async (paymentId) => {
-    return axiosInstance.post(
-      `/payment/cancel/${paymentId}`
-    );
-  };
+export const cancelPayment = async (paymentId) => {
+  return axiosInstance.post(
+    `/payment/cancel/${paymentId}`
+  );
+};
 
-// ===============================
-// Payment Statistics (Admin)
-// ===============================
+// ======================================
+// Download Receipt
+// ======================================
 
-export const getPaymentStats =
-  async () => {
-    return axiosInstance.get(
-      "/payment/stats"
-    );
-  };
+export const downloadReceipt = async (
+  paymentId
+) => {
+  return axiosInstance.get(
+    `/payment/receipt/${paymentId}`,
+    {
+      responseType: "blob",
+    }
+  );
+};
+
+// ======================================
+// Payment Statistics
+// ======================================
+
+export const getPaymentStats = async () => {
+  return axiosInstance.get(
+    "/payment/stats"
+  );
+};
