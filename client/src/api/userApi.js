@@ -23,9 +23,7 @@ export const updateProfile = async (userData) => {
 // Change Password
 // ===============================
 
-export const changePassword = async (
-  passwordData
-) => {
+export const changePassword = async (passwordData) => {
   return axiosInstance.put(
     "/users/change-password",
     passwordData
@@ -36,16 +34,13 @@ export const changePassword = async (
 // Upload Avatar
 // ===============================
 
-export const uploadAvatar = async (
-  formData
-) => {
+export const uploadAvatar = async (formData) => {
   return axiosInstance.post(
     "/users/avatar",
     formData,
     {
       headers: {
-        "Content-Type":
-          "multipart/form-data",
+        "Content-Type": "multipart/form-data",
       },
     }
   );
@@ -60,13 +55,17 @@ export const getUsers = async () => {
 };
 
 // ===============================
+// Alias (Required for UserList.jsx)
+// ===============================
+
+export const getAllUsers = getUsers;
+
+// ===============================
 // Get User By ID
 // ===============================
 
 export const getUserById = async (id) => {
-  return axiosInstance.get(
-    `/users/${id}`
-  );
+  return axiosInstance.get(`/users/${id}`);
 };
 
 // ===============================
@@ -108,7 +107,27 @@ export const updateUserRole = async (
 };
 
 // ===============================
-// Block / Unblock User
+// Block User
+// ===============================
+
+export const blockUser = async (id) => {
+  return axiosInstance.patch(
+    `/users/${id}/block`
+  );
+};
+
+// ===============================
+// Unblock User
+// ===============================
+
+export const unblockUser = async (id) => {
+  return axiosInstance.patch(
+    `/users/${id}/unblock`
+  );
+};
+
+// ===============================
+// Toggle User Status
 // ===============================
 
 export const toggleUserStatus = async (

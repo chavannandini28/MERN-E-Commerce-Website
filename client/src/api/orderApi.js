@@ -31,6 +31,9 @@ export const getOrderDetails = async (id) => {
   );
 };
 
+// Alias
+export const getOrderById = getOrderDetails;
+
 // ===============================
 // Cancel Order
 // ===============================
@@ -50,6 +53,9 @@ export const getOrders = async () => {
     "/orders/getAllOrders"
   );
 };
+
+// Alias (Fix for OrderList.jsx)
+export const getAllOrders = getOrders;
 
 // ===============================
 // Update Order Status (Admin)
@@ -121,4 +127,24 @@ export const verifyPayment = async (
     "/orders/verifyPayment",
     paymentData
   );
+};
+
+// ===============================
+// Default Export
+// ===============================
+
+export default {
+  createOrder,
+  getMyOrders,
+  getOrderDetails,
+  getOrderById,
+  cancelOrder,
+  getOrders,
+  getAllOrders,
+  updateOrderStatus,
+  deleteOrder,
+  downloadInvoice,
+  getOrderStats,
+  trackOrder,
+  verifyPayment,
 };

@@ -15,11 +15,31 @@ export const addReview = async (productId, reviewData) => {
 // Get Product Reviews
 // ===============================
 
-export const getProductReviews = async (
-  productId
-) => {
+export const getProductReviews = async (productId) => {
   return axiosInstance.get(
     `/reviews/${productId}`
+  );
+};
+
+// ===============================
+// Get All Reviews (Admin)
+// ===============================
+
+export const getReviews = async () => {
+  return axiosInstance.get("/reviews");
+};
+
+// Alias (Required)
+
+export const getAllReviews = getReviews;
+
+// ===============================
+// Get Review By ID
+// ===============================
+
+export const getReview = async (reviewId) => {
+  return axiosInstance.get(
+    `/reviews/details/${reviewId}`
   );
 };
 
@@ -41,31 +61,9 @@ export const updateReview = async (
 // Delete Review
 // ===============================
 
-export const deleteReview = async (
-  reviewId
-) => {
+export const deleteReview = async (reviewId) => {
   return axiosInstance.delete(
     `/reviews/${reviewId}`
-  );
-};
-
-// ===============================
-// Get All Reviews (Admin)
-// ===============================
-
-export const getReviews = async () => {
-  return axiosInstance.get("/reviews");
-};
-
-// ===============================
-// Get Single Review
-// ===============================
-
-export const getReview = async (
-  reviewId
-) => {
-  return axiosInstance.get(
-    `/reviews/details/${reviewId}`
   );
 };
 
@@ -73,9 +71,7 @@ export const getReview = async (
 // Approve Review
 // ===============================
 
-export const approveReview = async (
-  reviewId
-) => {
+export const approveReview = async (reviewId) => {
   return axiosInstance.patch(
     `/reviews/approve/${reviewId}`
   );
@@ -85,21 +81,9 @@ export const approveReview = async (
 // Reject Review
 // ===============================
 
-export const rejectReview = async (
-  reviewId
-) => {
+export const rejectReview = async (reviewId) => {
   return axiosInstance.patch(
     `/reviews/reject/${reviewId}`
-  );
-};
-
-// ===============================
-// Review Statistics
-// ===============================
-
-export const getReviewStats = async () => {
-  return axiosInstance.get(
-    "/reviews/stats"
   );
 };
 
@@ -121,10 +105,18 @@ export const reportReview = async (
 // Like Review
 // ===============================
 
-export const likeReview = async (
-  reviewId
-) => {
+export const likeReview = async (reviewId) => {
   return axiosInstance.patch(
     `/reviews/like/${reviewId}`
+  );
+};
+
+// ===============================
+// Review Statistics
+// ===============================
+
+export const getReviewStats = async () => {
+  return axiosInstance.get(
+    "/reviews/stats"
   );
 };

@@ -10,6 +10,9 @@ export const getProducts = async (params = {}) => {
   });
 };
 
+// Alias
+export const getAllProducts = getProducts;
+
 // ===============================
 // Get Single Product
 // ===============================
@@ -18,52 +21,42 @@ export const getProduct = async (id) => {
   return axiosInstance.get(`/products/${id}`);
 };
 
+// Alias (Fix for EditProduct.jsx)
+export const getProductById = getProduct;
+
 // ===============================
 // Get Featured Products
 // ===============================
 
 export const getFeaturedProducts = async () => {
-  return axiosInstance.get(
-    "/products/featured"
-  );
+  return axiosInstance.get("/products/featured");
 };
 
 // ===============================
 // Get Related Products
 // ===============================
 
-export const getRelatedProducts = async (
-  id
-) => {
-  return axiosInstance.get(
-    `/products/${id}/related`
-  );
+export const getRelatedProducts = async (id) => {
+  return axiosInstance.get(`/products/${id}/related`);
 };
 
 // ===============================
 // Search Products
 // ===============================
 
-export const searchProducts = async (
-  keyword
-) => {
-  return axiosInstance.get(
-    `/products/search`,
-    {
-      params: {
-        keyword,
-      },
-    }
-  );
+export const searchProducts = async (keyword) => {
+  return axiosInstance.get("/products/search", {
+    params: {
+      keyword,
+    },
+  });
 };
 
 // ===============================
 // Create Product
 // ===============================
 
-export const createProduct = async (
-  productData
-) => {
+export const createProduct = async (productData) => {
   return axiosInstance.post(
     "/products",
     productData
@@ -98,33 +91,36 @@ export const deleteProduct = async (id) => {
 // Upload Product Images
 // ===============================
 
-export const uploadProductImages =
-  async (formData) => {
-    return axiosInstance.post(
-      "/products/upload",
-      formData,
-      {
-        headers: {
-          "Content-Type":
-            "multipart/form-data",
-        },
-      }
-    );
-  };
+export const uploadProductImages = async (
+  formData
+) => {
+  return axiosInstance.post(
+    "/products/upload",
+    formData,
+    {
+      headers: {
+        "Content-Type":
+          "multipart/form-data",
+      },
+    }
+  );
+};
 
 // ===============================
 // Update Product Stock
 // ===============================
 
-export const updateProductStock =
-  async (id, stock) => {
-    return axiosInstance.patch(
-      `/products/${id}/stock`,
-      {
-        stock,
-      }
-    );
-  };
+export const updateProductStock = async (
+  id,
+  stock
+) => {
+  return axiosInstance.patch(
+    `/products/${id}/stock`,
+    {
+      stock,
+    }
+  );
+};
 
 // ===============================
 // Toggle Featured Product
@@ -147,3 +143,24 @@ export const getLowStockProducts =
       "/products/low-stock"
     );
   };
+
+// ===============================
+// Default Export (Optional)
+// ===============================
+
+export default {
+  getProducts,
+  getAllProducts,
+  getProduct,
+  getProductById,
+  getFeaturedProducts,
+  getRelatedProducts,
+  searchProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  uploadProductImages,
+  updateProductStock,
+  toggleFeaturedProduct,
+  getLowStockProducts,
+};

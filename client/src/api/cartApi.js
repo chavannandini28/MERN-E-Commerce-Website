@@ -1,7 +1,7 @@
 import axiosInstance from "./axiosInstance";
 
 // ===============================
-// Add Product to Cart
+// Add To Cart
 // ===============================
 
 export const addToCart = async (productData) => {
@@ -21,6 +21,10 @@ export const getCart = async () => {
   );
 };
 
+// Alias (Required)
+
+export const getMyCart = getCart;
+
 // ===============================
 // Update Cart Quantity
 // ===============================
@@ -36,7 +40,7 @@ export const updateCartQuantity = async (
 };
 
 // ===============================
-// Remove Item From Cart
+// Remove From Cart
 // ===============================
 
 export const removeFromCart = async (id) => {
@@ -56,7 +60,7 @@ export const clearCart = async () => {
 };
 
 // ===============================
-// Cart Count
+// Get Cart Count
 // ===============================
 
 export const getCartCount = async () => {
@@ -66,7 +70,7 @@ export const getCartCount = async () => {
 };
 
 // ===============================
-// Cart Total
+// Get Cart Total
 // ===============================
 
 export const getCartTotal = async () => {
@@ -84,9 +88,7 @@ export const applyCartCoupon = async (
 ) => {
   return axiosInstance.post(
     "/cart/applyCoupon",
-    {
-      couponCode,
-    }
+    { couponCode }
   );
 };
 
@@ -94,20 +96,20 @@ export const applyCartCoupon = async (
 // Remove Coupon
 // ===============================
 
-export const removeCartCoupon =
-  async () => {
-    return axiosInstance.delete(
-      "/cart/removeCoupon"
-    );
-  };
+export const removeCartCoupon = async () => {
+  return axiosInstance.delete(
+    "/cart/removeCoupon"
+  );
+};
 
 // ===============================
-// Move Item To Wishlist
+// Move To Wishlist
 // ===============================
 
-export const moveToWishlist =
-  async (id) => {
-    return axiosInstance.post(
-      `/cart/moveToWishlist/${id}`
-    );
-  };
+export const moveToWishlist = async (
+  id
+) => {
+  return axiosInstance.post(
+    `/cart/moveToWishlist/${id}`
+  );
+};
